@@ -1,0 +1,1 @@
+ALTER TABLE settings DROP COLUMN IF EXISTS base_url;
