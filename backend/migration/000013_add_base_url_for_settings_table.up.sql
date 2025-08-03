@@ -1,1 +1,0 @@
-ALTER TABLE settings ADD COLUMN IF NOT EXISTS base_url TEXT;

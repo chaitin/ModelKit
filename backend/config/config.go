@@ -108,7 +108,7 @@ func (c *Config) GetBaseURL(req *http.Request, settings *domain.Setting) string 
 func Init() (*Config, error) {
 	v := viper.New()
 	v.AutomaticEnv()
-	v.SetEnvPrefix("ModelKit")
+	v.SetEnvPrefix("MODELKIT")
 	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
 
 	v.SetDefault("debug", false)

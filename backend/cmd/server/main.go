@@ -38,9 +38,6 @@ func main() {
 		panic(err)
 	}
 
-
-
-
 	svc := service.NewService(service.WithPprof())
 	svc.Add(s)
 	if err := svc.Run(); err != nil {
