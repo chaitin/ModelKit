@@ -1,7 +1,6 @@
 package v1
 
 import (
-	"context"
 	"log/slog"
 
 	"github.com/GoYoko/web"
@@ -23,8 +22,6 @@ func NewModelHandler(
 
 	g := w.Group("/api/v1/model")
 
-	g.GET("/provider/supported", web.BindHandler(m.GetProviderModelList))
-	g.GET("", web.BaseHandler(m.ListModel))
 	// g.POST("", web.BindHandler(m.CreateModel))
 	g.POST("/check", web.BindHandler(m.CheckModel))
 	g.PUT("", web.BindHandler(m.UpdateModel))
@@ -52,23 +49,6 @@ func (h *ModelHandler) CheckModel(c *web.Context, req domain.CheckModelReq) erro
 	return c.Success(m)
 }
 
-// List 获取模型列表
-//
-//	@Tags			Model
-//	@Summary		获取模型列表
-//	@Description	获取模型列表
-//	@ID				list-model
-//	@Accept			json
-//	@Produce		json
-//	@Success		200	{object}	web.Resp{data=domain.AllModelResp}
-//	@Router			/api/v1/model [get]
-func (h *ModelHandler) ListModel(c *web.Context) error {
-	models, err := h.usecase.ListModel(c.Request().Context())
-	if err != nil {
-		return err
-	}
-	return c.Success(models)
-}
 
 // Update 更新模型
 //
@@ -87,27 +67,4 @@ func (h *ModelHandler) UpdateModel(c *web.Context, req domain.UpdateModelReq) er
 		return err
 	}
 	return c.Success(m)
-}
-
-// GetProviderModelList 获取供应商支持的模型列表
-//
-//	@Tags			Model
-//	@Summary		获取供应商支持的模型列表
-//	@Description	获取供应商支持的模型列表
-//	@ID				get-provider-model-list
-//	@Accept			json
-//	@Produce		json
-//	@Param			param	query		domain.GetProviderModelListReq	true	"模型类型"
-//	@Success		200		{object}	web.Resp{data=domain.GetProviderModelListResp}
-//	@Router			/api/v1/model/provider/supported [get]
-func (h *ModelHandler) GetProviderModelList(c *web.Context, req domain.GetProviderModelListReq) error {
-	resp, err := h.usecase.GetProviderModelList(c.Request().Context(), &req)
-	if err != nil {
-		return err
-	}
-	return c.Success(resp)
-}
-
-func (h *ModelHandler) InitModel() error {
-	return h.usecase.InitModel(context.Background())
 }

@@ -16,10 +16,6 @@ type Tx struct {
 	config
 	// Model is the client for interacting with the Model builders.
 	Model *ModelClient
-	// ModelProvider is the client for interacting with the ModelProvider builders.
-	ModelProvider *ModelProviderClient
-	// ModelProviderModel is the client for interacting with the ModelProviderModel builders.
-	ModelProviderModel *ModelProviderModelClient
 
 	// lazily loaded.
 	client     *Client
@@ -152,8 +148,6 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Model = NewModelClient(tx.config)
-	tx.ModelProvider = NewModelProviderClient(tx.config)
-	tx.ModelProviderModel = NewModelProviderModelClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

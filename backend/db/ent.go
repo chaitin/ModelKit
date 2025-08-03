@@ -13,8 +13,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/chaitin/ModelKit/backend/db/model"
-	"github.com/chaitin/ModelKit/backend/db/modelprovider"
-	"github.com/chaitin/ModelKit/backend/db/modelprovidermodel"
 )
 
 // ent aliases to avoid import conflicts in user's code.
@@ -75,9 +73,7 @@ var (
 func checkColumn(table, column string) error {
 	initCheck.Do(func() {
 		columnCheck = sql.NewColumnCheck(map[string]func(string) bool{
-			model.Table:              model.ValidColumn,
-			modelprovider.Table:      modelprovider.ValidColumn,
-			modelprovidermodel.Table: modelprovidermodel.ValidColumn,
+			model.Table: model.ValidColumn,
 		})
 	})
 	return columnCheck(table, column)

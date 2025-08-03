@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 	"github.com/patrickmn/go-cache"
 
@@ -13,7 +12,6 @@ import (
 	"github.com/chaitin/ModelKit/backend/db"
 	"github.com/chaitin/ModelKit/backend/db/model"
 	"github.com/chaitin/ModelKit/backend/domain"
-	"github.com/chaitin/ModelKit/backend/pkg/cvt"
 	"github.com/chaitin/ModelKit/backend/pkg/entx"
 )
 
@@ -72,70 +70,4 @@ func (r *ModelRepo) UpdateModel(ctx context.Context, id string, fn func(tx *db.T
 		return nil
 	})
 	return m, err
-}
-
-func (r *ModelRepo) MyModelList(ctx context.Context, req *domain.MyModelListReq) ([]*db.Model, error) {
-	q := r.db.Model.Query().
-		Where(model.ModelType(req.ModelType)).
-		Order(model.ByCreatedAt(sql.OrderAsc()))
-	return q.All(ctx)
-}
-
-type TokenUsage struct {
-	Input  int64 `json:"input"`  // 输入token数
-	Output int64 `json:"output"` // 输出token数
-}
-
-type DailyUsage struct {
-	Date         time.Time `json:"date"`          // 时间戳
-	InputTokens  int64     `json:"input_tokens"`  // 输入token数
-	OutputTokens int64     `json:"output_tokens"` // 输出token数
-}
-
-func (r *ModelRepo) ListModel(ctx context.Context) (*domain.AllModelResp, error) {
-	providers, err := r.db.ModelProvider.Query().WithModels().All(ctx)
-	if err != nil {
-		return nil, err
-	}
-
-	resp := &domain.AllModelResp{
-		Providers: cvt.Iter(providers, func(_ int, p *db.ModelProvider) domain.ProviderModel {
-			return domain.ProviderModel{
-				Provider: p.Name,
-				Models: cvt.Iter(p.Edges.Models, func(_ int, m *db.ModelProviderModel) domain.ModelBasic {
-					return domain.ModelBasic{
-						Name:     m.Name,
-						Provider: consts.ModelProvider(p.Name),
-						APIBase:  p.APIBase,
-					}
-				}),
-			}
-		}),
-	}
-	return resp, nil
-}
-
-func (r *ModelRepo) InitModel(ctx context.Context, modelName, modelKey, modelURL string) error {
-	n, err := r.db.Model.Query().
-		Where(model.ModelName(modelName)).
-		Where(model.Provider(consts.ModelProviderBaiZhiCloud)).
-		Where(model.IsInternal(true)).
-		Count(ctx)
-	if err != nil {
-		return err
-	}
-	if n > 0 {
-		return nil
-	}
-
-	return r.db.Model.Create().
-		SetAPIKey(modelKey).
-		SetShowName("内置慢速补全模型").
-		SetModelName(modelName).
-		SetModelType(consts.ModelTypeCoder).
-		SetAPIBase(modelURL).
-		SetProvider(consts.ModelProviderBaiZhiCloud).
-		SetStatus(consts.ModelStatusActive).
-		SetIsInternal(true).
-		Exec(ctx)
 }

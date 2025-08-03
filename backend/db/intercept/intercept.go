@@ -9,8 +9,6 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/chaitin/ModelKit/backend/db"
 	"github.com/chaitin/ModelKit/backend/db/model"
-	"github.com/chaitin/ModelKit/backend/db/modelprovider"
-	"github.com/chaitin/ModelKit/backend/db/modelprovidermodel"
 	"github.com/chaitin/ModelKit/backend/db/predicate"
 )
 
@@ -97,69 +95,11 @@ func (f TraverseModel) Traverse(ctx context.Context, q db.Query) error {
 	return fmt.Errorf("unexpected query type %T. expect *db.ModelQuery", q)
 }
 
-// The ModelProviderFunc type is an adapter to allow the use of ordinary function as a Querier.
-type ModelProviderFunc func(context.Context, *db.ModelProviderQuery) (db.Value, error)
-
-// Query calls f(ctx, q).
-func (f ModelProviderFunc) Query(ctx context.Context, q db.Query) (db.Value, error) {
-	if q, ok := q.(*db.ModelProviderQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *db.ModelProviderQuery", q)
-}
-
-// The TraverseModelProvider type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseModelProvider func(context.Context, *db.ModelProviderQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseModelProvider) Intercept(next db.Querier) db.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseModelProvider) Traverse(ctx context.Context, q db.Query) error {
-	if q, ok := q.(*db.ModelProviderQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *db.ModelProviderQuery", q)
-}
-
-// The ModelProviderModelFunc type is an adapter to allow the use of ordinary function as a Querier.
-type ModelProviderModelFunc func(context.Context, *db.ModelProviderModelQuery) (db.Value, error)
-
-// Query calls f(ctx, q).
-func (f ModelProviderModelFunc) Query(ctx context.Context, q db.Query) (db.Value, error) {
-	if q, ok := q.(*db.ModelProviderModelQuery); ok {
-		return f(ctx, q)
-	}
-	return nil, fmt.Errorf("unexpected query type %T. expect *db.ModelProviderModelQuery", q)
-}
-
-// The TraverseModelProviderModel type is an adapter to allow the use of ordinary function as Traverser.
-type TraverseModelProviderModel func(context.Context, *db.ModelProviderModelQuery) error
-
-// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
-func (f TraverseModelProviderModel) Intercept(next db.Querier) db.Querier {
-	return next
-}
-
-// Traverse calls f(ctx, q).
-func (f TraverseModelProviderModel) Traverse(ctx context.Context, q db.Query) error {
-	if q, ok := q.(*db.ModelProviderModelQuery); ok {
-		return f(ctx, q)
-	}
-	return fmt.Errorf("unexpected query type %T. expect *db.ModelProviderModelQuery", q)
-}
-
 // NewQuery returns the generic Query interface for the given typed query.
 func NewQuery(q db.Query) (Query, error) {
 	switch q := q.(type) {
 	case *db.ModelQuery:
 		return &query[*db.ModelQuery, predicate.Model, model.OrderOption]{typ: db.TypeModel, tq: q}, nil
-	case *db.ModelProviderQuery:
-		return &query[*db.ModelProviderQuery, predicate.ModelProvider, modelprovider.OrderOption]{typ: db.TypeModelProvider, tq: q}, nil
-	case *db.ModelProviderModelQuery:
-		return &query[*db.ModelProviderModelQuery, predicate.ModelProviderModel, modelprovidermodel.OrderOption]{typ: db.TypeModelProviderModel, tq: q}, nil
 	default:
 		return nil, fmt.Errorf("unknown query type %T", q)
 	}

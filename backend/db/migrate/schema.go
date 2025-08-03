@@ -34,60 +34,14 @@ var (
 		Columns:    ModelkitModelsColumns,
 		PrimaryKey: []*schema.Column{ModelkitModelsColumns[0]},
 	}
-	// ModelkitModelProvidersColumns holds the columns for the "modelkit_model_providers" table.
-	ModelkitModelProvidersColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeString, Unique: true},
-		{Name: "name", Type: field.TypeString},
-		{Name: "api_base", Type: field.TypeString},
-		{Name: "priority", Type: field.TypeInt, Default: 0},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-	}
-	// ModelkitModelProvidersTable holds the schema information for the "modelkit_model_providers" table.
-	ModelkitModelProvidersTable = &schema.Table{
-		Name:       "modelkit_model_providers",
-		Columns:    ModelkitModelProvidersColumns,
-		PrimaryKey: []*schema.Column{ModelkitModelProvidersColumns[0]},
-	}
-	// ModelkitModelProviderModelsColumns holds the columns for the "modelkit_model_provider_models" table.
-	ModelkitModelProviderModelsColumns = []*schema.Column{
-		{Name: "id", Type: field.TypeUUID},
-		{Name: "name", Type: field.TypeString},
-		{Name: "created_at", Type: field.TypeTime},
-		{Name: "updated_at", Type: field.TypeTime},
-		{Name: "provider_id", Type: field.TypeString, Nullable: true},
-	}
-	// ModelkitModelProviderModelsTable holds the schema information for the "modelkit_model_provider_models" table.
-	ModelkitModelProviderModelsTable = &schema.Table{
-		Name:       "modelkit_model_provider_models",
-		Columns:    ModelkitModelProviderModelsColumns,
-		PrimaryKey: []*schema.Column{ModelkitModelProviderModelsColumns[0]},
-		ForeignKeys: []*schema.ForeignKey{
-			{
-				Symbol:     "modelkit_model_provider_models_modelkit_model_providers_models",
-				Columns:    []*schema.Column{ModelkitModelProviderModelsColumns[4]},
-				RefColumns: []*schema.Column{ModelkitModelProvidersColumns[0]},
-				OnDelete:   schema.SetNull,
-			},
-		},
-	}
 	// Tables holds all the tables in the schema.
 	Tables = []*schema.Table{
 		ModelkitModelsTable,
-		ModelkitModelProvidersTable,
-		ModelkitModelProviderModelsTable,
 	}
 )
 
 func init() {
 	ModelkitModelsTable.Annotation = &entsql.Annotation{
 		Table: "modelkit_models",
-	}
-	ModelkitModelProvidersTable.Annotation = &entsql.Annotation{
-		Table: "modelkit_model_providers",
-	}
-	ModelkitModelProviderModelsTable.ForeignKeys[0].RefTable = ModelkitModelProvidersTable
-	ModelkitModelProviderModelsTable.Annotation = &entsql.Annotation{
-		Table: "modelkit_model_provider_models",
 	}
 }

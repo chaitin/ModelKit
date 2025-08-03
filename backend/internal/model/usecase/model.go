@@ -6,10 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"log/slog"
-	"maps"
 	"net/http"
-	"net/url"
-	"path"
 	"time"
 
 	"github.com/cloudwego/eino-ext/components/model/openai"
@@ -163,10 +160,6 @@ func getHttpClientWithAPIHeaderMap(header string) *http.Client {
 	return nil
 }
 
-func (m *ModelUsecase) ListModel(ctx context.Context) (*domain.AllModelResp, error) {
-	return m.repo.ListModel(ctx)
-}
-
 // Update implements domain.ModelUsecase.
 func (m *ModelUsecase) UpdateModel(ctx context.Context, req *domain.UpdateModelReq) (*domain.Model, error) {
 	model, err := m.repo.UpdateModel(ctx, req.ID, func(tx *db.Tx, old *db.Model, up *db.ModelUpdateOne) error {
@@ -199,94 +192,4 @@ func (m *ModelUsecase) UpdateModel(ctx context.Context, req *domain.UpdateModelR
 		return nil, err
 	}
 	return cvt.From(model, &domain.Model{}), nil
-}
-
-func (m *ModelUsecase) InitModel(ctx context.Context) error {
-	m.logger.With("init_model", m.cfg.InitModel).Debug("init model")
-	if m.cfg.InitModel.Name == "" {
-		return nil
-	}
-	return m.repo.InitModel(ctx, m.cfg.InitModel.Name, m.cfg.InitModel.Key, m.cfg.InitModel.URL)
-}
-
-func (m *ModelUsecase) getQuery(req *domain.GetProviderModelListReq) request.Query {
-	q := make(request.Query, 0)
-	if req.Provider != consts.ModelProviderBaiZhiCloud && req.Provider != consts.ModelProviderSiliconFlow {
-		return q
-	}
-	q["type"] = "text"
-	q["sub_type"] = string(req.Type)
-	if req.Type == consts.ModelTypeLLM {
-		q["sub_type"] = "chat"
-	}
-	// 硅基流动不支持coder sub_type
-	if req.Provider == consts.ModelProviderSiliconFlow && req.Type == consts.ModelTypeCoder {
-		q["sub_type"] = "chat"
-	}
-	return q
-}
-
-func (m *ModelUsecase) GetProviderModelList(ctx context.Context, req *domain.GetProviderModelListReq) (*domain.GetProviderModelListResp, error) {
-	switch req.Provider {
-	case consts.ModelProviderAzureOpenAI,
-		consts.ModelProviderVolcengine:
-		return &domain.GetProviderModelListResp{
-			Models: domain.ModelProviderBrandModelsList[req.Provider],
-		}, nil
-	case consts.ModelProviderOpenAI,
-		consts.ModelProviderHunyuan,
-		consts.ModelProviderMoonshot,
-		consts.ModelProviderDeepSeek,
-		consts.ModelProviderSiliconFlow,
-		consts.ModelProviderBaiZhiCloud,
-		consts.ModelProviderBaiLian:
-		u, err := url.Parse(req.BaseURL)
-		if err != nil {
-			return nil, err
-		}
-		u.Path = path.Join(u.Path, "/models")
-		client := request.NewClient(u.Scheme, u.Host, m.client.Timeout, request.WithClient(m.client))
-		client.SetDebug(m.cfg.Debug)
-		query := m.getQuery(req)
-		resp, err := request.Get[domain.OpenAIResp](
-			client, u.Path,
-			request.WithHeader(
-				request.Header{
-					"Authorization": fmt.Sprintf("Bearer %s", req.APIKey),
-				},
-			),
-			request.WithQuery(query),
-		)
-		if err != nil {
-			return nil, err
-		}
-
-		return &domain.GetProviderModelListResp{
-			Models: cvt.Iter(resp.Data, func(_ int, e *domain.OpenAIData) domain.ProviderModelListItem {
-				return domain.ProviderModelListItem{
-					Model: e.ID,
-				}
-			}),
-		}, nil
-
-	case consts.ModelProviderOllama:
-		// get from ollama http://10.10.16.24:11434/api/tags
-		u, err := url.Parse(req.BaseURL)
-		if err != nil {
-			return nil, err
-		}
-		u.Path = "/api/tags"
-		client := request.NewClient(u.Scheme, u.Host, m.client.Timeout, request.WithClient(m.client))
-
-		h := request.Header{}
-		if req.APIHeader != "" {
-			headers := request.GetHeaderMap(req.APIHeader)
-			maps.Copy(h, headers)
-		}
-
-		return request.Get[domain.GetProviderModelListResp](client, u.Path, request.WithHeader(h))
-
-	default:
-		return nil, fmt.Errorf("invalid provider: %s", req.Provider)
-	}
 }

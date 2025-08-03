@@ -15,10 +15,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
-	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/chaitin/ModelKit/backend/db/model"
-	"github.com/chaitin/ModelKit/backend/db/modelprovider"
-	"github.com/chaitin/ModelKit/backend/db/modelprovidermodel"
 
 	stdsql "database/sql"
 )
@@ -30,10 +27,6 @@ type Client struct {
 	Schema *migrate.Schema
 	// Model is the client for interacting with the Model builders.
 	Model *ModelClient
-	// ModelProvider is the client for interacting with the ModelProvider builders.
-	ModelProvider *ModelProviderClient
-	// ModelProviderModel is the client for interacting with the ModelProviderModel builders.
-	ModelProviderModel *ModelProviderModelClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -46,8 +39,6 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Model = NewModelClient(c.config)
-	c.ModelProvider = NewModelProviderClient(c.config)
-	c.ModelProviderModel = NewModelProviderModelClient(c.config)
 }
 
 type (
@@ -138,11 +129,9 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:                ctx,
-		config:             cfg,
-		Model:              NewModelClient(cfg),
-		ModelProvider:      NewModelProviderClient(cfg),
-		ModelProviderModel: NewModelProviderModelClient(cfg),
+		ctx:    ctx,
+		config: cfg,
+		Model:  NewModelClient(cfg),
 	}, nil
 }
 
@@ -160,11 +149,9 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:                ctx,
-		config:             cfg,
-		Model:              NewModelClient(cfg),
-		ModelProvider:      NewModelProviderClient(cfg),
-		ModelProviderModel: NewModelProviderModelClient(cfg),
+		ctx:    ctx,
+		config: cfg,
+		Model:  NewModelClient(cfg),
 	}, nil
 }
 
@@ -194,16 +181,12 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.Model.Use(hooks...)
-	c.ModelProvider.Use(hooks...)
-	c.ModelProviderModel.Use(hooks...)
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	c.Model.Intercept(interceptors...)
-	c.ModelProvider.Intercept(interceptors...)
-	c.ModelProviderModel.Intercept(interceptors...)
 }
 
 // Mutate implements the ent.Mutator interface.
@@ -211,10 +194,6 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *ModelMutation:
 		return c.Model.mutate(ctx, m)
-	case *ModelProviderMutation:
-		return c.ModelProvider.mutate(ctx, m)
-	case *ModelProviderModelMutation:
-		return c.ModelProviderModel.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("db: unknown mutation type %T", m)
 	}
@@ -353,311 +332,13 @@ func (c *ModelClient) mutate(ctx context.Context, m *ModelMutation) (Value, erro
 	}
 }
 
-// ModelProviderClient is a client for the ModelProvider schema.
-type ModelProviderClient struct {
-	config
-}
-
-// NewModelProviderClient returns a client for the ModelProvider from the given config.
-func NewModelProviderClient(c config) *ModelProviderClient {
-	return &ModelProviderClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `modelprovider.Hooks(f(g(h())))`.
-func (c *ModelProviderClient) Use(hooks ...Hook) {
-	c.hooks.ModelProvider = append(c.hooks.ModelProvider, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `modelprovider.Intercept(f(g(h())))`.
-func (c *ModelProviderClient) Intercept(interceptors ...Interceptor) {
-	c.inters.ModelProvider = append(c.inters.ModelProvider, interceptors...)
-}
-
-// Create returns a builder for creating a ModelProvider entity.
-func (c *ModelProviderClient) Create() *ModelProviderCreate {
-	mutation := newModelProviderMutation(c.config, OpCreate)
-	return &ModelProviderCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of ModelProvider entities.
-func (c *ModelProviderClient) CreateBulk(builders ...*ModelProviderCreate) *ModelProviderCreateBulk {
-	return &ModelProviderCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *ModelProviderClient) MapCreateBulk(slice any, setFunc func(*ModelProviderCreate, int)) *ModelProviderCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &ModelProviderCreateBulk{err: fmt.Errorf("calling to ModelProviderClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*ModelProviderCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &ModelProviderCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for ModelProvider.
-func (c *ModelProviderClient) Update() *ModelProviderUpdate {
-	mutation := newModelProviderMutation(c.config, OpUpdate)
-	return &ModelProviderUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *ModelProviderClient) UpdateOne(mp *ModelProvider) *ModelProviderUpdateOne {
-	mutation := newModelProviderMutation(c.config, OpUpdateOne, withModelProvider(mp))
-	return &ModelProviderUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *ModelProviderClient) UpdateOneID(id string) *ModelProviderUpdateOne {
-	mutation := newModelProviderMutation(c.config, OpUpdateOne, withModelProviderID(id))
-	return &ModelProviderUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for ModelProvider.
-func (c *ModelProviderClient) Delete() *ModelProviderDelete {
-	mutation := newModelProviderMutation(c.config, OpDelete)
-	return &ModelProviderDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *ModelProviderClient) DeleteOne(mp *ModelProvider) *ModelProviderDeleteOne {
-	return c.DeleteOneID(mp.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ModelProviderClient) DeleteOneID(id string) *ModelProviderDeleteOne {
-	builder := c.Delete().Where(modelprovider.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &ModelProviderDeleteOne{builder}
-}
-
-// Query returns a query builder for ModelProvider.
-func (c *ModelProviderClient) Query() *ModelProviderQuery {
-	return &ModelProviderQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeModelProvider},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a ModelProvider entity by its id.
-func (c *ModelProviderClient) Get(ctx context.Context, id string) (*ModelProvider, error) {
-	return c.Query().Where(modelprovider.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *ModelProviderClient) GetX(ctx context.Context, id string) *ModelProvider {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryModels queries the models edge of a ModelProvider.
-func (c *ModelProviderClient) QueryModels(mp *ModelProvider) *ModelProviderModelQuery {
-	query := (&ModelProviderModelClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := mp.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(modelprovider.Table, modelprovider.FieldID, id),
-			sqlgraph.To(modelprovidermodel.Table, modelprovidermodel.FieldID),
-			sqlgraph.Edge(sqlgraph.O2M, false, modelprovider.ModelsTable, modelprovider.ModelsColumn),
-		)
-		fromV = sqlgraph.Neighbors(mp.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *ModelProviderClient) Hooks() []Hook {
-	return c.hooks.ModelProvider
-}
-
-// Interceptors returns the client interceptors.
-func (c *ModelProviderClient) Interceptors() []Interceptor {
-	return c.inters.ModelProvider
-}
-
-func (c *ModelProviderClient) mutate(ctx context.Context, m *ModelProviderMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&ModelProviderCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&ModelProviderUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&ModelProviderUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&ModelProviderDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("db: unknown ModelProvider mutation op: %q", m.Op())
-	}
-}
-
-// ModelProviderModelClient is a client for the ModelProviderModel schema.
-type ModelProviderModelClient struct {
-	config
-}
-
-// NewModelProviderModelClient returns a client for the ModelProviderModel from the given config.
-func NewModelProviderModelClient(c config) *ModelProviderModelClient {
-	return &ModelProviderModelClient{config: c}
-}
-
-// Use adds a list of mutation hooks to the hooks stack.
-// A call to `Use(f, g, h)` equals to `modelprovidermodel.Hooks(f(g(h())))`.
-func (c *ModelProviderModelClient) Use(hooks ...Hook) {
-	c.hooks.ModelProviderModel = append(c.hooks.ModelProviderModel, hooks...)
-}
-
-// Intercept adds a list of query interceptors to the interceptors stack.
-// A call to `Intercept(f, g, h)` equals to `modelprovidermodel.Intercept(f(g(h())))`.
-func (c *ModelProviderModelClient) Intercept(interceptors ...Interceptor) {
-	c.inters.ModelProviderModel = append(c.inters.ModelProviderModel, interceptors...)
-}
-
-// Create returns a builder for creating a ModelProviderModel entity.
-func (c *ModelProviderModelClient) Create() *ModelProviderModelCreate {
-	mutation := newModelProviderModelMutation(c.config, OpCreate)
-	return &ModelProviderModelCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// CreateBulk returns a builder for creating a bulk of ModelProviderModel entities.
-func (c *ModelProviderModelClient) CreateBulk(builders ...*ModelProviderModelCreate) *ModelProviderModelCreateBulk {
-	return &ModelProviderModelCreateBulk{config: c.config, builders: builders}
-}
-
-// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
-// a builder and applies setFunc on it.
-func (c *ModelProviderModelClient) MapCreateBulk(slice any, setFunc func(*ModelProviderModelCreate, int)) *ModelProviderModelCreateBulk {
-	rv := reflect.ValueOf(slice)
-	if rv.Kind() != reflect.Slice {
-		return &ModelProviderModelCreateBulk{err: fmt.Errorf("calling to ModelProviderModelClient.MapCreateBulk with wrong type %T, need slice", slice)}
-	}
-	builders := make([]*ModelProviderModelCreate, rv.Len())
-	for i := 0; i < rv.Len(); i++ {
-		builders[i] = c.Create()
-		setFunc(builders[i], i)
-	}
-	return &ModelProviderModelCreateBulk{config: c.config, builders: builders}
-}
-
-// Update returns an update builder for ModelProviderModel.
-func (c *ModelProviderModelClient) Update() *ModelProviderModelUpdate {
-	mutation := newModelProviderModelMutation(c.config, OpUpdate)
-	return &ModelProviderModelUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOne returns an update builder for the given entity.
-func (c *ModelProviderModelClient) UpdateOne(mpm *ModelProviderModel) *ModelProviderModelUpdateOne {
-	mutation := newModelProviderModelMutation(c.config, OpUpdateOne, withModelProviderModel(mpm))
-	return &ModelProviderModelUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// UpdateOneID returns an update builder for the given id.
-func (c *ModelProviderModelClient) UpdateOneID(id uuid.UUID) *ModelProviderModelUpdateOne {
-	mutation := newModelProviderModelMutation(c.config, OpUpdateOne, withModelProviderModelID(id))
-	return &ModelProviderModelUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// Delete returns a delete builder for ModelProviderModel.
-func (c *ModelProviderModelClient) Delete() *ModelProviderModelDelete {
-	mutation := newModelProviderModelMutation(c.config, OpDelete)
-	return &ModelProviderModelDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
-}
-
-// DeleteOne returns a builder for deleting the given entity.
-func (c *ModelProviderModelClient) DeleteOne(mpm *ModelProviderModel) *ModelProviderModelDeleteOne {
-	return c.DeleteOneID(mpm.ID)
-}
-
-// DeleteOneID returns a builder for deleting the given entity by its id.
-func (c *ModelProviderModelClient) DeleteOneID(id uuid.UUID) *ModelProviderModelDeleteOne {
-	builder := c.Delete().Where(modelprovidermodel.ID(id))
-	builder.mutation.id = &id
-	builder.mutation.op = OpDeleteOne
-	return &ModelProviderModelDeleteOne{builder}
-}
-
-// Query returns a query builder for ModelProviderModel.
-func (c *ModelProviderModelClient) Query() *ModelProviderModelQuery {
-	return &ModelProviderModelQuery{
-		config: c.config,
-		ctx:    &QueryContext{Type: TypeModelProviderModel},
-		inters: c.Interceptors(),
-	}
-}
-
-// Get returns a ModelProviderModel entity by its id.
-func (c *ModelProviderModelClient) Get(ctx context.Context, id uuid.UUID) (*ModelProviderModel, error) {
-	return c.Query().Where(modelprovidermodel.ID(id)).Only(ctx)
-}
-
-// GetX is like Get, but panics if an error occurs.
-func (c *ModelProviderModelClient) GetX(ctx context.Context, id uuid.UUID) *ModelProviderModel {
-	obj, err := c.Get(ctx, id)
-	if err != nil {
-		panic(err)
-	}
-	return obj
-}
-
-// QueryProvider queries the provider edge of a ModelProviderModel.
-func (c *ModelProviderModelClient) QueryProvider(mpm *ModelProviderModel) *ModelProviderQuery {
-	query := (&ModelProviderClient{config: c.config}).Query()
-	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
-		id := mpm.ID
-		step := sqlgraph.NewStep(
-			sqlgraph.From(modelprovidermodel.Table, modelprovidermodel.FieldID, id),
-			sqlgraph.To(modelprovider.Table, modelprovider.FieldID),
-			sqlgraph.Edge(sqlgraph.M2O, true, modelprovidermodel.ProviderTable, modelprovidermodel.ProviderColumn),
-		)
-		fromV = sqlgraph.Neighbors(mpm.driver.Dialect(), step)
-		return fromV, nil
-	}
-	return query
-}
-
-// Hooks returns the client hooks.
-func (c *ModelProviderModelClient) Hooks() []Hook {
-	return c.hooks.ModelProviderModel
-}
-
-// Interceptors returns the client interceptors.
-func (c *ModelProviderModelClient) Interceptors() []Interceptor {
-	return c.inters.ModelProviderModel
-}
-
-func (c *ModelProviderModelClient) mutate(ctx context.Context, m *ModelProviderModelMutation) (Value, error) {
-	switch m.Op() {
-	case OpCreate:
-		return (&ModelProviderModelCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdate:
-		return (&ModelProviderModelUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpUpdateOne:
-		return (&ModelProviderModelUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
-	case OpDelete, OpDeleteOne:
-		return (&ModelProviderModelDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
-	default:
-		return nil, fmt.Errorf("db: unknown ModelProviderModel mutation op: %q", m.Op())
-	}
-}
-
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Model, ModelProvider, ModelProviderModel []ent.Hook
+		Model []ent.Hook
 	}
 	inters struct {
-		Model, ModelProvider, ModelProviderModel []ent.Interceptor
+		Model []ent.Interceptor
 	}
 )
 
