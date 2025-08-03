@@ -52,7 +52,7 @@ func (s *Server) Name() string {
 
 // Start implements service.Servicer.
 func (s *Server) Start() error {
-	return s.web.Run(s.config.Server.Addr)
+	return s.web.Run(":8888")
 }
 
 // Stop implements service.Servicer.

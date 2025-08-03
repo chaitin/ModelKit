@@ -11,7 +11,6 @@ import (
 	"github.com/chaitin/ModelKit/backend/config"
 	"github.com/chaitin/ModelKit/backend/errcode"
 	"github.com/chaitin/ModelKit/backend/pkg/logger"
-	"github.com/chaitin/ModelKit/backend/pkg/session"
 	"github.com/chaitin/ModelKit/backend/pkg/store"
 )
 
@@ -19,8 +18,6 @@ var Provider = wire.NewSet(
 	NewWeb,
 	logger.NewLogger,
 	store.NewEntDB,
-	store.NewRedisCli,
-	session.NewSession,
 )
 
 func NewWeb(cfg *config.Config) *web.Web {

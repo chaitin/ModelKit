@@ -15,7 +15,6 @@ import (
 	"github.com/chaitin/ModelKit/backend/config"
 	"github.com/chaitin/ModelKit/backend/consts"
 	"github.com/chaitin/ModelKit/backend/db"
-	"github.com/chaitin/ModelKit/backend/db/model"
 	"github.com/chaitin/ModelKit/backend/domain"
 	"github.com/chaitin/ModelKit/backend/pkg/cvt"
 	"github.com/chaitin/ModelKit/backend/pkg/request"
@@ -172,20 +171,7 @@ func (m *ModelUsecase) UpdateModel(ctx context.Context, req *domain.UpdateModelR
 		if req.APIHeader != nil {
 			up.SetAPIHeader(*req.APIHeader)
 		}
-		if req.ShowName != nil {
-			up.SetShowName(*req.ShowName)
-		}
-		if req.Status != nil {
-			if *req.Status == consts.ModelStatusActive {
-				if err := tx.Model.Update().
-					Where(model.ModelType(old.ModelType)).
-					SetStatus(consts.ModelStatusInactive).
-					Exec(ctx); err != nil {
-					return err
-				}
-			}
-			up.SetStatus(*req.Status)
-		}
+
 		return nil
 	})
 	if err != nil {
