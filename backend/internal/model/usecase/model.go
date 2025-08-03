@@ -179,3 +179,26 @@ func (m *ModelUsecase) UpdateModel(ctx context.Context, req *domain.UpdateModelR
 	}
 	return cvt.From(model, &domain.Model{}), nil
 }
+
+// GetModel implements domain.ModelUsecase.
+func (m *ModelUsecase) GetModel(ctx context.Context, req *domain.GetModelReq) (*domain.Model, error) {
+	model, err := m.repo.GetModel(ctx, req.ModelName, req.Provider)
+	if err != nil {
+		return nil, err
+	}
+	return cvt.From(model, &domain.Model{}), nil
+}
+
+// ListModel implements domain.ModelUsecase.
+func (m *ModelUsecase) ListModel(ctx context.Context, req *domain.ListModelReq) ([]*domain.Model, error) {
+	models, err := m.repo.ListModel(ctx, req)
+	if err != nil {
+		return nil, err
+	}
+
+	result := make([]*domain.Model, len(models))
+	for i, model := range models {
+		result[i] = cvt.From(model, &domain.Model{})
+	}
+	return result, nil
+}

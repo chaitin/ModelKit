@@ -22,10 +22,10 @@ func NewModelHandler(
 
 	g := w.Group("/api/v1/model")
 
-	// g.POST("", web.BindHandler(m.CreateModel))
 	g.POST("/check", web.BindHandler(m.CheckModel))
 	g.PUT("", web.BindHandler(m.UpdateModel))
-	// g.DELETE("", web.BaseHandler(m.DeleteModel))
+	g.GET("", web.BindHandler(m.GetModel))
+	g.GET("/list", web.BindHandler(m.ListModel))
 
 	return m
 }
@@ -49,7 +49,6 @@ func (h *ModelHandler) CheckModel(c *web.Context, req domain.CheckModelReq) erro
 	return c.Success(m)
 }
 
-
 // Update 更新模型
 //
 //	@Tags			Model
@@ -67,4 +66,42 @@ func (h *ModelHandler) UpdateModel(c *web.Context, req domain.UpdateModelReq) er
 		return err
 	}
 	return c.Success(m)
+}
+
+// Get 获取模型
+//
+//	@Tags			Model
+//	@Summary		获取模型
+//	@Description	根据模型名称和提供商获取模型信息
+//	@ID				get-model
+//	@Accept			json
+//	@Produce		json
+//	@Param			req	query	domain.GetModelReq	true	"模型"
+//	@Success		200			{object}	web.Resp{data=domain.Model}
+//	@Router			/api/v1/model [get]
+func (h *ModelHandler) GetModel(c *web.Context, req domain.GetModelReq) error {
+	m, err := h.usecase.GetModel(c.Request().Context(), &req)
+	if err != nil {
+		return err
+	}
+	return c.Success(m)
+}
+
+// List 获取模型列表
+//
+//	@Tags			Model
+//	@Summary		获取模型列表
+//	@Description	根据筛选条件获取模型列表，支持分页，按创建时间降序排列
+//	@ID				list-model
+//	@Accept			json
+//	@Produce		json
+//	@Param			req	query	domain.ListModelReq	true	"模型"
+//	@Success		200			{object}	web.Resp{data=[]domain.Model}
+//	@Router			/api/v1/model/list [get]
+func (h *ModelHandler) ListModel(c *web.Context, req domain.ListModelReq) error {
+	models, err := h.usecase.ListModel(c.Request().Context(), &req)
+	if err != nil {
+		return err
+	}
+	return c.Success(models)
 }

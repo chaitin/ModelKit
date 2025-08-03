@@ -2,24 +2,23 @@ package repo
 
 import (
 	"context"
-	"time"
 
+	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
-	"github.com/patrickmn/go-cache"
 
+	"github.com/chaitin/ModelKit/backend/consts"
 	"github.com/chaitin/ModelKit/backend/db"
+	"github.com/chaitin/ModelKit/backend/db/model"
 	"github.com/chaitin/ModelKit/backend/domain"
 	"github.com/chaitin/ModelKit/backend/pkg/entx"
 )
 
 type ModelRepo struct {
-	db    *db.Client
-	cache *cache.Cache
+	db *db.Client
 }
 
 func NewModelRepo(db *db.Client) domain.ModelRepo {
-	cache := cache.New(24*time.Hour, 10*time.Minute)
-	return &ModelRepo{db: db, cache: cache}
+	return &ModelRepo{db: db}
 }
 
 func (r *ModelRepo) UpdateModel(ctx context.Context, id string, fn func(tx *db.Tx, old *db.Model, up *db.ModelUpdateOne) error) (*db.Model, error) {
@@ -46,4 +45,40 @@ func (r *ModelRepo) UpdateModel(ctx context.Context, id string, fn func(tx *db.T
 		return nil
 	})
 	return m, err
+}
+
+func (r *ModelRepo) GetModel(ctx context.Context, modelName string, provider consts.ModelProvider) (*db.Model, error) {
+	result, err := r.db.Model.Query().
+		Where(model.ModelName(modelName), model.Provider(provider)).
+		Only(ctx)
+	if err != nil {
+		return nil, err
+	}
+
+	return result, nil
+}
+
+func (r *ModelRepo) ListModel(ctx context.Context, req *domain.ListModelReq) ([]*db.Model, error) {
+	query := r.db.Model.Query()
+
+	// 添加筛选条件
+	if req.ID != "" {
+		if id, err := uuid.Parse(req.ID); err == nil {
+			query = query.Where(model.ID(id))
+		}
+	}
+	if req.ModelName != "" {
+		query = query.Where(model.ModelName(req.ModelName))
+	}
+	if req.Provider != "" {
+		query = query.Where(model.Provider(req.Provider))
+	}
+	if req.ModelType != "" {
+		query = query.Where(model.ModelType(req.ModelType))
+	}
+
+	// 按创建时间降序排列
+	query = query.Order(model.ByCreatedAt(sql.OrderDesc()))
+
+	return query.All(ctx)
 }

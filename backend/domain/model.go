@@ -10,10 +10,14 @@ import (
 type ModelUsecase interface {
 	UpdateModel(ctx context.Context, req *UpdateModelReq) (*Model, error)
 	CheckModel(ctx context.Context, req *CheckModelReq) (*Model, error)
+	GetModel(ctx context.Context, req *GetModelReq) (*Model, error)
+	ListModel(ctx context.Context, req *ListModelReq) ([]*Model, error)
 }
 
 type ModelRepo interface {
 	UpdateModel(ctx context.Context, id string, fn func(tx *db.Tx, old *db.Model, up *db.ModelUpdateOne) error) (*db.Model, error)
+	GetModel(ctx context.Context, modelName string, provider consts.ModelProvider) (*db.Model, error)
+	ListModel(ctx context.Context, req *ListModelReq) ([]*db.Model, error)
 }
 
 type CheckModelReq struct {
@@ -26,21 +30,23 @@ type CheckModelReq struct {
 	APIHeader  string               `json:"api_header"`
 }
 
-type CreateModelReq struct {
-	ModelName  string               `json:"model_name" validate:"required"`                                                                                                          // 模型名称 如: deepseek-v3
-	Provider   consts.ModelProvider `json:"provider" validate:"required,oneof=SiliconFlow OpenAI Ollama DeepSeek Moonshot AzureOpenAI BaiZhiCloud Hunyuan BaiLian Volcengine Other"` // 提供商
-	APIBase    string               `json:"api_base" validate:"required"`                                                                                                            // 接口地址 如：https://api.qwen.com
-	APIKey     string               `json:"api_key"`                                                                                                                                 // 接口密钥 如：sk-xxxx
-	APIVersion string               `json:"api_version"`
-	APIHeader  string               `json:"api_header"`
-	ModelType  consts.ModelType     `json:"model_type"` // 模型类型 llm:对话模型 coder:代码模型
+type UpdateModelReq struct {
+	ID         string  `json:"id"`      // 模型ID
+	APIKey     *string `json:"api_key"` // 接口密钥 如：sk-xxxx
+	APIVersion *string `json:"api_version"`
+	APIHeader  *string `json:"api_header"`
 }
 
-type UpdateModelReq struct {
-	ID         string                `json:"id"`                                                                                                                                      // 模型ID
-	APIKey     *string               `json:"api_key"`                                                                                                                                 // 接口密钥 如：sk-xxxx
-	APIVersion *string               `json:"api_version"`
-	APIHeader  *string               `json:"api_header"`
+type GetModelReq struct {
+	ModelName string               `json:"model_name" query:"model_name" validate:"required"` // 模型名称
+	Provider  consts.ModelProvider `json:"provider" query:"provider" validate:"required"`     // 提供商
+}
+
+type ListModelReq struct {
+	ID        string               `json:"id" query:"id"`                 // 模型ID
+	ModelName string               `json:"model_name" query:"model_name"` // 模型名称
+	Provider  consts.ModelProvider `json:"provider" query:"provider"`     // 提供商
+	ModelType consts.ModelType     `json:"model_type" query:"model_type"` // 模型类型
 }
 
 type Model struct {
