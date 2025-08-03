@@ -3,7 +3,6 @@ package v1
 import (
 	"context"
 	"log/slog"
-	"strings"
 
 	"github.com/GoYoko/web"
 
@@ -26,10 +25,10 @@ func NewModelHandler(
 
 	g.GET("/provider/supported", web.BindHandler(m.GetProviderModelList))
 	g.GET("", web.BaseHandler(m.ListModel))
-	g.POST("", web.BindHandler(m.CreateModel))
+	// g.POST("", web.BindHandler(m.CreateModel))
 	g.POST("/check", web.BindHandler(m.CheckModel))
 	g.PUT("", web.BindHandler(m.UpdateModel))
-	g.DELETE("", web.BaseHandler(m.DeleteModel))
+	// g.DELETE("", web.BaseHandler(m.DeleteModel))
 
 	return m
 }
@@ -71,26 +70,6 @@ func (h *ModelHandler) ListModel(c *web.Context) error {
 	return c.Success(models)
 }
 
-// Create 创建模型
-//
-//	@Tags			Model
-//	@Summary		创建模型
-//	@Description	创建模型
-//	@ID				create-model
-//	@Accept			json
-//	@Produce		json
-//	@Param			model	body		domain.CreateModelReq	true	"模型"
-//	@Success		200		{object}	web.Resp{data=domain.Model}
-//	@Router			/api/v1/model [post]
-func (h *ModelHandler) CreateModel(c *web.Context, req domain.CreateModelReq) error {
-	req.APIBase = strings.TrimSuffix(req.APIBase, "/")
-	m, err := h.usecase.CreateModel(c.Request().Context(), &req)
-	if err != nil {
-		return err
-	}
-	return c.Success(m)
-}
-
 // Update 更新模型
 //
 //	@Tags			Model
@@ -110,8 +89,6 @@ func (h *ModelHandler) UpdateModel(c *web.Context, req domain.UpdateModelReq) er
 	return c.Success(m)
 }
 
-
-
 // GetProviderModelList 获取供应商支持的模型列表
 //
 //	@Tags			Model
@@ -129,24 +106,6 @@ func (h *ModelHandler) GetProviderModelList(c *web.Context, req domain.GetProvid
 		return err
 	}
 	return c.Success(resp)
-}
-
-// Delete 删除模型
-//
-//	@Tags			Model
-//	@Summary		删除模型
-//	@Description	删除模型
-//	@ID				delete-model
-//	@Accept			json
-//	@Produce		json
-//	@Param			id	query		string	true	"模型ID"
-//	@Success		200	{object}	web.Resp{}
-//	@Router			/api/v1/model [delete]
-func (h *ModelHandler) DeleteModel(c *web.Context) error {
-	if err := h.usecase.DeleteModel(c.Request().Context(), c.QueryParam("id")); err != nil {
-		return err
-	}
-	return c.Success(nil)
 }
 
 func (h *ModelHandler) InitModel() error {

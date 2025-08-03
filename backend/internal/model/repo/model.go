@@ -13,7 +13,6 @@ import (
 	"github.com/chaitin/ModelKit/backend/db"
 	"github.com/chaitin/ModelKit/backend/db/model"
 	"github.com/chaitin/ModelKit/backend/domain"
-	"github.com/chaitin/ModelKit/backend/ent/types"
 	"github.com/chaitin/ModelKit/backend/pkg/cvt"
 	"github.com/chaitin/ModelKit/backend/pkg/entx"
 )
@@ -43,48 +42,6 @@ func (r *ModelRepo) GetWithCache(ctx context.Context, modelType consts.ModelType
 
 	r.cache.Set(string(modelType), m, 24*time.Hour)
 	return m, nil
-}
-
-func (r *ModelRepo) CreateModel(ctx context.Context, m *domain.CreateModelReq) (*db.Model, error) {
-	uid, err := uuid.Parse(m.UserID)
-	if err != nil {
-		return nil, err
-	}
-
-	n, err := r.db.Model.Query().Where(model.ModelType(m.ModelType)).Count(ctx)
-	if err != nil {
-		return nil, err
-	}
-	status := consts.ModelStatusInactive
-	if n == 0 {
-		status = consts.ModelStatusActive
-	}
-
-	r.cache.Delete(string(m.ModelType))
-	create := r.db.Model.Create().
-		SetUserID(uid).
-		SetShowName(m.ShowName).
-		SetModelName(m.ModelName).
-		SetProvider(m.Provider).
-		SetAPIBase(m.APIBase).
-		SetAPIKey(m.APIKey).
-		SetAPIVersion(m.APIVersion).
-		SetAPIHeader(m.APIHeader).
-		SetModelType(m.ModelType).
-		SetStatus(status)
-	if m.Param != nil {
-		create.SetParameters(&types.ModelParam{
-			R1Enabled:          m.Param.R1Enabled,
-			MaxTokens:          m.Param.MaxTokens,
-			ContextWindow:      m.Param.ContextWindow,
-			SupprtImages:       m.Param.SupprtImages,
-			SupportComputerUse: m.Param.SupportComputerUse,
-			SupportPromptCache: m.Param.SupportPromptCache,
-		})
-	} else {
-		create.SetParameters(types.DefaultModelParam())
-	}
-	return create.Save(ctx)
 }
 
 func (r *ModelRepo) UpdateModel(ctx context.Context, id string, fn func(tx *db.Tx, old *db.Model, up *db.ModelUpdateOne) error) (*db.Model, error) {
@@ -181,22 +138,4 @@ func (r *ModelRepo) InitModel(ctx context.Context, modelName, modelKey, modelURL
 		SetStatus(consts.ModelStatusActive).
 		SetIsInternal(true).
 		Exec(ctx)
-}
-
-func (r *ModelRepo) DeleteModel(ctx context.Context, id string) error {
-	uuidID, err := uuid.Parse(id)
-	if err != nil {
-		return err
-	}
-	model, err := r.db.Model.Get(ctx, uuidID)
-	if err != nil {
-		return err
-	}
-	if model.IsInternal {
-		return fmt.Errorf("internal model can not be deleted")
-	}
-	if model.Status == consts.ModelStatusActive {
-		return fmt.Errorf("active model can not be deleted")
-	}
-	return r.db.Model.DeleteOneID(uuidID).Exec(ctx)
 }

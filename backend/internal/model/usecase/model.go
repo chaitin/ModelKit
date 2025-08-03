@@ -20,7 +20,6 @@ import (
 	"github.com/chaitin/ModelKit/backend/db"
 	"github.com/chaitin/ModelKit/backend/db/model"
 	"github.com/chaitin/ModelKit/backend/domain"
-	"github.com/chaitin/ModelKit/backend/ent/types"
 	"github.com/chaitin/ModelKit/backend/pkg/cvt"
 	"github.com/chaitin/ModelKit/backend/pkg/request"
 )
@@ -168,28 +167,9 @@ func (m *ModelUsecase) ListModel(ctx context.Context) (*domain.AllModelResp, err
 	return m.repo.ListModel(ctx)
 }
 
-// Create implements domain.ModelUsecase.
-func (m *ModelUsecase) CreateModel(ctx context.Context, req *domain.CreateModelReq) (*domain.Model, error) {
-	model, err := m.repo.CreateModel(ctx, req)
-	if err != nil {
-		return nil, err
-	}
-	return cvt.From(model, &domain.Model{}), nil
-}
-
 // Update implements domain.ModelUsecase.
 func (m *ModelUsecase) UpdateModel(ctx context.Context, req *domain.UpdateModelReq) (*domain.Model, error) {
-	m.logger.With("req", req).With("param", req.Param).DebugContext(ctx, "update model")
 	model, err := m.repo.UpdateModel(ctx, req.ID, func(tx *db.Tx, old *db.Model, up *db.ModelUpdateOne) error {
-		if req.ModelName != nil {
-			up.SetModelName(*req.ModelName)
-		}
-		if req.Provider != nil {
-			up.SetProvider(*req.Provider)
-		}
-		if req.APIBase != nil {
-			up.SetAPIBase(*req.APIBase)
-		}
 		if req.APIKey != nil {
 			up.SetAPIKey(*req.APIKey)
 		}
@@ -212,16 +192,6 @@ func (m *ModelUsecase) UpdateModel(ctx context.Context, req *domain.UpdateModelR
 				}
 			}
 			up.SetStatus(*req.Status)
-		}
-		if req.Param != nil {
-			up.SetParameters(&types.ModelParam{
-				R1Enabled:          req.Param.R1Enabled,
-				MaxTokens:          req.Param.MaxTokens,
-				ContextWindow:      req.Param.ContextWindow,
-				SupprtImages:       req.Param.SupprtImages,
-				SupportComputerUse: req.Param.SupportComputerUse,
-				SupportPromptCache: req.Param.SupportPromptCache,
-			})
 		}
 		return nil
 	})
@@ -319,8 +289,4 @@ func (m *ModelUsecase) GetProviderModelList(ctx context.Context, req *domain.Get
 	default:
 		return nil, fmt.Errorf("invalid provider: %s", req.Provider)
 	}
-}
-
-func (m *ModelUsecase) DeleteModel(ctx context.Context, id string) error {
-	return m.repo.DeleteModel(ctx, id)
 }

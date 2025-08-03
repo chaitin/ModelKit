@@ -11,9 +11,7 @@ import (
 
 type ModelUsecase interface {
 	ListModel(ctx context.Context) (*AllModelResp, error)
-	CreateModel(ctx context.Context, req *CreateModelReq) (*Model, error)
 	UpdateModel(ctx context.Context, req *UpdateModelReq) (*Model, error)
-	DeleteModel(ctx context.Context, id string) error
 	CheckModel(ctx context.Context, req *CheckModelReq) (*Model, error)
 	InitModel(ctx context.Context) error
 	GetProviderModelList(ctx context.Context, req *GetProviderModelListReq) (*GetProviderModelListResp, error)
@@ -22,9 +20,7 @@ type ModelUsecase interface {
 type ModelRepo interface {
 	GetWithCache(ctx context.Context, modelType consts.ModelType) (*db.Model, error)
 	ListModel(ctx context.Context) (*AllModelResp, error)
-	CreateModel(ctx context.Context, m *CreateModelReq) (*db.Model, error)
 	UpdateModel(ctx context.Context, id string, fn func(tx *db.Tx, old *db.Model, up *db.ModelUpdateOne) error) (*db.Model, error)
-	DeleteModel(ctx context.Context, id string) error
 	InitModel(ctx context.Context, modelName, modelKey, modelURL string) error
 }
 
@@ -144,15 +140,11 @@ func DefaultModelParam() *ModelParam {
 
 type UpdateModelReq struct {
 	ID         string                `json:"id"`                                                                                                                                      // 模型ID
-	ModelName  *string               `json:"model_name"`                                                                                                                              // 模型名称
 	ShowName   *string               `json:"show_name"`                                                                                                                               // 模型显示名称
-	Provider   *consts.ModelProvider `json:"provider" validate:"required,oneof=SiliconFlow OpenAI Ollama DeepSeek Moonshot AzureOpenAI BaiZhiCloud Hunyuan BaiLian Volcengine Other"` // 提供商
-	APIBase    *string               `json:"api_base"`                                                                                                                                // 接口地址 如：https://api.qwen.com
 	APIKey     *string               `json:"api_key"`                                                                                                                                 // 接口密钥 如：sk-xxxx
 	APIVersion *string               `json:"api_version"`
 	APIHeader  *string               `json:"api_header"`
 	Status     *consts.ModelStatus   `json:"status"`          // 状态 active:启用 inactive:禁用
-	Param      *ModelParam           `json:"param,omitempty"` // 高级参数
 }
 
 type ModelTokenUsageResp struct {
