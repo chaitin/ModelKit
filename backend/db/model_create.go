@@ -25,20 +25,6 @@ type ModelCreate struct {
 	conflict []sql.ConflictOption
 }
 
-// SetUserID sets the "user_id" field.
-func (mc *ModelCreate) SetUserID(u uuid.UUID) *ModelCreate {
-	mc.mutation.SetUserID(u)
-	return mc
-}
-
-// SetNillableUserID sets the "user_id" field if the given value is not nil.
-func (mc *ModelCreate) SetNillableUserID(u *uuid.UUID) *ModelCreate {
-	if u != nil {
-		mc.SetUserID(*u)
-	}
-	return mc
-}
-
 // SetModelName sets the "model_name" field.
 func (mc *ModelCreate) SetModelName(s string) *ModelCreate {
 	mc.mutation.SetModelName(s)
@@ -48,20 +34,6 @@ func (mc *ModelCreate) SetModelName(s string) *ModelCreate {
 // SetModelType sets the "model_type" field.
 func (mc *ModelCreate) SetModelType(ct consts.ModelType) *ModelCreate {
 	mc.mutation.SetModelType(ct)
-	return mc
-}
-
-// SetShowName sets the "show_name" field.
-func (mc *ModelCreate) SetShowName(s string) *ModelCreate {
-	mc.mutation.SetShowName(s)
-	return mc
-}
-
-// SetNillableShowName sets the "show_name" field if the given value is not nil.
-func (mc *ModelCreate) SetNillableShowName(s *string) *ModelCreate {
-	if s != nil {
-		mc.SetShowName(*s)
-	}
 	return mc
 }
 
@@ -105,65 +77,9 @@ func (mc *ModelCreate) SetNillableAPIHeader(s *string) *ModelCreate {
 	return mc
 }
 
-// SetDescription sets the "description" field.
-func (mc *ModelCreate) SetDescription(s string) *ModelCreate {
-	mc.mutation.SetDescription(s)
-	return mc
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (mc *ModelCreate) SetNillableDescription(s *string) *ModelCreate {
-	if s != nil {
-		mc.SetDescription(*s)
-	}
-	return mc
-}
-
-// SetIsInternal sets the "is_internal" field.
-func (mc *ModelCreate) SetIsInternal(b bool) *ModelCreate {
-	mc.mutation.SetIsInternal(b)
-	return mc
-}
-
-// SetNillableIsInternal sets the "is_internal" field if the given value is not nil.
-func (mc *ModelCreate) SetNillableIsInternal(b *bool) *ModelCreate {
-	if b != nil {
-		mc.SetIsInternal(*b)
-	}
-	return mc
-}
-
 // SetProvider sets the "provider" field.
 func (mc *ModelCreate) SetProvider(cp consts.ModelProvider) *ModelCreate {
 	mc.mutation.SetProvider(cp)
-	return mc
-}
-
-// SetStatus sets the "status" field.
-func (mc *ModelCreate) SetStatus(cs consts.ModelStatus) *ModelCreate {
-	mc.mutation.SetStatus(cs)
-	return mc
-}
-
-// SetNillableStatus sets the "status" field if the given value is not nil.
-func (mc *ModelCreate) SetNillableStatus(cs *consts.ModelStatus) *ModelCreate {
-	if cs != nil {
-		mc.SetStatus(*cs)
-	}
-	return mc
-}
-
-// SetContextLength sets the "context_length" field.
-func (mc *ModelCreate) SetContextLength(i int) *ModelCreate {
-	mc.mutation.SetContextLength(i)
-	return mc
-}
-
-// SetNillableContextLength sets the "context_length" field if the given value is not nil.
-func (mc *ModelCreate) SetNillableContextLength(i *int) *ModelCreate {
-	if i != nil {
-		mc.SetContextLength(*i)
-	}
 	return mc
 }
 
@@ -236,14 +152,6 @@ func (mc *ModelCreate) ExecX(ctx context.Context) {
 
 // defaults sets the default values of the builder before save.
 func (mc *ModelCreate) defaults() {
-	if _, ok := mc.mutation.IsInternal(); !ok {
-		v := model.DefaultIsInternal
-		mc.mutation.SetIsInternal(v)
-	}
-	if _, ok := mc.mutation.Status(); !ok {
-		v := model.DefaultStatus
-		mc.mutation.SetStatus(v)
-	}
 	if _, ok := mc.mutation.CreatedAt(); !ok {
 		v := model.DefaultCreatedAt()
 		mc.mutation.SetCreatedAt(v)
@@ -268,14 +176,8 @@ func (mc *ModelCreate) check() error {
 	if _, ok := mc.mutation.APIKey(); !ok {
 		return &ValidationError{Name: "api_key", err: errors.New(`db: missing required field "Model.api_key"`)}
 	}
-	if _, ok := mc.mutation.IsInternal(); !ok {
-		return &ValidationError{Name: "is_internal", err: errors.New(`db: missing required field "Model.is_internal"`)}
-	}
 	if _, ok := mc.mutation.Provider(); !ok {
 		return &ValidationError{Name: "provider", err: errors.New(`db: missing required field "Model.provider"`)}
-	}
-	if _, ok := mc.mutation.Status(); !ok {
-		return &ValidationError{Name: "status", err: errors.New(`db: missing required field "Model.status"`)}
 	}
 	if _, ok := mc.mutation.CreatedAt(); !ok {
 		return &ValidationError{Name: "created_at", err: errors.New(`db: missing required field "Model.created_at"`)}
@@ -319,10 +221,6 @@ func (mc *ModelCreate) createSpec() (*Model, *sqlgraph.CreateSpec) {
 		_node.ID = id
 		_spec.ID.Value = &id
 	}
-	if value, ok := mc.mutation.UserID(); ok {
-		_spec.SetField(model.FieldUserID, field.TypeUUID, value)
-		_node.UserID = value
-	}
 	if value, ok := mc.mutation.ModelName(); ok {
 		_spec.SetField(model.FieldModelName, field.TypeString, value)
 		_node.ModelName = value
@@ -330,10 +228,6 @@ func (mc *ModelCreate) createSpec() (*Model, *sqlgraph.CreateSpec) {
 	if value, ok := mc.mutation.ModelType(); ok {
 		_spec.SetField(model.FieldModelType, field.TypeString, value)
 		_node.ModelType = value
-	}
-	if value, ok := mc.mutation.ShowName(); ok {
-		_spec.SetField(model.FieldShowName, field.TypeString, value)
-		_node.ShowName = value
 	}
 	if value, ok := mc.mutation.APIBase(); ok {
 		_spec.SetField(model.FieldAPIBase, field.TypeString, value)
@@ -351,25 +245,9 @@ func (mc *ModelCreate) createSpec() (*Model, *sqlgraph.CreateSpec) {
 		_spec.SetField(model.FieldAPIHeader, field.TypeString, value)
 		_node.APIHeader = value
 	}
-	if value, ok := mc.mutation.Description(); ok {
-		_spec.SetField(model.FieldDescription, field.TypeString, value)
-		_node.Description = value
-	}
-	if value, ok := mc.mutation.IsInternal(); ok {
-		_spec.SetField(model.FieldIsInternal, field.TypeBool, value)
-		_node.IsInternal = value
-	}
 	if value, ok := mc.mutation.Provider(); ok {
 		_spec.SetField(model.FieldProvider, field.TypeString, value)
 		_node.Provider = value
-	}
-	if value, ok := mc.mutation.Status(); ok {
-		_spec.SetField(model.FieldStatus, field.TypeString, value)
-		_node.Status = value
-	}
-	if value, ok := mc.mutation.ContextLength(); ok {
-		_spec.SetField(model.FieldContextLength, field.TypeInt, value)
-		_node.ContextLength = value
 	}
 	if value, ok := mc.mutation.CreatedAt(); ok {
 		_spec.SetField(model.FieldCreatedAt, field.TypeTime, value)
@@ -386,7 +264,7 @@ func (mc *ModelCreate) createSpec() (*Model, *sqlgraph.CreateSpec) {
 // of the `INSERT` statement. For example:
 //
 //	client.Model.Create().
-//		SetUserID(v).
+//		SetModelName(v).
 //		OnConflict(
 //			// Update the row with the new values
 //			// the was proposed for insertion.
@@ -395,7 +273,7 @@ func (mc *ModelCreate) createSpec() (*Model, *sqlgraph.CreateSpec) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.ModelUpsert) {
-//			SetUserID(v+v).
+//			SetModelName(v+v).
 //		}).
 //		Exec(ctx)
 func (mc *ModelCreate) OnConflict(opts ...sql.ConflictOption) *ModelUpsertOne {
@@ -431,24 +309,6 @@ type (
 	}
 )
 
-// SetUserID sets the "user_id" field.
-func (u *ModelUpsert) SetUserID(v uuid.UUID) *ModelUpsert {
-	u.Set(model.FieldUserID, v)
-	return u
-}
-
-// UpdateUserID sets the "user_id" field to the value that was provided on create.
-func (u *ModelUpsert) UpdateUserID() *ModelUpsert {
-	u.SetExcluded(model.FieldUserID)
-	return u
-}
-
-// ClearUserID clears the value of the "user_id" field.
-func (u *ModelUpsert) ClearUserID() *ModelUpsert {
-	u.SetNull(model.FieldUserID)
-	return u
-}
-
 // SetModelName sets the "model_name" field.
 func (u *ModelUpsert) SetModelName(v string) *ModelUpsert {
 	u.Set(model.FieldModelName, v)
@@ -470,24 +330,6 @@ func (u *ModelUpsert) SetModelType(v consts.ModelType) *ModelUpsert {
 // UpdateModelType sets the "model_type" field to the value that was provided on create.
 func (u *ModelUpsert) UpdateModelType() *ModelUpsert {
 	u.SetExcluded(model.FieldModelType)
-	return u
-}
-
-// SetShowName sets the "show_name" field.
-func (u *ModelUpsert) SetShowName(v string) *ModelUpsert {
-	u.Set(model.FieldShowName, v)
-	return u
-}
-
-// UpdateShowName sets the "show_name" field to the value that was provided on create.
-func (u *ModelUpsert) UpdateShowName() *ModelUpsert {
-	u.SetExcluded(model.FieldShowName)
-	return u
-}
-
-// ClearShowName clears the value of the "show_name" field.
-func (u *ModelUpsert) ClearShowName() *ModelUpsert {
-	u.SetNull(model.FieldShowName)
 	return u
 }
 
@@ -551,36 +393,6 @@ func (u *ModelUpsert) ClearAPIHeader() *ModelUpsert {
 	return u
 }
 
-// SetDescription sets the "description" field.
-func (u *ModelUpsert) SetDescription(v string) *ModelUpsert {
-	u.Set(model.FieldDescription, v)
-	return u
-}
-
-// UpdateDescription sets the "description" field to the value that was provided on create.
-func (u *ModelUpsert) UpdateDescription() *ModelUpsert {
-	u.SetExcluded(model.FieldDescription)
-	return u
-}
-
-// ClearDescription clears the value of the "description" field.
-func (u *ModelUpsert) ClearDescription() *ModelUpsert {
-	u.SetNull(model.FieldDescription)
-	return u
-}
-
-// SetIsInternal sets the "is_internal" field.
-func (u *ModelUpsert) SetIsInternal(v bool) *ModelUpsert {
-	u.Set(model.FieldIsInternal, v)
-	return u
-}
-
-// UpdateIsInternal sets the "is_internal" field to the value that was provided on create.
-func (u *ModelUpsert) UpdateIsInternal() *ModelUpsert {
-	u.SetExcluded(model.FieldIsInternal)
-	return u
-}
-
 // SetProvider sets the "provider" field.
 func (u *ModelUpsert) SetProvider(v consts.ModelProvider) *ModelUpsert {
 	u.Set(model.FieldProvider, v)
@@ -590,42 +402,6 @@ func (u *ModelUpsert) SetProvider(v consts.ModelProvider) *ModelUpsert {
 // UpdateProvider sets the "provider" field to the value that was provided on create.
 func (u *ModelUpsert) UpdateProvider() *ModelUpsert {
 	u.SetExcluded(model.FieldProvider)
-	return u
-}
-
-// SetStatus sets the "status" field.
-func (u *ModelUpsert) SetStatus(v consts.ModelStatus) *ModelUpsert {
-	u.Set(model.FieldStatus, v)
-	return u
-}
-
-// UpdateStatus sets the "status" field to the value that was provided on create.
-func (u *ModelUpsert) UpdateStatus() *ModelUpsert {
-	u.SetExcluded(model.FieldStatus)
-	return u
-}
-
-// SetContextLength sets the "context_length" field.
-func (u *ModelUpsert) SetContextLength(v int) *ModelUpsert {
-	u.Set(model.FieldContextLength, v)
-	return u
-}
-
-// UpdateContextLength sets the "context_length" field to the value that was provided on create.
-func (u *ModelUpsert) UpdateContextLength() *ModelUpsert {
-	u.SetExcluded(model.FieldContextLength)
-	return u
-}
-
-// AddContextLength adds v to the "context_length" field.
-func (u *ModelUpsert) AddContextLength(v int) *ModelUpsert {
-	u.Add(model.FieldContextLength, v)
-	return u
-}
-
-// ClearContextLength clears the value of the "context_length" field.
-func (u *ModelUpsert) ClearContextLength() *ModelUpsert {
-	u.SetNull(model.FieldContextLength)
 	return u
 }
 
@@ -701,27 +477,6 @@ func (u *ModelUpsertOne) Update(set func(*ModelUpsert)) *ModelUpsertOne {
 	return u
 }
 
-// SetUserID sets the "user_id" field.
-func (u *ModelUpsertOne) SetUserID(v uuid.UUID) *ModelUpsertOne {
-	return u.Update(func(s *ModelUpsert) {
-		s.SetUserID(v)
-	})
-}
-
-// UpdateUserID sets the "user_id" field to the value that was provided on create.
-func (u *ModelUpsertOne) UpdateUserID() *ModelUpsertOne {
-	return u.Update(func(s *ModelUpsert) {
-		s.UpdateUserID()
-	})
-}
-
-// ClearUserID clears the value of the "user_id" field.
-func (u *ModelUpsertOne) ClearUserID() *ModelUpsertOne {
-	return u.Update(func(s *ModelUpsert) {
-		s.ClearUserID()
-	})
-}
-
 // SetModelName sets the "model_name" field.
 func (u *ModelUpsertOne) SetModelName(v string) *ModelUpsertOne {
 	return u.Update(func(s *ModelUpsert) {
@@ -747,27 +502,6 @@ func (u *ModelUpsertOne) SetModelType(v consts.ModelType) *ModelUpsertOne {
 func (u *ModelUpsertOne) UpdateModelType() *ModelUpsertOne {
 	return u.Update(func(s *ModelUpsert) {
 		s.UpdateModelType()
-	})
-}
-
-// SetShowName sets the "show_name" field.
-func (u *ModelUpsertOne) SetShowName(v string) *ModelUpsertOne {
-	return u.Update(func(s *ModelUpsert) {
-		s.SetShowName(v)
-	})
-}
-
-// UpdateShowName sets the "show_name" field to the value that was provided on create.
-func (u *ModelUpsertOne) UpdateShowName() *ModelUpsertOne {
-	return u.Update(func(s *ModelUpsert) {
-		s.UpdateShowName()
-	})
-}
-
-// ClearShowName clears the value of the "show_name" field.
-func (u *ModelUpsertOne) ClearShowName() *ModelUpsertOne {
-	return u.Update(func(s *ModelUpsert) {
-		s.ClearShowName()
 	})
 }
 
@@ -841,41 +575,6 @@ func (u *ModelUpsertOne) ClearAPIHeader() *ModelUpsertOne {
 	})
 }
 
-// SetDescription sets the "description" field.
-func (u *ModelUpsertOne) SetDescription(v string) *ModelUpsertOne {
-	return u.Update(func(s *ModelUpsert) {
-		s.SetDescription(v)
-	})
-}
-
-// UpdateDescription sets the "description" field to the value that was provided on create.
-func (u *ModelUpsertOne) UpdateDescription() *ModelUpsertOne {
-	return u.Update(func(s *ModelUpsert) {
-		s.UpdateDescription()
-	})
-}
-
-// ClearDescription clears the value of the "description" field.
-func (u *ModelUpsertOne) ClearDescription() *ModelUpsertOne {
-	return u.Update(func(s *ModelUpsert) {
-		s.ClearDescription()
-	})
-}
-
-// SetIsInternal sets the "is_internal" field.
-func (u *ModelUpsertOne) SetIsInternal(v bool) *ModelUpsertOne {
-	return u.Update(func(s *ModelUpsert) {
-		s.SetIsInternal(v)
-	})
-}
-
-// UpdateIsInternal sets the "is_internal" field to the value that was provided on create.
-func (u *ModelUpsertOne) UpdateIsInternal() *ModelUpsertOne {
-	return u.Update(func(s *ModelUpsert) {
-		s.UpdateIsInternal()
-	})
-}
-
 // SetProvider sets the "provider" field.
 func (u *ModelUpsertOne) SetProvider(v consts.ModelProvider) *ModelUpsertOne {
 	return u.Update(func(s *ModelUpsert) {
@@ -887,48 +586,6 @@ func (u *ModelUpsertOne) SetProvider(v consts.ModelProvider) *ModelUpsertOne {
 func (u *ModelUpsertOne) UpdateProvider() *ModelUpsertOne {
 	return u.Update(func(s *ModelUpsert) {
 		s.UpdateProvider()
-	})
-}
-
-// SetStatus sets the "status" field.
-func (u *ModelUpsertOne) SetStatus(v consts.ModelStatus) *ModelUpsertOne {
-	return u.Update(func(s *ModelUpsert) {
-		s.SetStatus(v)
-	})
-}
-
-// UpdateStatus sets the "status" field to the value that was provided on create.
-func (u *ModelUpsertOne) UpdateStatus() *ModelUpsertOne {
-	return u.Update(func(s *ModelUpsert) {
-		s.UpdateStatus()
-	})
-}
-
-// SetContextLength sets the "context_length" field.
-func (u *ModelUpsertOne) SetContextLength(v int) *ModelUpsertOne {
-	return u.Update(func(s *ModelUpsert) {
-		s.SetContextLength(v)
-	})
-}
-
-// AddContextLength adds v to the "context_length" field.
-func (u *ModelUpsertOne) AddContextLength(v int) *ModelUpsertOne {
-	return u.Update(func(s *ModelUpsert) {
-		s.AddContextLength(v)
-	})
-}
-
-// UpdateContextLength sets the "context_length" field to the value that was provided on create.
-func (u *ModelUpsertOne) UpdateContextLength() *ModelUpsertOne {
-	return u.Update(func(s *ModelUpsert) {
-		s.UpdateContextLength()
-	})
-}
-
-// ClearContextLength clears the value of the "context_length" field.
-func (u *ModelUpsertOne) ClearContextLength() *ModelUpsertOne {
-	return u.Update(func(s *ModelUpsert) {
-		s.ClearContextLength()
 	})
 }
 
@@ -1096,7 +753,7 @@ func (mcb *ModelCreateBulk) ExecX(ctx context.Context) {
 //		// Override some of the fields with custom
 //		// update values.
 //		Update(func(u *ent.ModelUpsert) {
-//			SetUserID(v+v).
+//			SetModelName(v+v).
 //		}).
 //		Exec(ctx)
 func (mcb *ModelCreateBulk) OnConflict(opts ...sql.ConflictOption) *ModelUpsertBulk {
@@ -1175,27 +832,6 @@ func (u *ModelUpsertBulk) Update(set func(*ModelUpsert)) *ModelUpsertBulk {
 	return u
 }
 
-// SetUserID sets the "user_id" field.
-func (u *ModelUpsertBulk) SetUserID(v uuid.UUID) *ModelUpsertBulk {
-	return u.Update(func(s *ModelUpsert) {
-		s.SetUserID(v)
-	})
-}
-
-// UpdateUserID sets the "user_id" field to the value that was provided on create.
-func (u *ModelUpsertBulk) UpdateUserID() *ModelUpsertBulk {
-	return u.Update(func(s *ModelUpsert) {
-		s.UpdateUserID()
-	})
-}
-
-// ClearUserID clears the value of the "user_id" field.
-func (u *ModelUpsertBulk) ClearUserID() *ModelUpsertBulk {
-	return u.Update(func(s *ModelUpsert) {
-		s.ClearUserID()
-	})
-}
-
 // SetModelName sets the "model_name" field.
 func (u *ModelUpsertBulk) SetModelName(v string) *ModelUpsertBulk {
 	return u.Update(func(s *ModelUpsert) {
@@ -1221,27 +857,6 @@ func (u *ModelUpsertBulk) SetModelType(v consts.ModelType) *ModelUpsertBulk {
 func (u *ModelUpsertBulk) UpdateModelType() *ModelUpsertBulk {
 	return u.Update(func(s *ModelUpsert) {
 		s.UpdateModelType()
-	})
-}
-
-// SetShowName sets the "show_name" field.
-func (u *ModelUpsertBulk) SetShowName(v string) *ModelUpsertBulk {
-	return u.Update(func(s *ModelUpsert) {
-		s.SetShowName(v)
-	})
-}
-
-// UpdateShowName sets the "show_name" field to the value that was provided on create.
-func (u *ModelUpsertBulk) UpdateShowName() *ModelUpsertBulk {
-	return u.Update(func(s *ModelUpsert) {
-		s.UpdateShowName()
-	})
-}
-
-// ClearShowName clears the value of the "show_name" field.
-func (u *ModelUpsertBulk) ClearShowName() *ModelUpsertBulk {
-	return u.Update(func(s *ModelUpsert) {
-		s.ClearShowName()
 	})
 }
 
@@ -1315,41 +930,6 @@ func (u *ModelUpsertBulk) ClearAPIHeader() *ModelUpsertBulk {
 	})
 }
 
-// SetDescription sets the "description" field.
-func (u *ModelUpsertBulk) SetDescription(v string) *ModelUpsertBulk {
-	return u.Update(func(s *ModelUpsert) {
-		s.SetDescription(v)
-	})
-}
-
-// UpdateDescription sets the "description" field to the value that was provided on create.
-func (u *ModelUpsertBulk) UpdateDescription() *ModelUpsertBulk {
-	return u.Update(func(s *ModelUpsert) {
-		s.UpdateDescription()
-	})
-}
-
-// ClearDescription clears the value of the "description" field.
-func (u *ModelUpsertBulk) ClearDescription() *ModelUpsertBulk {
-	return u.Update(func(s *ModelUpsert) {
-		s.ClearDescription()
-	})
-}
-
-// SetIsInternal sets the "is_internal" field.
-func (u *ModelUpsertBulk) SetIsInternal(v bool) *ModelUpsertBulk {
-	return u.Update(func(s *ModelUpsert) {
-		s.SetIsInternal(v)
-	})
-}
-
-// UpdateIsInternal sets the "is_internal" field to the value that was provided on create.
-func (u *ModelUpsertBulk) UpdateIsInternal() *ModelUpsertBulk {
-	return u.Update(func(s *ModelUpsert) {
-		s.UpdateIsInternal()
-	})
-}
-
 // SetProvider sets the "provider" field.
 func (u *ModelUpsertBulk) SetProvider(v consts.ModelProvider) *ModelUpsertBulk {
 	return u.Update(func(s *ModelUpsert) {
@@ -1361,48 +941,6 @@ func (u *ModelUpsertBulk) SetProvider(v consts.ModelProvider) *ModelUpsertBulk {
 func (u *ModelUpsertBulk) UpdateProvider() *ModelUpsertBulk {
 	return u.Update(func(s *ModelUpsert) {
 		s.UpdateProvider()
-	})
-}
-
-// SetStatus sets the "status" field.
-func (u *ModelUpsertBulk) SetStatus(v consts.ModelStatus) *ModelUpsertBulk {
-	return u.Update(func(s *ModelUpsert) {
-		s.SetStatus(v)
-	})
-}
-
-// UpdateStatus sets the "status" field to the value that was provided on create.
-func (u *ModelUpsertBulk) UpdateStatus() *ModelUpsertBulk {
-	return u.Update(func(s *ModelUpsert) {
-		s.UpdateStatus()
-	})
-}
-
-// SetContextLength sets the "context_length" field.
-func (u *ModelUpsertBulk) SetContextLength(v int) *ModelUpsertBulk {
-	return u.Update(func(s *ModelUpsert) {
-		s.SetContextLength(v)
-	})
-}
-
-// AddContextLength adds v to the "context_length" field.
-func (u *ModelUpsertBulk) AddContextLength(v int) *ModelUpsertBulk {
-	return u.Update(func(s *ModelUpsert) {
-		s.AddContextLength(v)
-	})
-}
-
-// UpdateContextLength sets the "context_length" field to the value that was provided on create.
-func (u *ModelUpsertBulk) UpdateContextLength() *ModelUpsertBulk {
-	return u.Update(func(s *ModelUpsert) {
-		s.UpdateContextLength()
-	})
-}
-
-// ClearContextLength clears the value of the "context_length" field.
-func (u *ModelUpsertBulk) ClearContextLength() *ModelUpsertBulk {
-	return u.Update(func(s *ModelUpsert) {
-		s.ClearContextLength()
 	})
 }
 

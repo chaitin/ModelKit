@@ -19,14 +19,10 @@ type Model struct {
 	config `json:"-"`
 	// ID of the ent.
 	ID uuid.UUID `json:"id,omitempty"`
-	// UserID holds the value of the "user_id" field.
-	UserID uuid.UUID `json:"user_id,omitempty"`
 	// ModelName holds the value of the "model_name" field.
 	ModelName string `json:"model_name,omitempty"`
 	// ModelType holds the value of the "model_type" field.
 	ModelType consts.ModelType `json:"model_type,omitempty"`
-	// ShowName holds the value of the "show_name" field.
-	ShowName string `json:"show_name,omitempty"`
 	// APIBase holds the value of the "api_base" field.
 	APIBase string `json:"api_base,omitempty"`
 	// APIKey holds the value of the "api_key" field.
@@ -35,16 +31,8 @@ type Model struct {
 	APIVersion string `json:"api_version,omitempty"`
 	// APIHeader holds the value of the "api_header" field.
 	APIHeader string `json:"api_header,omitempty"`
-	// Description holds the value of the "description" field.
-	Description string `json:"description,omitempty"`
-	// IsInternal holds the value of the "is_internal" field.
-	IsInternal bool `json:"is_internal,omitempty"`
 	// Provider holds the value of the "provider" field.
 	Provider consts.ModelProvider `json:"provider,omitempty"`
-	// Status holds the value of the "status" field.
-	Status consts.ModelStatus `json:"status,omitempty"`
-	// ContextLength holds the value of the "context_length" field.
-	ContextLength int `json:"context_length,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
@@ -57,15 +45,11 @@ func (*Model) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case model.FieldIsInternal:
-			values[i] = new(sql.NullBool)
-		case model.FieldContextLength:
-			values[i] = new(sql.NullInt64)
-		case model.FieldModelName, model.FieldModelType, model.FieldShowName, model.FieldAPIBase, model.FieldAPIKey, model.FieldAPIVersion, model.FieldAPIHeader, model.FieldDescription, model.FieldProvider, model.FieldStatus:
+		case model.FieldModelName, model.FieldModelType, model.FieldAPIBase, model.FieldAPIKey, model.FieldAPIVersion, model.FieldAPIHeader, model.FieldProvider:
 			values[i] = new(sql.NullString)
 		case model.FieldCreatedAt, model.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
-		case model.FieldID, model.FieldUserID:
+		case model.FieldID:
 			values[i] = new(uuid.UUID)
 		default:
 			values[i] = new(sql.UnknownType)
@@ -88,12 +72,6 @@ func (m *Model) assignValues(columns []string, values []any) error {
 			} else if value != nil {
 				m.ID = *value
 			}
-		case model.FieldUserID:
-			if value, ok := values[i].(*uuid.UUID); !ok {
-				return fmt.Errorf("unexpected type %T for field user_id", values[i])
-			} else if value != nil {
-				m.UserID = *value
-			}
 		case model.FieldModelName:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field model_name", values[i])
@@ -105,12 +83,6 @@ func (m *Model) assignValues(columns []string, values []any) error {
 				return fmt.Errorf("unexpected type %T for field model_type", values[i])
 			} else if value.Valid {
 				m.ModelType = consts.ModelType(value.String)
-			}
-		case model.FieldShowName:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field show_name", values[i])
-			} else if value.Valid {
-				m.ShowName = value.String
 			}
 		case model.FieldAPIBase:
 			if value, ok := values[i].(*sql.NullString); !ok {
@@ -136,35 +108,11 @@ func (m *Model) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				m.APIHeader = value.String
 			}
-		case model.FieldDescription:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field description", values[i])
-			} else if value.Valid {
-				m.Description = value.String
-			}
-		case model.FieldIsInternal:
-			if value, ok := values[i].(*sql.NullBool); !ok {
-				return fmt.Errorf("unexpected type %T for field is_internal", values[i])
-			} else if value.Valid {
-				m.IsInternal = value.Bool
-			}
 		case model.FieldProvider:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field provider", values[i])
 			} else if value.Valid {
 				m.Provider = consts.ModelProvider(value.String)
-			}
-		case model.FieldStatus:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field status", values[i])
-			} else if value.Valid {
-				m.Status = consts.ModelStatus(value.String)
-			}
-		case model.FieldContextLength:
-			if value, ok := values[i].(*sql.NullInt64); !ok {
-				return fmt.Errorf("unexpected type %T for field context_length", values[i])
-			} else if value.Valid {
-				m.ContextLength = int(value.Int64)
 			}
 		case model.FieldCreatedAt:
 			if value, ok := values[i].(*sql.NullTime); !ok {
@@ -214,17 +162,11 @@ func (m *Model) String() string {
 	var builder strings.Builder
 	builder.WriteString("Model(")
 	builder.WriteString(fmt.Sprintf("id=%v, ", m.ID))
-	builder.WriteString("user_id=")
-	builder.WriteString(fmt.Sprintf("%v", m.UserID))
-	builder.WriteString(", ")
 	builder.WriteString("model_name=")
 	builder.WriteString(m.ModelName)
 	builder.WriteString(", ")
 	builder.WriteString("model_type=")
 	builder.WriteString(fmt.Sprintf("%v", m.ModelType))
-	builder.WriteString(", ")
-	builder.WriteString("show_name=")
-	builder.WriteString(m.ShowName)
 	builder.WriteString(", ")
 	builder.WriteString("api_base=")
 	builder.WriteString(m.APIBase)
@@ -238,20 +180,8 @@ func (m *Model) String() string {
 	builder.WriteString("api_header=")
 	builder.WriteString(m.APIHeader)
 	builder.WriteString(", ")
-	builder.WriteString("description=")
-	builder.WriteString(m.Description)
-	builder.WriteString(", ")
-	builder.WriteString("is_internal=")
-	builder.WriteString(fmt.Sprintf("%v", m.IsInternal))
-	builder.WriteString(", ")
 	builder.WriteString("provider=")
 	builder.WriteString(fmt.Sprintf("%v", m.Provider))
-	builder.WriteString(", ")
-	builder.WriteString("status=")
-	builder.WriteString(fmt.Sprintf("%v", m.Status))
-	builder.WriteString(", ")
-	builder.WriteString("context_length=")
-	builder.WriteString(fmt.Sprintf("%v", m.ContextLength))
 	builder.WriteString(", ")
 	builder.WriteString("created_at=")
 	builder.WriteString(m.CreatedAt.Format(time.ANSIC))

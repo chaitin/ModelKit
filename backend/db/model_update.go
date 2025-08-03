@@ -14,7 +14,6 @@ import (
 	"github.com/chaitin/ModelKit/backend/consts"
 	"github.com/chaitin/ModelKit/backend/db/model"
 	"github.com/chaitin/ModelKit/backend/db/predicate"
-	"github.com/google/uuid"
 )
 
 // ModelUpdate is the builder for updating Model entities.
@@ -28,26 +27,6 @@ type ModelUpdate struct {
 // Where appends a list predicates to the ModelUpdate builder.
 func (mu *ModelUpdate) Where(ps ...predicate.Model) *ModelUpdate {
 	mu.mutation.Where(ps...)
-	return mu
-}
-
-// SetUserID sets the "user_id" field.
-func (mu *ModelUpdate) SetUserID(u uuid.UUID) *ModelUpdate {
-	mu.mutation.SetUserID(u)
-	return mu
-}
-
-// SetNillableUserID sets the "user_id" field if the given value is not nil.
-func (mu *ModelUpdate) SetNillableUserID(u *uuid.UUID) *ModelUpdate {
-	if u != nil {
-		mu.SetUserID(*u)
-	}
-	return mu
-}
-
-// ClearUserID clears the value of the "user_id" field.
-func (mu *ModelUpdate) ClearUserID() *ModelUpdate {
-	mu.mutation.ClearUserID()
 	return mu
 }
 
@@ -76,26 +55,6 @@ func (mu *ModelUpdate) SetNillableModelType(ct *consts.ModelType) *ModelUpdate {
 	if ct != nil {
 		mu.SetModelType(*ct)
 	}
-	return mu
-}
-
-// SetShowName sets the "show_name" field.
-func (mu *ModelUpdate) SetShowName(s string) *ModelUpdate {
-	mu.mutation.SetShowName(s)
-	return mu
-}
-
-// SetNillableShowName sets the "show_name" field if the given value is not nil.
-func (mu *ModelUpdate) SetNillableShowName(s *string) *ModelUpdate {
-	if s != nil {
-		mu.SetShowName(*s)
-	}
-	return mu
-}
-
-// ClearShowName clears the value of the "show_name" field.
-func (mu *ModelUpdate) ClearShowName() *ModelUpdate {
-	mu.mutation.ClearShowName()
 	return mu
 }
 
@@ -167,40 +126,6 @@ func (mu *ModelUpdate) ClearAPIHeader() *ModelUpdate {
 	return mu
 }
 
-// SetDescription sets the "description" field.
-func (mu *ModelUpdate) SetDescription(s string) *ModelUpdate {
-	mu.mutation.SetDescription(s)
-	return mu
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (mu *ModelUpdate) SetNillableDescription(s *string) *ModelUpdate {
-	if s != nil {
-		mu.SetDescription(*s)
-	}
-	return mu
-}
-
-// ClearDescription clears the value of the "description" field.
-func (mu *ModelUpdate) ClearDescription() *ModelUpdate {
-	mu.mutation.ClearDescription()
-	return mu
-}
-
-// SetIsInternal sets the "is_internal" field.
-func (mu *ModelUpdate) SetIsInternal(b bool) *ModelUpdate {
-	mu.mutation.SetIsInternal(b)
-	return mu
-}
-
-// SetNillableIsInternal sets the "is_internal" field if the given value is not nil.
-func (mu *ModelUpdate) SetNillableIsInternal(b *bool) *ModelUpdate {
-	if b != nil {
-		mu.SetIsInternal(*b)
-	}
-	return mu
-}
-
 // SetProvider sets the "provider" field.
 func (mu *ModelUpdate) SetProvider(cp consts.ModelProvider) *ModelUpdate {
 	mu.mutation.SetProvider(cp)
@@ -212,47 +137,6 @@ func (mu *ModelUpdate) SetNillableProvider(cp *consts.ModelProvider) *ModelUpdat
 	if cp != nil {
 		mu.SetProvider(*cp)
 	}
-	return mu
-}
-
-// SetStatus sets the "status" field.
-func (mu *ModelUpdate) SetStatus(cs consts.ModelStatus) *ModelUpdate {
-	mu.mutation.SetStatus(cs)
-	return mu
-}
-
-// SetNillableStatus sets the "status" field if the given value is not nil.
-func (mu *ModelUpdate) SetNillableStatus(cs *consts.ModelStatus) *ModelUpdate {
-	if cs != nil {
-		mu.SetStatus(*cs)
-	}
-	return mu
-}
-
-// SetContextLength sets the "context_length" field.
-func (mu *ModelUpdate) SetContextLength(i int) *ModelUpdate {
-	mu.mutation.ResetContextLength()
-	mu.mutation.SetContextLength(i)
-	return mu
-}
-
-// SetNillableContextLength sets the "context_length" field if the given value is not nil.
-func (mu *ModelUpdate) SetNillableContextLength(i *int) *ModelUpdate {
-	if i != nil {
-		mu.SetContextLength(*i)
-	}
-	return mu
-}
-
-// AddContextLength adds i to the "context_length" field.
-func (mu *ModelUpdate) AddContextLength(i int) *ModelUpdate {
-	mu.mutation.AddContextLength(i)
-	return mu
-}
-
-// ClearContextLength clears the value of the "context_length" field.
-func (mu *ModelUpdate) ClearContextLength() *ModelUpdate {
-	mu.mutation.ClearContextLength()
 	return mu
 }
 
@@ -332,23 +216,11 @@ func (mu *ModelUpdate) sqlSave(ctx context.Context) (n int, err error) {
 			}
 		}
 	}
-	if value, ok := mu.mutation.UserID(); ok {
-		_spec.SetField(model.FieldUserID, field.TypeUUID, value)
-	}
-	if mu.mutation.UserIDCleared() {
-		_spec.ClearField(model.FieldUserID, field.TypeUUID)
-	}
 	if value, ok := mu.mutation.ModelName(); ok {
 		_spec.SetField(model.FieldModelName, field.TypeString, value)
 	}
 	if value, ok := mu.mutation.ModelType(); ok {
 		_spec.SetField(model.FieldModelType, field.TypeString, value)
-	}
-	if value, ok := mu.mutation.ShowName(); ok {
-		_spec.SetField(model.FieldShowName, field.TypeString, value)
-	}
-	if mu.mutation.ShowNameCleared() {
-		_spec.ClearField(model.FieldShowName, field.TypeString)
 	}
 	if value, ok := mu.mutation.APIBase(); ok {
 		_spec.SetField(model.FieldAPIBase, field.TypeString, value)
@@ -368,29 +240,8 @@ func (mu *ModelUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if mu.mutation.APIHeaderCleared() {
 		_spec.ClearField(model.FieldAPIHeader, field.TypeString)
 	}
-	if value, ok := mu.mutation.Description(); ok {
-		_spec.SetField(model.FieldDescription, field.TypeString, value)
-	}
-	if mu.mutation.DescriptionCleared() {
-		_spec.ClearField(model.FieldDescription, field.TypeString)
-	}
-	if value, ok := mu.mutation.IsInternal(); ok {
-		_spec.SetField(model.FieldIsInternal, field.TypeBool, value)
-	}
 	if value, ok := mu.mutation.Provider(); ok {
 		_spec.SetField(model.FieldProvider, field.TypeString, value)
-	}
-	if value, ok := mu.mutation.Status(); ok {
-		_spec.SetField(model.FieldStatus, field.TypeString, value)
-	}
-	if value, ok := mu.mutation.ContextLength(); ok {
-		_spec.SetField(model.FieldContextLength, field.TypeInt, value)
-	}
-	if value, ok := mu.mutation.AddedContextLength(); ok {
-		_spec.AddField(model.FieldContextLength, field.TypeInt, value)
-	}
-	if mu.mutation.ContextLengthCleared() {
-		_spec.ClearField(model.FieldContextLength, field.TypeInt)
 	}
 	if value, ok := mu.mutation.CreatedAt(); ok {
 		_spec.SetField(model.FieldCreatedAt, field.TypeTime, value)
@@ -420,26 +271,6 @@ type ModelUpdateOne struct {
 	modifiers []func(*sql.UpdateBuilder)
 }
 
-// SetUserID sets the "user_id" field.
-func (muo *ModelUpdateOne) SetUserID(u uuid.UUID) *ModelUpdateOne {
-	muo.mutation.SetUserID(u)
-	return muo
-}
-
-// SetNillableUserID sets the "user_id" field if the given value is not nil.
-func (muo *ModelUpdateOne) SetNillableUserID(u *uuid.UUID) *ModelUpdateOne {
-	if u != nil {
-		muo.SetUserID(*u)
-	}
-	return muo
-}
-
-// ClearUserID clears the value of the "user_id" field.
-func (muo *ModelUpdateOne) ClearUserID() *ModelUpdateOne {
-	muo.mutation.ClearUserID()
-	return muo
-}
-
 // SetModelName sets the "model_name" field.
 func (muo *ModelUpdateOne) SetModelName(s string) *ModelUpdateOne {
 	muo.mutation.SetModelName(s)
@@ -465,26 +296,6 @@ func (muo *ModelUpdateOne) SetNillableModelType(ct *consts.ModelType) *ModelUpda
 	if ct != nil {
 		muo.SetModelType(*ct)
 	}
-	return muo
-}
-
-// SetShowName sets the "show_name" field.
-func (muo *ModelUpdateOne) SetShowName(s string) *ModelUpdateOne {
-	muo.mutation.SetShowName(s)
-	return muo
-}
-
-// SetNillableShowName sets the "show_name" field if the given value is not nil.
-func (muo *ModelUpdateOne) SetNillableShowName(s *string) *ModelUpdateOne {
-	if s != nil {
-		muo.SetShowName(*s)
-	}
-	return muo
-}
-
-// ClearShowName clears the value of the "show_name" field.
-func (muo *ModelUpdateOne) ClearShowName() *ModelUpdateOne {
-	muo.mutation.ClearShowName()
 	return muo
 }
 
@@ -556,40 +367,6 @@ func (muo *ModelUpdateOne) ClearAPIHeader() *ModelUpdateOne {
 	return muo
 }
 
-// SetDescription sets the "description" field.
-func (muo *ModelUpdateOne) SetDescription(s string) *ModelUpdateOne {
-	muo.mutation.SetDescription(s)
-	return muo
-}
-
-// SetNillableDescription sets the "description" field if the given value is not nil.
-func (muo *ModelUpdateOne) SetNillableDescription(s *string) *ModelUpdateOne {
-	if s != nil {
-		muo.SetDescription(*s)
-	}
-	return muo
-}
-
-// ClearDescription clears the value of the "description" field.
-func (muo *ModelUpdateOne) ClearDescription() *ModelUpdateOne {
-	muo.mutation.ClearDescription()
-	return muo
-}
-
-// SetIsInternal sets the "is_internal" field.
-func (muo *ModelUpdateOne) SetIsInternal(b bool) *ModelUpdateOne {
-	muo.mutation.SetIsInternal(b)
-	return muo
-}
-
-// SetNillableIsInternal sets the "is_internal" field if the given value is not nil.
-func (muo *ModelUpdateOne) SetNillableIsInternal(b *bool) *ModelUpdateOne {
-	if b != nil {
-		muo.SetIsInternal(*b)
-	}
-	return muo
-}
-
 // SetProvider sets the "provider" field.
 func (muo *ModelUpdateOne) SetProvider(cp consts.ModelProvider) *ModelUpdateOne {
 	muo.mutation.SetProvider(cp)
@@ -601,47 +378,6 @@ func (muo *ModelUpdateOne) SetNillableProvider(cp *consts.ModelProvider) *ModelU
 	if cp != nil {
 		muo.SetProvider(*cp)
 	}
-	return muo
-}
-
-// SetStatus sets the "status" field.
-func (muo *ModelUpdateOne) SetStatus(cs consts.ModelStatus) *ModelUpdateOne {
-	muo.mutation.SetStatus(cs)
-	return muo
-}
-
-// SetNillableStatus sets the "status" field if the given value is not nil.
-func (muo *ModelUpdateOne) SetNillableStatus(cs *consts.ModelStatus) *ModelUpdateOne {
-	if cs != nil {
-		muo.SetStatus(*cs)
-	}
-	return muo
-}
-
-// SetContextLength sets the "context_length" field.
-func (muo *ModelUpdateOne) SetContextLength(i int) *ModelUpdateOne {
-	muo.mutation.ResetContextLength()
-	muo.mutation.SetContextLength(i)
-	return muo
-}
-
-// SetNillableContextLength sets the "context_length" field if the given value is not nil.
-func (muo *ModelUpdateOne) SetNillableContextLength(i *int) *ModelUpdateOne {
-	if i != nil {
-		muo.SetContextLength(*i)
-	}
-	return muo
-}
-
-// AddContextLength adds i to the "context_length" field.
-func (muo *ModelUpdateOne) AddContextLength(i int) *ModelUpdateOne {
-	muo.mutation.AddContextLength(i)
-	return muo
-}
-
-// ClearContextLength clears the value of the "context_length" field.
-func (muo *ModelUpdateOne) ClearContextLength() *ModelUpdateOne {
-	muo.mutation.ClearContextLength()
 	return muo
 }
 
@@ -751,23 +487,11 @@ func (muo *ModelUpdateOne) sqlSave(ctx context.Context) (_node *Model, err error
 			}
 		}
 	}
-	if value, ok := muo.mutation.UserID(); ok {
-		_spec.SetField(model.FieldUserID, field.TypeUUID, value)
-	}
-	if muo.mutation.UserIDCleared() {
-		_spec.ClearField(model.FieldUserID, field.TypeUUID)
-	}
 	if value, ok := muo.mutation.ModelName(); ok {
 		_spec.SetField(model.FieldModelName, field.TypeString, value)
 	}
 	if value, ok := muo.mutation.ModelType(); ok {
 		_spec.SetField(model.FieldModelType, field.TypeString, value)
-	}
-	if value, ok := muo.mutation.ShowName(); ok {
-		_spec.SetField(model.FieldShowName, field.TypeString, value)
-	}
-	if muo.mutation.ShowNameCleared() {
-		_spec.ClearField(model.FieldShowName, field.TypeString)
 	}
 	if value, ok := muo.mutation.APIBase(); ok {
 		_spec.SetField(model.FieldAPIBase, field.TypeString, value)
@@ -787,29 +511,8 @@ func (muo *ModelUpdateOne) sqlSave(ctx context.Context) (_node *Model, err error
 	if muo.mutation.APIHeaderCleared() {
 		_spec.ClearField(model.FieldAPIHeader, field.TypeString)
 	}
-	if value, ok := muo.mutation.Description(); ok {
-		_spec.SetField(model.FieldDescription, field.TypeString, value)
-	}
-	if muo.mutation.DescriptionCleared() {
-		_spec.ClearField(model.FieldDescription, field.TypeString)
-	}
-	if value, ok := muo.mutation.IsInternal(); ok {
-		_spec.SetField(model.FieldIsInternal, field.TypeBool, value)
-	}
 	if value, ok := muo.mutation.Provider(); ok {
 		_spec.SetField(model.FieldProvider, field.TypeString, value)
-	}
-	if value, ok := muo.mutation.Status(); ok {
-		_spec.SetField(model.FieldStatus, field.TypeString, value)
-	}
-	if value, ok := muo.mutation.ContextLength(); ok {
-		_spec.SetField(model.FieldContextLength, field.TypeInt, value)
-	}
-	if value, ok := muo.mutation.AddedContextLength(); ok {
-		_spec.AddField(model.FieldContextLength, field.TypeInt, value)
-	}
-	if muo.mutation.ContextLengthCleared() {
-		_spec.ClearField(model.FieldContextLength, field.TypeInt)
 	}
 	if value, ok := muo.mutation.CreatedAt(); ok {
 		_spec.SetField(model.FieldCreatedAt, field.TypeTime, value)

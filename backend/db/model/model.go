@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
-	"github.com/chaitin/ModelKit/backend/consts"
 )
 
 const (
@@ -14,14 +13,10 @@ const (
 	Label = "model"
 	// FieldID holds the string denoting the id field in the database.
 	FieldID = "id"
-	// FieldUserID holds the string denoting the user_id field in the database.
-	FieldUserID = "user_id"
 	// FieldModelName holds the string denoting the model_name field in the database.
 	FieldModelName = "model_name"
 	// FieldModelType holds the string denoting the model_type field in the database.
 	FieldModelType = "model_type"
-	// FieldShowName holds the string denoting the show_name field in the database.
-	FieldShowName = "show_name"
 	// FieldAPIBase holds the string denoting the api_base field in the database.
 	FieldAPIBase = "api_base"
 	// FieldAPIKey holds the string denoting the api_key field in the database.
@@ -30,16 +25,8 @@ const (
 	FieldAPIVersion = "api_version"
 	// FieldAPIHeader holds the string denoting the api_header field in the database.
 	FieldAPIHeader = "api_header"
-	// FieldDescription holds the string denoting the description field in the database.
-	FieldDescription = "description"
-	// FieldIsInternal holds the string denoting the is_internal field in the database.
-	FieldIsInternal = "is_internal"
 	// FieldProvider holds the string denoting the provider field in the database.
 	FieldProvider = "provider"
-	// FieldStatus holds the string denoting the status field in the database.
-	FieldStatus = "status"
-	// FieldContextLength holds the string denoting the context_length field in the database.
-	FieldContextLength = "context_length"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
@@ -51,19 +38,13 @@ const (
 // Columns holds all SQL columns for model fields.
 var Columns = []string{
 	FieldID,
-	FieldUserID,
 	FieldModelName,
 	FieldModelType,
-	FieldShowName,
 	FieldAPIBase,
 	FieldAPIKey,
 	FieldAPIVersion,
 	FieldAPIHeader,
-	FieldDescription,
-	FieldIsInternal,
 	FieldProvider,
-	FieldStatus,
-	FieldContextLength,
 	FieldCreatedAt,
 	FieldUpdatedAt,
 }
@@ -79,10 +60,6 @@ func ValidColumn(column string) bool {
 }
 
 var (
-	// DefaultIsInternal holds the default value on creation for the "is_internal" field.
-	DefaultIsInternal bool
-	// DefaultStatus holds the default value on creation for the "status" field.
-	DefaultStatus consts.ModelStatus
 	// DefaultCreatedAt holds the default value on creation for the "created_at" field.
 	DefaultCreatedAt func() time.Time
 	// DefaultUpdatedAt holds the default value on creation for the "updated_at" field.
@@ -99,11 +76,6 @@ func ByID(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldID, opts...).ToFunc()
 }
 
-// ByUserID orders the results by the user_id field.
-func ByUserID(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldUserID, opts...).ToFunc()
-}
-
 // ByModelName orders the results by the model_name field.
 func ByModelName(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldModelName, opts...).ToFunc()
@@ -112,11 +84,6 @@ func ByModelName(opts ...sql.OrderTermOption) OrderOption {
 // ByModelType orders the results by the model_type field.
 func ByModelType(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldModelType, opts...).ToFunc()
-}
-
-// ByShowName orders the results by the show_name field.
-func ByShowName(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldShowName, opts...).ToFunc()
 }
 
 // ByAPIBase orders the results by the api_base field.
@@ -139,29 +106,9 @@ func ByAPIHeader(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldAPIHeader, opts...).ToFunc()
 }
 
-// ByDescription orders the results by the description field.
-func ByDescription(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldDescription, opts...).ToFunc()
-}
-
-// ByIsInternal orders the results by the is_internal field.
-func ByIsInternal(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldIsInternal, opts...).ToFunc()
-}
-
 // ByProvider orders the results by the provider field.
 func ByProvider(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldProvider, opts...).ToFunc()
-}
-
-// ByStatus orders the results by the status field.
-func ByStatus(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldStatus, opts...).ToFunc()
-}
-
-// ByContextLength orders the results by the context_length field.
-func ByContextLength(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldContextLength, opts...).ToFunc()
 }
 
 // ByCreatedAt orders the results by the created_at field.

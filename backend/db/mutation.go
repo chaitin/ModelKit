@@ -32,29 +32,22 @@ const (
 // ModelMutation represents an operation that mutates the Model nodes in the graph.
 type ModelMutation struct {
 	config
-	op                Op
-	typ               string
-	id                *uuid.UUID
-	user_id           *uuid.UUID
-	model_name        *string
-	model_type        *consts.ModelType
-	show_name         *string
-	api_base          *string
-	api_key           *string
-	api_version       *string
-	api_header        *string
-	description       *string
-	is_internal       *bool
-	provider          *consts.ModelProvider
-	status            *consts.ModelStatus
-	context_length    *int
-	addcontext_length *int
-	created_at        *time.Time
-	updated_at        *time.Time
-	clearedFields     map[string]struct{}
-	done              bool
-	oldValue          func(context.Context) (*Model, error)
-	predicates        []predicate.Model
+	op            Op
+	typ           string
+	id            *uuid.UUID
+	model_name    *string
+	model_type    *consts.ModelType
+	api_base      *string
+	api_key       *string
+	api_version   *string
+	api_header    *string
+	provider      *consts.ModelProvider
+	created_at    *time.Time
+	updated_at    *time.Time
+	clearedFields map[string]struct{}
+	done          bool
+	oldValue      func(context.Context) (*Model, error)
+	predicates    []predicate.Model
 }
 
 var _ ent.Mutation = (*ModelMutation)(nil)
@@ -161,55 +154,6 @@ func (m *ModelMutation) IDs(ctx context.Context) ([]uuid.UUID, error) {
 	}
 }
 
-// SetUserID sets the "user_id" field.
-func (m *ModelMutation) SetUserID(u uuid.UUID) {
-	m.user_id = &u
-}
-
-// UserID returns the value of the "user_id" field in the mutation.
-func (m *ModelMutation) UserID() (r uuid.UUID, exists bool) {
-	v := m.user_id
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldUserID returns the old "user_id" field's value of the Model entity.
-// If the Model object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ModelMutation) OldUserID(ctx context.Context) (v uuid.UUID, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldUserID is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldUserID requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldUserID: %w", err)
-	}
-	return oldValue.UserID, nil
-}
-
-// ClearUserID clears the value of the "user_id" field.
-func (m *ModelMutation) ClearUserID() {
-	m.user_id = nil
-	m.clearedFields[model.FieldUserID] = struct{}{}
-}
-
-// UserIDCleared returns if the "user_id" field was cleared in this mutation.
-func (m *ModelMutation) UserIDCleared() bool {
-	_, ok := m.clearedFields[model.FieldUserID]
-	return ok
-}
-
-// ResetUserID resets all changes to the "user_id" field.
-func (m *ModelMutation) ResetUserID() {
-	m.user_id = nil
-	delete(m.clearedFields, model.FieldUserID)
-}
-
 // SetModelName sets the "model_name" field.
 func (m *ModelMutation) SetModelName(s string) {
 	m.model_name = &s
@@ -280,55 +224,6 @@ func (m *ModelMutation) OldModelType(ctx context.Context) (v consts.ModelType, e
 // ResetModelType resets all changes to the "model_type" field.
 func (m *ModelMutation) ResetModelType() {
 	m.model_type = nil
-}
-
-// SetShowName sets the "show_name" field.
-func (m *ModelMutation) SetShowName(s string) {
-	m.show_name = &s
-}
-
-// ShowName returns the value of the "show_name" field in the mutation.
-func (m *ModelMutation) ShowName() (r string, exists bool) {
-	v := m.show_name
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldShowName returns the old "show_name" field's value of the Model entity.
-// If the Model object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ModelMutation) OldShowName(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldShowName is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldShowName requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldShowName: %w", err)
-	}
-	return oldValue.ShowName, nil
-}
-
-// ClearShowName clears the value of the "show_name" field.
-func (m *ModelMutation) ClearShowName() {
-	m.show_name = nil
-	m.clearedFields[model.FieldShowName] = struct{}{}
-}
-
-// ShowNameCleared returns if the "show_name" field was cleared in this mutation.
-func (m *ModelMutation) ShowNameCleared() bool {
-	_, ok := m.clearedFields[model.FieldShowName]
-	return ok
-}
-
-// ResetShowName resets all changes to the "show_name" field.
-func (m *ModelMutation) ResetShowName() {
-	m.show_name = nil
-	delete(m.clearedFields, model.FieldShowName)
 }
 
 // SetAPIBase sets the "api_base" field.
@@ -501,91 +396,6 @@ func (m *ModelMutation) ResetAPIHeader() {
 	delete(m.clearedFields, model.FieldAPIHeader)
 }
 
-// SetDescription sets the "description" field.
-func (m *ModelMutation) SetDescription(s string) {
-	m.description = &s
-}
-
-// Description returns the value of the "description" field in the mutation.
-func (m *ModelMutation) Description() (r string, exists bool) {
-	v := m.description
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldDescription returns the old "description" field's value of the Model entity.
-// If the Model object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ModelMutation) OldDescription(ctx context.Context) (v string, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldDescription is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldDescription requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldDescription: %w", err)
-	}
-	return oldValue.Description, nil
-}
-
-// ClearDescription clears the value of the "description" field.
-func (m *ModelMutation) ClearDescription() {
-	m.description = nil
-	m.clearedFields[model.FieldDescription] = struct{}{}
-}
-
-// DescriptionCleared returns if the "description" field was cleared in this mutation.
-func (m *ModelMutation) DescriptionCleared() bool {
-	_, ok := m.clearedFields[model.FieldDescription]
-	return ok
-}
-
-// ResetDescription resets all changes to the "description" field.
-func (m *ModelMutation) ResetDescription() {
-	m.description = nil
-	delete(m.clearedFields, model.FieldDescription)
-}
-
-// SetIsInternal sets the "is_internal" field.
-func (m *ModelMutation) SetIsInternal(b bool) {
-	m.is_internal = &b
-}
-
-// IsInternal returns the value of the "is_internal" field in the mutation.
-func (m *ModelMutation) IsInternal() (r bool, exists bool) {
-	v := m.is_internal
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldIsInternal returns the old "is_internal" field's value of the Model entity.
-// If the Model object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ModelMutation) OldIsInternal(ctx context.Context) (v bool, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldIsInternal is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldIsInternal requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldIsInternal: %w", err)
-	}
-	return oldValue.IsInternal, nil
-}
-
-// ResetIsInternal resets all changes to the "is_internal" field.
-func (m *ModelMutation) ResetIsInternal() {
-	m.is_internal = nil
-}
-
 // SetProvider sets the "provider" field.
 func (m *ModelMutation) SetProvider(cp consts.ModelProvider) {
 	m.provider = &cp
@@ -620,112 +430,6 @@ func (m *ModelMutation) OldProvider(ctx context.Context) (v consts.ModelProvider
 // ResetProvider resets all changes to the "provider" field.
 func (m *ModelMutation) ResetProvider() {
 	m.provider = nil
-}
-
-// SetStatus sets the "status" field.
-func (m *ModelMutation) SetStatus(cs consts.ModelStatus) {
-	m.status = &cs
-}
-
-// Status returns the value of the "status" field in the mutation.
-func (m *ModelMutation) Status() (r consts.ModelStatus, exists bool) {
-	v := m.status
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldStatus returns the old "status" field's value of the Model entity.
-// If the Model object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ModelMutation) OldStatus(ctx context.Context) (v consts.ModelStatus, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldStatus is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldStatus requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldStatus: %w", err)
-	}
-	return oldValue.Status, nil
-}
-
-// ResetStatus resets all changes to the "status" field.
-func (m *ModelMutation) ResetStatus() {
-	m.status = nil
-}
-
-// SetContextLength sets the "context_length" field.
-func (m *ModelMutation) SetContextLength(i int) {
-	m.context_length = &i
-	m.addcontext_length = nil
-}
-
-// ContextLength returns the value of the "context_length" field in the mutation.
-func (m *ModelMutation) ContextLength() (r int, exists bool) {
-	v := m.context_length
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// OldContextLength returns the old "context_length" field's value of the Model entity.
-// If the Model object wasn't provided to the builder, the object is fetched from the database.
-// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
-func (m *ModelMutation) OldContextLength(ctx context.Context) (v int, err error) {
-	if !m.op.Is(OpUpdateOne) {
-		return v, errors.New("OldContextLength is only allowed on UpdateOne operations")
-	}
-	if m.id == nil || m.oldValue == nil {
-		return v, errors.New("OldContextLength requires an ID field in the mutation")
-	}
-	oldValue, err := m.oldValue(ctx)
-	if err != nil {
-		return v, fmt.Errorf("querying old value for OldContextLength: %w", err)
-	}
-	return oldValue.ContextLength, nil
-}
-
-// AddContextLength adds i to the "context_length" field.
-func (m *ModelMutation) AddContextLength(i int) {
-	if m.addcontext_length != nil {
-		*m.addcontext_length += i
-	} else {
-		m.addcontext_length = &i
-	}
-}
-
-// AddedContextLength returns the value that was added to the "context_length" field in this mutation.
-func (m *ModelMutation) AddedContextLength() (r int, exists bool) {
-	v := m.addcontext_length
-	if v == nil {
-		return
-	}
-	return *v, true
-}
-
-// ClearContextLength clears the value of the "context_length" field.
-func (m *ModelMutation) ClearContextLength() {
-	m.context_length = nil
-	m.addcontext_length = nil
-	m.clearedFields[model.FieldContextLength] = struct{}{}
-}
-
-// ContextLengthCleared returns if the "context_length" field was cleared in this mutation.
-func (m *ModelMutation) ContextLengthCleared() bool {
-	_, ok := m.clearedFields[model.FieldContextLength]
-	return ok
-}
-
-// ResetContextLength resets all changes to the "context_length" field.
-func (m *ModelMutation) ResetContextLength() {
-	m.context_length = nil
-	m.addcontext_length = nil
-	delete(m.clearedFields, model.FieldContextLength)
 }
 
 // SetCreatedAt sets the "created_at" field.
@@ -834,18 +538,12 @@ func (m *ModelMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *ModelMutation) Fields() []string {
-	fields := make([]string, 0, 15)
-	if m.user_id != nil {
-		fields = append(fields, model.FieldUserID)
-	}
+	fields := make([]string, 0, 9)
 	if m.model_name != nil {
 		fields = append(fields, model.FieldModelName)
 	}
 	if m.model_type != nil {
 		fields = append(fields, model.FieldModelType)
-	}
-	if m.show_name != nil {
-		fields = append(fields, model.FieldShowName)
 	}
 	if m.api_base != nil {
 		fields = append(fields, model.FieldAPIBase)
@@ -859,20 +557,8 @@ func (m *ModelMutation) Fields() []string {
 	if m.api_header != nil {
 		fields = append(fields, model.FieldAPIHeader)
 	}
-	if m.description != nil {
-		fields = append(fields, model.FieldDescription)
-	}
-	if m.is_internal != nil {
-		fields = append(fields, model.FieldIsInternal)
-	}
 	if m.provider != nil {
 		fields = append(fields, model.FieldProvider)
-	}
-	if m.status != nil {
-		fields = append(fields, model.FieldStatus)
-	}
-	if m.context_length != nil {
-		fields = append(fields, model.FieldContextLength)
 	}
 	if m.created_at != nil {
 		fields = append(fields, model.FieldCreatedAt)
@@ -888,14 +574,10 @@ func (m *ModelMutation) Fields() []string {
 // schema.
 func (m *ModelMutation) Field(name string) (ent.Value, bool) {
 	switch name {
-	case model.FieldUserID:
-		return m.UserID()
 	case model.FieldModelName:
 		return m.ModelName()
 	case model.FieldModelType:
 		return m.ModelType()
-	case model.FieldShowName:
-		return m.ShowName()
 	case model.FieldAPIBase:
 		return m.APIBase()
 	case model.FieldAPIKey:
@@ -904,16 +586,8 @@ func (m *ModelMutation) Field(name string) (ent.Value, bool) {
 		return m.APIVersion()
 	case model.FieldAPIHeader:
 		return m.APIHeader()
-	case model.FieldDescription:
-		return m.Description()
-	case model.FieldIsInternal:
-		return m.IsInternal()
 	case model.FieldProvider:
 		return m.Provider()
-	case model.FieldStatus:
-		return m.Status()
-	case model.FieldContextLength:
-		return m.ContextLength()
 	case model.FieldCreatedAt:
 		return m.CreatedAt()
 	case model.FieldUpdatedAt:
@@ -927,14 +601,10 @@ func (m *ModelMutation) Field(name string) (ent.Value, bool) {
 // database failed.
 func (m *ModelMutation) OldField(ctx context.Context, name string) (ent.Value, error) {
 	switch name {
-	case model.FieldUserID:
-		return m.OldUserID(ctx)
 	case model.FieldModelName:
 		return m.OldModelName(ctx)
 	case model.FieldModelType:
 		return m.OldModelType(ctx)
-	case model.FieldShowName:
-		return m.OldShowName(ctx)
 	case model.FieldAPIBase:
 		return m.OldAPIBase(ctx)
 	case model.FieldAPIKey:
@@ -943,16 +613,8 @@ func (m *ModelMutation) OldField(ctx context.Context, name string) (ent.Value, e
 		return m.OldAPIVersion(ctx)
 	case model.FieldAPIHeader:
 		return m.OldAPIHeader(ctx)
-	case model.FieldDescription:
-		return m.OldDescription(ctx)
-	case model.FieldIsInternal:
-		return m.OldIsInternal(ctx)
 	case model.FieldProvider:
 		return m.OldProvider(ctx)
-	case model.FieldStatus:
-		return m.OldStatus(ctx)
-	case model.FieldContextLength:
-		return m.OldContextLength(ctx)
 	case model.FieldCreatedAt:
 		return m.OldCreatedAt(ctx)
 	case model.FieldUpdatedAt:
@@ -966,13 +628,6 @@ func (m *ModelMutation) OldField(ctx context.Context, name string) (ent.Value, e
 // type.
 func (m *ModelMutation) SetField(name string, value ent.Value) error {
 	switch name {
-	case model.FieldUserID:
-		v, ok := value.(uuid.UUID)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetUserID(v)
-		return nil
 	case model.FieldModelName:
 		v, ok := value.(string)
 		if !ok {
@@ -986,13 +641,6 @@ func (m *ModelMutation) SetField(name string, value ent.Value) error {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetModelType(v)
-		return nil
-	case model.FieldShowName:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetShowName(v)
 		return nil
 	case model.FieldAPIBase:
 		v, ok := value.(string)
@@ -1022,40 +670,12 @@ func (m *ModelMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetAPIHeader(v)
 		return nil
-	case model.FieldDescription:
-		v, ok := value.(string)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetDescription(v)
-		return nil
-	case model.FieldIsInternal:
-		v, ok := value.(bool)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetIsInternal(v)
-		return nil
 	case model.FieldProvider:
 		v, ok := value.(consts.ModelProvider)
 		if !ok {
 			return fmt.Errorf("unexpected type %T for field %s", value, name)
 		}
 		m.SetProvider(v)
-		return nil
-	case model.FieldStatus:
-		v, ok := value.(consts.ModelStatus)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetStatus(v)
-		return nil
-	case model.FieldContextLength:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.SetContextLength(v)
 		return nil
 	case model.FieldCreatedAt:
 		v, ok := value.(time.Time)
@@ -1078,21 +698,13 @@ func (m *ModelMutation) SetField(name string, value ent.Value) error {
 // AddedFields returns all numeric fields that were incremented/decremented during
 // this mutation.
 func (m *ModelMutation) AddedFields() []string {
-	var fields []string
-	if m.addcontext_length != nil {
-		fields = append(fields, model.FieldContextLength)
-	}
-	return fields
+	return nil
 }
 
 // AddedField returns the numeric value that was incremented/decremented on a field
 // with the given name. The second boolean return value indicates that this field
 // was not set, or was not defined in the schema.
 func (m *ModelMutation) AddedField(name string) (ent.Value, bool) {
-	switch name {
-	case model.FieldContextLength:
-		return m.AddedContextLength()
-	}
 	return nil, false
 }
 
@@ -1101,13 +713,6 @@ func (m *ModelMutation) AddedField(name string) (ent.Value, bool) {
 // type.
 func (m *ModelMutation) AddField(name string, value ent.Value) error {
 	switch name {
-	case model.FieldContextLength:
-		v, ok := value.(int)
-		if !ok {
-			return fmt.Errorf("unexpected type %T for field %s", value, name)
-		}
-		m.AddContextLength(v)
-		return nil
 	}
 	return fmt.Errorf("unknown Model numeric field %s", name)
 }
@@ -1116,23 +721,11 @@ func (m *ModelMutation) AddField(name string, value ent.Value) error {
 // mutation.
 func (m *ModelMutation) ClearedFields() []string {
 	var fields []string
-	if m.FieldCleared(model.FieldUserID) {
-		fields = append(fields, model.FieldUserID)
-	}
-	if m.FieldCleared(model.FieldShowName) {
-		fields = append(fields, model.FieldShowName)
-	}
 	if m.FieldCleared(model.FieldAPIVersion) {
 		fields = append(fields, model.FieldAPIVersion)
 	}
 	if m.FieldCleared(model.FieldAPIHeader) {
 		fields = append(fields, model.FieldAPIHeader)
-	}
-	if m.FieldCleared(model.FieldDescription) {
-		fields = append(fields, model.FieldDescription)
-	}
-	if m.FieldCleared(model.FieldContextLength) {
-		fields = append(fields, model.FieldContextLength)
 	}
 	return fields
 }
@@ -1148,23 +741,11 @@ func (m *ModelMutation) FieldCleared(name string) bool {
 // error if the field is not defined in the schema.
 func (m *ModelMutation) ClearField(name string) error {
 	switch name {
-	case model.FieldUserID:
-		m.ClearUserID()
-		return nil
-	case model.FieldShowName:
-		m.ClearShowName()
-		return nil
 	case model.FieldAPIVersion:
 		m.ClearAPIVersion()
 		return nil
 	case model.FieldAPIHeader:
 		m.ClearAPIHeader()
-		return nil
-	case model.FieldDescription:
-		m.ClearDescription()
-		return nil
-	case model.FieldContextLength:
-		m.ClearContextLength()
 		return nil
 	}
 	return fmt.Errorf("unknown Model nullable field %s", name)
@@ -1174,17 +755,11 @@ func (m *ModelMutation) ClearField(name string) error {
 // It returns an error if the field is not defined in the schema.
 func (m *ModelMutation) ResetField(name string) error {
 	switch name {
-	case model.FieldUserID:
-		m.ResetUserID()
-		return nil
 	case model.FieldModelName:
 		m.ResetModelName()
 		return nil
 	case model.FieldModelType:
 		m.ResetModelType()
-		return nil
-	case model.FieldShowName:
-		m.ResetShowName()
 		return nil
 	case model.FieldAPIBase:
 		m.ResetAPIBase()
@@ -1198,20 +773,8 @@ func (m *ModelMutation) ResetField(name string) error {
 	case model.FieldAPIHeader:
 		m.ResetAPIHeader()
 		return nil
-	case model.FieldDescription:
-		m.ResetDescription()
-		return nil
-	case model.FieldIsInternal:
-		m.ResetIsInternal()
-		return nil
 	case model.FieldProvider:
 		m.ResetProvider()
-		return nil
-	case model.FieldStatus:
-		m.ResetStatus()
-		return nil
-	case model.FieldContextLength:
-		m.ResetContextLength()
 		return nil
 	case model.FieldCreatedAt:
 		m.ResetCreatedAt()

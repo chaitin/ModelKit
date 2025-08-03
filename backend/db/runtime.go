@@ -5,7 +5,6 @@ package db
 import (
 	"time"
 
-	"github.com/chaitin/ModelKit/backend/consts"
 	"github.com/chaitin/ModelKit/backend/db/model"
 	"github.com/chaitin/ModelKit/backend/ent/schema"
 )
@@ -16,20 +15,12 @@ import (
 func init() {
 	modelFields := schema.Model{}.Fields()
 	_ = modelFields
-	// modelDescIsInternal is the schema descriptor for is_internal field.
-	modelDescIsInternal := modelFields[10].Descriptor()
-	// model.DefaultIsInternal holds the default value on creation for the is_internal field.
-	model.DefaultIsInternal = modelDescIsInternal.Default.(bool)
-	// modelDescStatus is the schema descriptor for status field.
-	modelDescStatus := modelFields[12].Descriptor()
-	// model.DefaultStatus holds the default value on creation for the status field.
-	model.DefaultStatus = consts.ModelStatus(modelDescStatus.Default.(string))
 	// modelDescCreatedAt is the schema descriptor for created_at field.
-	modelDescCreatedAt := modelFields[14].Descriptor()
+	modelDescCreatedAt := modelFields[8].Descriptor()
 	// model.DefaultCreatedAt holds the default value on creation for the created_at field.
 	model.DefaultCreatedAt = modelDescCreatedAt.Default.(func() time.Time)
 	// modelDescUpdatedAt is the schema descriptor for updated_at field.
-	modelDescUpdatedAt := modelFields[15].Descriptor()
+	modelDescUpdatedAt := modelFields[9].Descriptor()
 	// model.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	model.DefaultUpdatedAt = modelDescUpdatedAt.Default.(func() time.Time)
 	// model.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.

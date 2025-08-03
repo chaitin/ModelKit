@@ -56,11 +56,6 @@ func IDLTE(id uuid.UUID) predicate.Model {
 	return predicate.Model(sql.FieldLTE(FieldID, id))
 }
 
-// UserID applies equality check predicate on the "user_id" field. It's identical to UserIDEQ.
-func UserID(v uuid.UUID) predicate.Model {
-	return predicate.Model(sql.FieldEQ(FieldUserID, v))
-}
-
 // ModelName applies equality check predicate on the "model_name" field. It's identical to ModelNameEQ.
 func ModelName(v string) predicate.Model {
 	return predicate.Model(sql.FieldEQ(FieldModelName, v))
@@ -70,11 +65,6 @@ func ModelName(v string) predicate.Model {
 func ModelType(v consts.ModelType) predicate.Model {
 	vc := string(v)
 	return predicate.Model(sql.FieldEQ(FieldModelType, vc))
-}
-
-// ShowName applies equality check predicate on the "show_name" field. It's identical to ShowNameEQ.
-func ShowName(v string) predicate.Model {
-	return predicate.Model(sql.FieldEQ(FieldShowName, v))
 }
 
 // APIBase applies equality check predicate on the "api_base" field. It's identical to APIBaseEQ.
@@ -97,31 +87,10 @@ func APIHeader(v string) predicate.Model {
 	return predicate.Model(sql.FieldEQ(FieldAPIHeader, v))
 }
 
-// Description applies equality check predicate on the "description" field. It's identical to DescriptionEQ.
-func Description(v string) predicate.Model {
-	return predicate.Model(sql.FieldEQ(FieldDescription, v))
-}
-
-// IsInternal applies equality check predicate on the "is_internal" field. It's identical to IsInternalEQ.
-func IsInternal(v bool) predicate.Model {
-	return predicate.Model(sql.FieldEQ(FieldIsInternal, v))
-}
-
 // Provider applies equality check predicate on the "provider" field. It's identical to ProviderEQ.
 func Provider(v consts.ModelProvider) predicate.Model {
 	vc := string(v)
 	return predicate.Model(sql.FieldEQ(FieldProvider, vc))
-}
-
-// Status applies equality check predicate on the "status" field. It's identical to StatusEQ.
-func Status(v consts.ModelStatus) predicate.Model {
-	vc := string(v)
-	return predicate.Model(sql.FieldEQ(FieldStatus, vc))
-}
-
-// ContextLength applies equality check predicate on the "context_length" field. It's identical to ContextLengthEQ.
-func ContextLength(v int) predicate.Model {
-	return predicate.Model(sql.FieldEQ(FieldContextLength, v))
 }
 
 // CreatedAt applies equality check predicate on the "created_at" field. It's identical to CreatedAtEQ.
@@ -132,56 +101,6 @@ func CreatedAt(v time.Time) predicate.Model {
 // UpdatedAt applies equality check predicate on the "updated_at" field. It's identical to UpdatedAtEQ.
 func UpdatedAt(v time.Time) predicate.Model {
 	return predicate.Model(sql.FieldEQ(FieldUpdatedAt, v))
-}
-
-// UserIDEQ applies the EQ predicate on the "user_id" field.
-func UserIDEQ(v uuid.UUID) predicate.Model {
-	return predicate.Model(sql.FieldEQ(FieldUserID, v))
-}
-
-// UserIDNEQ applies the NEQ predicate on the "user_id" field.
-func UserIDNEQ(v uuid.UUID) predicate.Model {
-	return predicate.Model(sql.FieldNEQ(FieldUserID, v))
-}
-
-// UserIDIn applies the In predicate on the "user_id" field.
-func UserIDIn(vs ...uuid.UUID) predicate.Model {
-	return predicate.Model(sql.FieldIn(FieldUserID, vs...))
-}
-
-// UserIDNotIn applies the NotIn predicate on the "user_id" field.
-func UserIDNotIn(vs ...uuid.UUID) predicate.Model {
-	return predicate.Model(sql.FieldNotIn(FieldUserID, vs...))
-}
-
-// UserIDGT applies the GT predicate on the "user_id" field.
-func UserIDGT(v uuid.UUID) predicate.Model {
-	return predicate.Model(sql.FieldGT(FieldUserID, v))
-}
-
-// UserIDGTE applies the GTE predicate on the "user_id" field.
-func UserIDGTE(v uuid.UUID) predicate.Model {
-	return predicate.Model(sql.FieldGTE(FieldUserID, v))
-}
-
-// UserIDLT applies the LT predicate on the "user_id" field.
-func UserIDLT(v uuid.UUID) predicate.Model {
-	return predicate.Model(sql.FieldLT(FieldUserID, v))
-}
-
-// UserIDLTE applies the LTE predicate on the "user_id" field.
-func UserIDLTE(v uuid.UUID) predicate.Model {
-	return predicate.Model(sql.FieldLTE(FieldUserID, v))
-}
-
-// UserIDIsNil applies the IsNil predicate on the "user_id" field.
-func UserIDIsNil() predicate.Model {
-	return predicate.Model(sql.FieldIsNull(FieldUserID))
-}
-
-// UserIDNotNil applies the NotNil predicate on the "user_id" field.
-func UserIDNotNil() predicate.Model {
-	return predicate.Model(sql.FieldNotNull(FieldUserID))
 }
 
 // ModelNameEQ applies the EQ predicate on the "model_name" field.
@@ -331,81 +250,6 @@ func ModelTypeEqualFold(v consts.ModelType) predicate.Model {
 func ModelTypeContainsFold(v consts.ModelType) predicate.Model {
 	vc := string(v)
 	return predicate.Model(sql.FieldContainsFold(FieldModelType, vc))
-}
-
-// ShowNameEQ applies the EQ predicate on the "show_name" field.
-func ShowNameEQ(v string) predicate.Model {
-	return predicate.Model(sql.FieldEQ(FieldShowName, v))
-}
-
-// ShowNameNEQ applies the NEQ predicate on the "show_name" field.
-func ShowNameNEQ(v string) predicate.Model {
-	return predicate.Model(sql.FieldNEQ(FieldShowName, v))
-}
-
-// ShowNameIn applies the In predicate on the "show_name" field.
-func ShowNameIn(vs ...string) predicate.Model {
-	return predicate.Model(sql.FieldIn(FieldShowName, vs...))
-}
-
-// ShowNameNotIn applies the NotIn predicate on the "show_name" field.
-func ShowNameNotIn(vs ...string) predicate.Model {
-	return predicate.Model(sql.FieldNotIn(FieldShowName, vs...))
-}
-
-// ShowNameGT applies the GT predicate on the "show_name" field.
-func ShowNameGT(v string) predicate.Model {
-	return predicate.Model(sql.FieldGT(FieldShowName, v))
-}
-
-// ShowNameGTE applies the GTE predicate on the "show_name" field.
-func ShowNameGTE(v string) predicate.Model {
-	return predicate.Model(sql.FieldGTE(FieldShowName, v))
-}
-
-// ShowNameLT applies the LT predicate on the "show_name" field.
-func ShowNameLT(v string) predicate.Model {
-	return predicate.Model(sql.FieldLT(FieldShowName, v))
-}
-
-// ShowNameLTE applies the LTE predicate on the "show_name" field.
-func ShowNameLTE(v string) predicate.Model {
-	return predicate.Model(sql.FieldLTE(FieldShowName, v))
-}
-
-// ShowNameContains applies the Contains predicate on the "show_name" field.
-func ShowNameContains(v string) predicate.Model {
-	return predicate.Model(sql.FieldContains(FieldShowName, v))
-}
-
-// ShowNameHasPrefix applies the HasPrefix predicate on the "show_name" field.
-func ShowNameHasPrefix(v string) predicate.Model {
-	return predicate.Model(sql.FieldHasPrefix(FieldShowName, v))
-}
-
-// ShowNameHasSuffix applies the HasSuffix predicate on the "show_name" field.
-func ShowNameHasSuffix(v string) predicate.Model {
-	return predicate.Model(sql.FieldHasSuffix(FieldShowName, v))
-}
-
-// ShowNameIsNil applies the IsNil predicate on the "show_name" field.
-func ShowNameIsNil() predicate.Model {
-	return predicate.Model(sql.FieldIsNull(FieldShowName))
-}
-
-// ShowNameNotNil applies the NotNil predicate on the "show_name" field.
-func ShowNameNotNil() predicate.Model {
-	return predicate.Model(sql.FieldNotNull(FieldShowName))
-}
-
-// ShowNameEqualFold applies the EqualFold predicate on the "show_name" field.
-func ShowNameEqualFold(v string) predicate.Model {
-	return predicate.Model(sql.FieldEqualFold(FieldShowName, v))
-}
-
-// ShowNameContainsFold applies the ContainsFold predicate on the "show_name" field.
-func ShowNameContainsFold(v string) predicate.Model {
-	return predicate.Model(sql.FieldContainsFold(FieldShowName, v))
 }
 
 // APIBaseEQ applies the EQ predicate on the "api_base" field.
@@ -688,91 +532,6 @@ func APIHeaderContainsFold(v string) predicate.Model {
 	return predicate.Model(sql.FieldContainsFold(FieldAPIHeader, v))
 }
 
-// DescriptionEQ applies the EQ predicate on the "description" field.
-func DescriptionEQ(v string) predicate.Model {
-	return predicate.Model(sql.FieldEQ(FieldDescription, v))
-}
-
-// DescriptionNEQ applies the NEQ predicate on the "description" field.
-func DescriptionNEQ(v string) predicate.Model {
-	return predicate.Model(sql.FieldNEQ(FieldDescription, v))
-}
-
-// DescriptionIn applies the In predicate on the "description" field.
-func DescriptionIn(vs ...string) predicate.Model {
-	return predicate.Model(sql.FieldIn(FieldDescription, vs...))
-}
-
-// DescriptionNotIn applies the NotIn predicate on the "description" field.
-func DescriptionNotIn(vs ...string) predicate.Model {
-	return predicate.Model(sql.FieldNotIn(FieldDescription, vs...))
-}
-
-// DescriptionGT applies the GT predicate on the "description" field.
-func DescriptionGT(v string) predicate.Model {
-	return predicate.Model(sql.FieldGT(FieldDescription, v))
-}
-
-// DescriptionGTE applies the GTE predicate on the "description" field.
-func DescriptionGTE(v string) predicate.Model {
-	return predicate.Model(sql.FieldGTE(FieldDescription, v))
-}
-
-// DescriptionLT applies the LT predicate on the "description" field.
-func DescriptionLT(v string) predicate.Model {
-	return predicate.Model(sql.FieldLT(FieldDescription, v))
-}
-
-// DescriptionLTE applies the LTE predicate on the "description" field.
-func DescriptionLTE(v string) predicate.Model {
-	return predicate.Model(sql.FieldLTE(FieldDescription, v))
-}
-
-// DescriptionContains applies the Contains predicate on the "description" field.
-func DescriptionContains(v string) predicate.Model {
-	return predicate.Model(sql.FieldContains(FieldDescription, v))
-}
-
-// DescriptionHasPrefix applies the HasPrefix predicate on the "description" field.
-func DescriptionHasPrefix(v string) predicate.Model {
-	return predicate.Model(sql.FieldHasPrefix(FieldDescription, v))
-}
-
-// DescriptionHasSuffix applies the HasSuffix predicate on the "description" field.
-func DescriptionHasSuffix(v string) predicate.Model {
-	return predicate.Model(sql.FieldHasSuffix(FieldDescription, v))
-}
-
-// DescriptionIsNil applies the IsNil predicate on the "description" field.
-func DescriptionIsNil() predicate.Model {
-	return predicate.Model(sql.FieldIsNull(FieldDescription))
-}
-
-// DescriptionNotNil applies the NotNil predicate on the "description" field.
-func DescriptionNotNil() predicate.Model {
-	return predicate.Model(sql.FieldNotNull(FieldDescription))
-}
-
-// DescriptionEqualFold applies the EqualFold predicate on the "description" field.
-func DescriptionEqualFold(v string) predicate.Model {
-	return predicate.Model(sql.FieldEqualFold(FieldDescription, v))
-}
-
-// DescriptionContainsFold applies the ContainsFold predicate on the "description" field.
-func DescriptionContainsFold(v string) predicate.Model {
-	return predicate.Model(sql.FieldContainsFold(FieldDescription, v))
-}
-
-// IsInternalEQ applies the EQ predicate on the "is_internal" field.
-func IsInternalEQ(v bool) predicate.Model {
-	return predicate.Model(sql.FieldEQ(FieldIsInternal, v))
-}
-
-// IsInternalNEQ applies the NEQ predicate on the "is_internal" field.
-func IsInternalNEQ(v bool) predicate.Model {
-	return predicate.Model(sql.FieldNEQ(FieldIsInternal, v))
-}
-
 // ProviderEQ applies the EQ predicate on the "provider" field.
 func ProviderEQ(v consts.ModelProvider) predicate.Model {
 	vc := string(v)
@@ -855,140 +614,6 @@ func ProviderEqualFold(v consts.ModelProvider) predicate.Model {
 func ProviderContainsFold(v consts.ModelProvider) predicate.Model {
 	vc := string(v)
 	return predicate.Model(sql.FieldContainsFold(FieldProvider, vc))
-}
-
-// StatusEQ applies the EQ predicate on the "status" field.
-func StatusEQ(v consts.ModelStatus) predicate.Model {
-	vc := string(v)
-	return predicate.Model(sql.FieldEQ(FieldStatus, vc))
-}
-
-// StatusNEQ applies the NEQ predicate on the "status" field.
-func StatusNEQ(v consts.ModelStatus) predicate.Model {
-	vc := string(v)
-	return predicate.Model(sql.FieldNEQ(FieldStatus, vc))
-}
-
-// StatusIn applies the In predicate on the "status" field.
-func StatusIn(vs ...consts.ModelStatus) predicate.Model {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = string(vs[i])
-	}
-	return predicate.Model(sql.FieldIn(FieldStatus, v...))
-}
-
-// StatusNotIn applies the NotIn predicate on the "status" field.
-func StatusNotIn(vs ...consts.ModelStatus) predicate.Model {
-	v := make([]any, len(vs))
-	for i := range v {
-		v[i] = string(vs[i])
-	}
-	return predicate.Model(sql.FieldNotIn(FieldStatus, v...))
-}
-
-// StatusGT applies the GT predicate on the "status" field.
-func StatusGT(v consts.ModelStatus) predicate.Model {
-	vc := string(v)
-	return predicate.Model(sql.FieldGT(FieldStatus, vc))
-}
-
-// StatusGTE applies the GTE predicate on the "status" field.
-func StatusGTE(v consts.ModelStatus) predicate.Model {
-	vc := string(v)
-	return predicate.Model(sql.FieldGTE(FieldStatus, vc))
-}
-
-// StatusLT applies the LT predicate on the "status" field.
-func StatusLT(v consts.ModelStatus) predicate.Model {
-	vc := string(v)
-	return predicate.Model(sql.FieldLT(FieldStatus, vc))
-}
-
-// StatusLTE applies the LTE predicate on the "status" field.
-func StatusLTE(v consts.ModelStatus) predicate.Model {
-	vc := string(v)
-	return predicate.Model(sql.FieldLTE(FieldStatus, vc))
-}
-
-// StatusContains applies the Contains predicate on the "status" field.
-func StatusContains(v consts.ModelStatus) predicate.Model {
-	vc := string(v)
-	return predicate.Model(sql.FieldContains(FieldStatus, vc))
-}
-
-// StatusHasPrefix applies the HasPrefix predicate on the "status" field.
-func StatusHasPrefix(v consts.ModelStatus) predicate.Model {
-	vc := string(v)
-	return predicate.Model(sql.FieldHasPrefix(FieldStatus, vc))
-}
-
-// StatusHasSuffix applies the HasSuffix predicate on the "status" field.
-func StatusHasSuffix(v consts.ModelStatus) predicate.Model {
-	vc := string(v)
-	return predicate.Model(sql.FieldHasSuffix(FieldStatus, vc))
-}
-
-// StatusEqualFold applies the EqualFold predicate on the "status" field.
-func StatusEqualFold(v consts.ModelStatus) predicate.Model {
-	vc := string(v)
-	return predicate.Model(sql.FieldEqualFold(FieldStatus, vc))
-}
-
-// StatusContainsFold applies the ContainsFold predicate on the "status" field.
-func StatusContainsFold(v consts.ModelStatus) predicate.Model {
-	vc := string(v)
-	return predicate.Model(sql.FieldContainsFold(FieldStatus, vc))
-}
-
-// ContextLengthEQ applies the EQ predicate on the "context_length" field.
-func ContextLengthEQ(v int) predicate.Model {
-	return predicate.Model(sql.FieldEQ(FieldContextLength, v))
-}
-
-// ContextLengthNEQ applies the NEQ predicate on the "context_length" field.
-func ContextLengthNEQ(v int) predicate.Model {
-	return predicate.Model(sql.FieldNEQ(FieldContextLength, v))
-}
-
-// ContextLengthIn applies the In predicate on the "context_length" field.
-func ContextLengthIn(vs ...int) predicate.Model {
-	return predicate.Model(sql.FieldIn(FieldContextLength, vs...))
-}
-
-// ContextLengthNotIn applies the NotIn predicate on the "context_length" field.
-func ContextLengthNotIn(vs ...int) predicate.Model {
-	return predicate.Model(sql.FieldNotIn(FieldContextLength, vs...))
-}
-
-// ContextLengthGT applies the GT predicate on the "context_length" field.
-func ContextLengthGT(v int) predicate.Model {
-	return predicate.Model(sql.FieldGT(FieldContextLength, v))
-}
-
-// ContextLengthGTE applies the GTE predicate on the "context_length" field.
-func ContextLengthGTE(v int) predicate.Model {
-	return predicate.Model(sql.FieldGTE(FieldContextLength, v))
-}
-
-// ContextLengthLT applies the LT predicate on the "context_length" field.
-func ContextLengthLT(v int) predicate.Model {
-	return predicate.Model(sql.FieldLT(FieldContextLength, v))
-}
-
-// ContextLengthLTE applies the LTE predicate on the "context_length" field.
-func ContextLengthLTE(v int) predicate.Model {
-	return predicate.Model(sql.FieldLTE(FieldContextLength, v))
-}
-
-// ContextLengthIsNil applies the IsNil predicate on the "context_length" field.
-func ContextLengthIsNil() predicate.Model {
-	return predicate.Model(sql.FieldIsNull(FieldContextLength))
-}
-
-// ContextLengthNotNil applies the NotNil predicate on the "context_length" field.
-func ContextLengthNotNil() predicate.Model {
-	return predicate.Model(sql.FieldNotNull(FieldContextLength))
 }
 
 // CreatedAtEQ applies the EQ predicate on the "created_at" field.

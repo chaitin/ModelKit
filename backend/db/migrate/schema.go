@@ -12,19 +12,13 @@ var (
 	// ModelkitModelsColumns holds the columns for the "modelkit_models" table.
 	ModelkitModelsColumns = []*schema.Column{
 		{Name: "id", Type: field.TypeUUID},
-		{Name: "user_id", Type: field.TypeUUID, Nullable: true},
 		{Name: "model_name", Type: field.TypeString},
 		{Name: "model_type", Type: field.TypeString},
-		{Name: "show_name", Type: field.TypeString, Nullable: true},
 		{Name: "api_base", Type: field.TypeString},
 		{Name: "api_key", Type: field.TypeString},
 		{Name: "api_version", Type: field.TypeString, Nullable: true},
 		{Name: "api_header", Type: field.TypeString, Nullable: true},
-		{Name: "description", Type: field.TypeString, Nullable: true},
-		{Name: "is_internal", Type: field.TypeBool, Default: false},
 		{Name: "provider", Type: field.TypeString},
-		{Name: "status", Type: field.TypeString, Default: "active"},
-		{Name: "context_length", Type: field.TypeInt, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},
 	}

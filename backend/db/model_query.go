@@ -266,12 +266,12 @@ func (mq *ModelQuery) Clone() *ModelQuery {
 // Example:
 //
 //	var v []struct {
-//		UserID uuid.UUID `json:"user_id,omitempty"`
+//		ModelName string `json:"model_name,omitempty"`
 //		Count int `json:"count,omitempty"`
 //	}
 //
 //	client.Model.Query().
-//		GroupBy(model.FieldUserID).
+//		GroupBy(model.FieldModelName).
 //		Aggregate(db.Count()).
 //		Scan(ctx, &v)
 func (mq *ModelQuery) GroupBy(field string, fields ...string) *ModelGroupBy {
@@ -289,11 +289,11 @@ func (mq *ModelQuery) GroupBy(field string, fields ...string) *ModelGroupBy {
 // Example:
 //
 //	var v []struct {
-//		UserID uuid.UUID `json:"user_id,omitempty"`
+//		ModelName string `json:"model_name,omitempty"`
 //	}
 //
 //	client.Model.Query().
-//		Select(model.FieldUserID).
+//		Select(model.FieldModelName).
 //		Scan(ctx, &v)
 func (mq *ModelQuery) Select(fields ...string) *ModelSelect {
 	mq.ctx.Fields = append(mq.ctx.Fields, fields...)
