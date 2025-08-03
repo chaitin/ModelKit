@@ -941,16 +941,6 @@ func StatusContainsFold(v consts.ModelStatus) predicate.Model {
 	return predicate.Model(sql.FieldContainsFold(FieldStatus, vc))
 }
 
-// ParametersIsNil applies the IsNil predicate on the "parameters" field.
-func ParametersIsNil() predicate.Model {
-	return predicate.Model(sql.FieldIsNull(FieldParameters))
-}
-
-// ParametersNotNil applies the NotNil predicate on the "parameters" field.
-func ParametersNotNil() predicate.Model {
-	return predicate.Model(sql.FieldNotNull(FieldParameters))
-}
-
 // ContextLengthEQ applies the EQ predicate on the "context_length" field.
 func ContextLengthEQ(v int) predicate.Model {
 	return predicate.Model(sql.FieldEQ(FieldContextLength, v))

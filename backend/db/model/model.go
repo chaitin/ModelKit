@@ -38,8 +38,6 @@ const (
 	FieldProvider = "provider"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
-	// FieldParameters holds the string denoting the parameters field in the database.
-	FieldParameters = "parameters"
 	// FieldContextLength holds the string denoting the context_length field in the database.
 	FieldContextLength = "context_length"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
@@ -65,7 +63,6 @@ var Columns = []string{
 	FieldIsInternal,
 	FieldProvider,
 	FieldStatus,
-	FieldParameters,
 	FieldContextLength,
 	FieldCreatedAt,
 	FieldUpdatedAt,

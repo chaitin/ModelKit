@@ -14,7 +14,6 @@ import (
 	"github.com/chaitin/ModelKit/backend/consts"
 	"github.com/chaitin/ModelKit/backend/db/model"
 	"github.com/chaitin/ModelKit/backend/db/predicate"
-	"github.com/chaitin/ModelKit/backend/ent/types"
 	"github.com/google/uuid"
 )
 
@@ -230,18 +229,6 @@ func (mu *ModelUpdate) SetNillableStatus(cs *consts.ModelStatus) *ModelUpdate {
 	return mu
 }
 
-// SetParameters sets the "parameters" field.
-func (mu *ModelUpdate) SetParameters(tp *types.ModelParam) *ModelUpdate {
-	mu.mutation.SetParameters(tp)
-	return mu
-}
-
-// ClearParameters clears the value of the "parameters" field.
-func (mu *ModelUpdate) ClearParameters() *ModelUpdate {
-	mu.mutation.ClearParameters()
-	return mu
-}
-
 // SetContextLength sets the "context_length" field.
 func (mu *ModelUpdate) SetContextLength(i int) *ModelUpdate {
 	mu.mutation.ResetContextLength()
@@ -395,12 +382,6 @@ func (mu *ModelUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := mu.mutation.Status(); ok {
 		_spec.SetField(model.FieldStatus, field.TypeString, value)
-	}
-	if value, ok := mu.mutation.Parameters(); ok {
-		_spec.SetField(model.FieldParameters, field.TypeJSON, value)
-	}
-	if mu.mutation.ParametersCleared() {
-		_spec.ClearField(model.FieldParameters, field.TypeJSON)
 	}
 	if value, ok := mu.mutation.ContextLength(); ok {
 		_spec.SetField(model.FieldContextLength, field.TypeInt, value)
@@ -637,18 +618,6 @@ func (muo *ModelUpdateOne) SetNillableStatus(cs *consts.ModelStatus) *ModelUpdat
 	return muo
 }
 
-// SetParameters sets the "parameters" field.
-func (muo *ModelUpdateOne) SetParameters(tp *types.ModelParam) *ModelUpdateOne {
-	muo.mutation.SetParameters(tp)
-	return muo
-}
-
-// ClearParameters clears the value of the "parameters" field.
-func (muo *ModelUpdateOne) ClearParameters() *ModelUpdateOne {
-	muo.mutation.ClearParameters()
-	return muo
-}
-
 // SetContextLength sets the "context_length" field.
 func (muo *ModelUpdateOne) SetContextLength(i int) *ModelUpdateOne {
 	muo.mutation.ResetContextLength()
@@ -832,12 +801,6 @@ func (muo *ModelUpdateOne) sqlSave(ctx context.Context) (_node *Model, err error
 	}
 	if value, ok := muo.mutation.Status(); ok {
 		_spec.SetField(model.FieldStatus, field.TypeString, value)
-	}
-	if value, ok := muo.mutation.Parameters(); ok {
-		_spec.SetField(model.FieldParameters, field.TypeJSON, value)
-	}
-	if muo.mutation.ParametersCleared() {
-		_spec.ClearField(model.FieldParameters, field.TypeJSON)
 	}
 	if value, ok := muo.mutation.ContextLength(); ok {
 		_spec.SetField(model.FieldContextLength, field.TypeInt, value)

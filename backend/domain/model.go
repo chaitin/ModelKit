@@ -208,16 +208,6 @@ func (m *Model) From(e *db.Model) *Model {
 	m.Status = e.Status
 	m.IsInternal = e.IsInternal
 	m.IsActive = e.Status == consts.ModelStatusActive
-	if p := e.Parameters; p != nil {
-		m.Param = ModelParam{
-			R1Enabled:          p.R1Enabled,
-			MaxTokens:          p.MaxTokens,
-			ContextWindow:      p.ContextWindow,
-			SupprtImages:       p.SupprtImages,
-			SupportComputerUse: p.SupportComputerUse,
-			SupportPromptCache: p.SupportPromptCache,
-		}
-	}
 	m.CreatedAt = e.CreatedAt.Unix()
 	m.UpdatedAt = e.UpdatedAt.Unix()
 

@@ -14,7 +14,6 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/chaitin/ModelKit/backend/consts"
 	"github.com/chaitin/ModelKit/backend/db/model"
-	"github.com/chaitin/ModelKit/backend/ent/types"
 	"github.com/google/uuid"
 )
 
@@ -151,12 +150,6 @@ func (mc *ModelCreate) SetNillableStatus(cs *consts.ModelStatus) *ModelCreate {
 	if cs != nil {
 		mc.SetStatus(*cs)
 	}
-	return mc
-}
-
-// SetParameters sets the "parameters" field.
-func (mc *ModelCreate) SetParameters(tp *types.ModelParam) *ModelCreate {
-	mc.mutation.SetParameters(tp)
 	return mc
 }
 
@@ -373,10 +366,6 @@ func (mc *ModelCreate) createSpec() (*Model, *sqlgraph.CreateSpec) {
 	if value, ok := mc.mutation.Status(); ok {
 		_spec.SetField(model.FieldStatus, field.TypeString, value)
 		_node.Status = value
-	}
-	if value, ok := mc.mutation.Parameters(); ok {
-		_spec.SetField(model.FieldParameters, field.TypeJSON, value)
-		_node.Parameters = value
 	}
 	if value, ok := mc.mutation.ContextLength(); ok {
 		_spec.SetField(model.FieldContextLength, field.TypeInt, value)
@@ -613,24 +602,6 @@ func (u *ModelUpsert) SetStatus(v consts.ModelStatus) *ModelUpsert {
 // UpdateStatus sets the "status" field to the value that was provided on create.
 func (u *ModelUpsert) UpdateStatus() *ModelUpsert {
 	u.SetExcluded(model.FieldStatus)
-	return u
-}
-
-// SetParameters sets the "parameters" field.
-func (u *ModelUpsert) SetParameters(v *types.ModelParam) *ModelUpsert {
-	u.Set(model.FieldParameters, v)
-	return u
-}
-
-// UpdateParameters sets the "parameters" field to the value that was provided on create.
-func (u *ModelUpsert) UpdateParameters() *ModelUpsert {
-	u.SetExcluded(model.FieldParameters)
-	return u
-}
-
-// ClearParameters clears the value of the "parameters" field.
-func (u *ModelUpsert) ClearParameters() *ModelUpsert {
-	u.SetNull(model.FieldParameters)
 	return u
 }
 
@@ -930,27 +901,6 @@ func (u *ModelUpsertOne) SetStatus(v consts.ModelStatus) *ModelUpsertOne {
 func (u *ModelUpsertOne) UpdateStatus() *ModelUpsertOne {
 	return u.Update(func(s *ModelUpsert) {
 		s.UpdateStatus()
-	})
-}
-
-// SetParameters sets the "parameters" field.
-func (u *ModelUpsertOne) SetParameters(v *types.ModelParam) *ModelUpsertOne {
-	return u.Update(func(s *ModelUpsert) {
-		s.SetParameters(v)
-	})
-}
-
-// UpdateParameters sets the "parameters" field to the value that was provided on create.
-func (u *ModelUpsertOne) UpdateParameters() *ModelUpsertOne {
-	return u.Update(func(s *ModelUpsert) {
-		s.UpdateParameters()
-	})
-}
-
-// ClearParameters clears the value of the "parameters" field.
-func (u *ModelUpsertOne) ClearParameters() *ModelUpsertOne {
-	return u.Update(func(s *ModelUpsert) {
-		s.ClearParameters()
 	})
 }
 
@@ -1425,27 +1375,6 @@ func (u *ModelUpsertBulk) SetStatus(v consts.ModelStatus) *ModelUpsertBulk {
 func (u *ModelUpsertBulk) UpdateStatus() *ModelUpsertBulk {
 	return u.Update(func(s *ModelUpsert) {
 		s.UpdateStatus()
-	})
-}
-
-// SetParameters sets the "parameters" field.
-func (u *ModelUpsertBulk) SetParameters(v *types.ModelParam) *ModelUpsertBulk {
-	return u.Update(func(s *ModelUpsert) {
-		s.SetParameters(v)
-	})
-}
-
-// UpdateParameters sets the "parameters" field to the value that was provided on create.
-func (u *ModelUpsertBulk) UpdateParameters() *ModelUpsertBulk {
-	return u.Update(func(s *ModelUpsert) {
-		s.UpdateParameters()
-	})
-}
-
-// ClearParameters clears the value of the "parameters" field.
-func (u *ModelUpsertBulk) ClearParameters() *ModelUpsertBulk {
-	return u.Update(func(s *ModelUpsert) {
-		s.ClearParameters()
 	})
 }
 

@@ -24,7 +24,6 @@ var (
 		{Name: "is_internal", Type: field.TypeBool, Default: false},
 		{Name: "provider", Type: field.TypeString},
 		{Name: "status", Type: field.TypeString, Default: "active"},
-		{Name: "parameters", Type: field.TypeJSON, Nullable: true},
 		{Name: "context_length", Type: field.TypeInt, Nullable: true},
 		{Name: "created_at", Type: field.TypeTime},
 		{Name: "updated_at", Type: field.TypeTime},

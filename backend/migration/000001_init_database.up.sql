@@ -40,9 +40,6 @@ CREATE TABLE IF NOT EXISTS models (
     provider VARCHAR(50) NOT NULL,
     context_length INTEGER DEFAULT 4096,
     status VARCHAR(20) DEFAULT 'active',
-    capabilities JSONB,
-    parameters JSONB,
-    pricing JSONB,
     created_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP,
     updated_at TIMESTAMPTZ DEFAULT CURRENT_TIMESTAMP
 );
