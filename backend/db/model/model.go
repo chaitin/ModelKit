@@ -45,7 +45,7 @@ const (
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
 	// Table holds the table name of the model in the database.
-	Table = "models"
+	Table = "modelkit_models"
 )
 
 // Columns holds all SQL columns for model fields.

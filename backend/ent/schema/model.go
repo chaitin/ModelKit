@@ -20,7 +20,7 @@ type Model struct {
 func (Model) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entsql.Annotation{
-			Table: "models",
+			Table: "modelkit_models",
 		},
 	}
 }

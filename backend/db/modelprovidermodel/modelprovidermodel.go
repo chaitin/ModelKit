@@ -26,12 +26,12 @@ const (
 	// EdgeProvider holds the string denoting the provider edge name in mutations.
 	EdgeProvider = "provider"
 	// Table holds the table name of the modelprovidermodel in the database.
-	Table = "model_provider_models"
+	Table = "modelkit_model_provider_models"
 	// ProviderTable is the table that holds the provider relation/edge.
-	ProviderTable = "model_provider_models"
+	ProviderTable = "modelkit_model_provider_models"
 	// ProviderInverseTable is the table name for the ModelProvider entity.
 	// It exists in this package in order to avoid circular dependency with the "modelprovider" package.
-	ProviderInverseTable = "model_providers"
+	ProviderInverseTable = "modelkit_model_providers"
 	// ProviderColumn is the table column denoting the provider relation/edge.
 	ProviderColumn = "provider_id"
 )

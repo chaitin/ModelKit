@@ -19,7 +19,7 @@ type ModelProviderModel struct {
 func (ModelProviderModel) Annotations() []schema.Annotation {
 	return []schema.Annotation{
 		entsql.Annotation{
-			Table: "model_provider_models",
+			Table: "modelkit_model_provider_models",
 		},
 	}
 }

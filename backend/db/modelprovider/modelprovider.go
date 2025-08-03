@@ -27,12 +27,12 @@ const (
 	// EdgeModels holds the string denoting the models edge name in mutations.
 	EdgeModels = "models"
 	// Table holds the table name of the modelprovider in the database.
-	Table = "model_providers"
+	Table = "modelkit_model_providers"
 	// ModelsTable is the table that holds the models relation/edge.
-	ModelsTable = "model_provider_models"
+	ModelsTable = "modelkit_model_provider_models"
 	// ModelsInverseTable is the table name for the ModelProviderModel entity.
 	// It exists in this package in order to avoid circular dependency with the "modelprovidermodel" package.
-	ModelsInverseTable = "model_provider_models"
+	ModelsInverseTable = "modelkit_model_provider_models"
 	// ModelsColumn is the table column denoting the models relation/edge.
 	ModelsColumn = "provider_id"
 )
