@@ -2,11 +2,11 @@ package repo
 
 import (
 	"context"
+	"fmt"
 
 	"entgo.io/ent/dialect/sql"
 	"github.com/google/uuid"
 
-	"github.com/chaitin/ModelKit/backend/consts"
 	"github.com/chaitin/ModelKit/backend/db"
 	"github.com/chaitin/ModelKit/backend/db/model"
 	"github.com/chaitin/ModelKit/backend/domain"
@@ -21,14 +21,29 @@ func NewModelRepo(db *db.Client) domain.ModelRepo {
 	return &ModelRepo{db: db}
 }
 
-func (r *ModelRepo) UpdateModel(ctx context.Context, id string, fn func(tx *db.Tx, old *db.Model, up *db.ModelUpdateOne) error) (*db.Model, error) {
-	modelID, err := uuid.Parse(id)
-	if err != nil {
-		return nil, err
-	}
+func (r *ModelRepo) UpdateModel(ctx context.Context, req *domain.UpdateModelReq, fn func(tx *db.Tx, old *db.Model, up *db.ModelUpdateOne) error) (*db.Model, error) {
 	var m *db.Model
-	err = entx.WithTx(ctx, r.db, func(tx *db.Tx) error {
-		old, err := tx.Model.Get(ctx, modelID)
+	err := entx.WithTx(ctx, r.db, func(tx *db.Tx) error {
+		var old *db.Model
+		var err error
+
+		// 根据不同的查找条件获取模型
+		if req.ID != "" {
+			// 通过 ID 查找
+			modelID, parseErr := uuid.Parse(req.ID)
+			if parseErr != nil {
+				return parseErr
+			}
+			old, err = tx.Model.Get(ctx, modelID)
+		} else if req.ModelName != "" && req.Provider != "" {
+			// 通过 ModelName + Provider 查找
+			old, err = tx.Model.Query().
+				Where(model.ModelName(req.ModelName), model.Provider(req.Provider)).
+				Only(ctx)
+		} else {
+			return fmt.Errorf("必须提供 ID 或者 ModelName+Provider 来查找模型")
+		}
+
 		if err != nil {
 			return err
 		}
@@ -47,15 +62,23 @@ func (r *ModelRepo) UpdateModel(ctx context.Context, id string, fn func(tx *db.T
 	return m, err
 }
 
-func (r *ModelRepo) GetModel(ctx context.Context, modelName string, provider consts.ModelProvider) (*db.Model, error) {
-	result, err := r.db.Model.Query().
-		Where(model.ModelName(modelName), model.Provider(provider)).
-		Only(ctx)
-	if err != nil {
-		return nil, err
-	}
+func (r *ModelRepo) GetModel(ctx context.Context, req *domain.GetModelReq) (*db.Model, error) {
+	query := r.db.Model.Query()
 
-	return result, nil
+	// 根据不同的查找条件获取模型
+	if req.ID != "" {
+		// 通过 ID 查找
+		modelID, err := uuid.Parse(req.ID)
+		if err != nil {
+			return nil, err
+		}
+		return query.Where(model.ID(modelID)).Only(ctx)
+	} else if req.ModelName != "" && req.Provider != "" {
+		// 通过 ModelName + Provider 查找
+		return query.Where(model.ModelName(req.ModelName), model.Provider(req.Provider)).Only(ctx)
+	} else {
+		return nil, fmt.Errorf("必须提供 ID 或者 ModelName+Provider 来查找模型")
+	}
 }
 
 func (r *ModelRepo) ListModel(ctx context.Context, req *domain.ListModelReq) ([]*db.Model, error) {

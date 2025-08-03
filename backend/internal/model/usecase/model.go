@@ -161,15 +161,15 @@ func getHttpClientWithAPIHeaderMap(header string) *http.Client {
 
 // Update implements domain.ModelUsecase.
 func (m *ModelUsecase) UpdateModel(ctx context.Context, req *domain.UpdateModelReq) (*domain.Model, error) {
-	model, err := m.repo.UpdateModel(ctx, req.ID, func(tx *db.Tx, old *db.Model, up *db.ModelUpdateOne) error {
-		if req.APIKey != nil {
-			up.SetAPIKey(*req.APIKey)
+	model, err := m.repo.UpdateModel(ctx, req, func(tx *db.Tx, old *db.Model, up *db.ModelUpdateOne) error {
+		if req.APIKey != "" {
+			up.SetAPIKey(req.APIKey)
 		}
-		if req.APIVersion != nil {
-			up.SetAPIVersion(*req.APIVersion)
+		if req.APIVersion != "" {
+			up.SetAPIVersion(req.APIVersion)
 		}
-		if req.APIHeader != nil {
-			up.SetAPIHeader(*req.APIHeader)
+		if req.APIHeader != "" {
+			up.SetAPIHeader(req.APIHeader)
 		}
 
 		return nil
@@ -182,7 +182,7 @@ func (m *ModelUsecase) UpdateModel(ctx context.Context, req *domain.UpdateModelR
 
 // GetModel implements domain.ModelUsecase.
 func (m *ModelUsecase) GetModel(ctx context.Context, req *domain.GetModelReq) (*domain.Model, error) {
-	model, err := m.repo.GetModel(ctx, req.ModelName, req.Provider)
+	model, err := m.repo.GetModel(ctx, req)
 	if err != nil {
 		return nil, err
 	}

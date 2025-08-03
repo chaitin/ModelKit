@@ -15,8 +15,8 @@ type ModelUsecase interface {
 }
 
 type ModelRepo interface {
-	UpdateModel(ctx context.Context, id string, fn func(tx *db.Tx, old *db.Model, up *db.ModelUpdateOne) error) (*db.Model, error)
-	GetModel(ctx context.Context, modelName string, provider consts.ModelProvider) (*db.Model, error)
+	UpdateModel(ctx context.Context, req *UpdateModelReq, fn func(tx *db.Tx, old *db.Model, up *db.ModelUpdateOne) error) (*db.Model, error)
+	GetModel(ctx context.Context, req *GetModelReq) (*db.Model, error)
 	ListModel(ctx context.Context, req *ListModelReq) ([]*db.Model, error)
 }
 
@@ -31,15 +31,22 @@ type CheckModelReq struct {
 }
 
 type UpdateModelReq struct {
-	ID         string  `json:"id"`      // 模型ID
-	APIKey     *string `json:"api_key"` // 接口密钥 如：sk-xxxx
-	APIVersion *string `json:"api_version"`
-	APIHeader  *string `json:"api_header"`
+	// 查找条件（至少需要提供一种）
+	ID        string               `json:"id"`         // 模型ID
+	ModelName string               `json:"model_name"` // 模型名称
+	Provider  consts.ModelProvider `json:"provider"`   // 提供商
+
+	// 更新字段
+	APIKey     string `json:"api_key"`     // 接口密钥 如：sk-xxxx
+	APIVersion string `json:"api_version"` // 接口版本
+	APIHeader  string `json:"api_header"`  // 接口头
 }
 
 type GetModelReq struct {
-	ModelName string               `json:"model_name" query:"model_name" validate:"required"` // 模型名称
-	Provider  consts.ModelProvider `json:"provider" query:"provider" validate:"required"`     // 提供商
+	// 查找条件（至少需要提供一种）
+	ID        string               `json:"id" query:"id"`                 // 模型ID
+	ModelName string               `json:"model_name" query:"model_name"` // 模型名称
+	Provider  consts.ModelProvider `json:"provider" query:"provider"`     // 提供商
 }
 
 type ListModelReq struct {
