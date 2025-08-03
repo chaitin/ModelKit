@@ -15,7 +15,9 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect"
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/chaitin/ModelKit/backend/db/model"
+	"github.com/chaitin/ModelKit/backend/db/modelapiconfig"
 
 	stdsql "database/sql"
 )
@@ -27,6 +29,8 @@ type Client struct {
 	Schema *migrate.Schema
 	// Model is the client for interacting with the Model builders.
 	Model *ModelClient
+	// ModelAPIConfig is the client for interacting with the ModelAPIConfig builders.
+	ModelAPIConfig *ModelAPIConfigClient
 }
 
 // NewClient creates a new client configured with the given options.
@@ -39,6 +43,7 @@ func NewClient(opts ...Option) *Client {
 func (c *Client) init() {
 	c.Schema = migrate.NewSchema(c.driver)
 	c.Model = NewModelClient(c.config)
+	c.ModelAPIConfig = NewModelAPIConfigClient(c.config)
 }
 
 type (
@@ -129,9 +134,10 @@ func (c *Client) Tx(ctx context.Context) (*Tx, error) {
 	cfg := c.config
 	cfg.driver = tx
 	return &Tx{
-		ctx:    ctx,
-		config: cfg,
-		Model:  NewModelClient(cfg),
+		ctx:            ctx,
+		config:         cfg,
+		Model:          NewModelClient(cfg),
+		ModelAPIConfig: NewModelAPIConfigClient(cfg),
 	}, nil
 }
 
@@ -149,9 +155,10 @@ func (c *Client) BeginTx(ctx context.Context, opts *sql.TxOptions) (*Tx, error) 
 	cfg := c.config
 	cfg.driver = &txDriver{tx: tx, drv: c.driver}
 	return &Tx{
-		ctx:    ctx,
-		config: cfg,
-		Model:  NewModelClient(cfg),
+		ctx:            ctx,
+		config:         cfg,
+		Model:          NewModelClient(cfg),
+		ModelAPIConfig: NewModelAPIConfigClient(cfg),
 	}, nil
 }
 
@@ -181,12 +188,14 @@ func (c *Client) Close() error {
 // In order to add hooks to a specific client, call: `client.Node.Use(...)`.
 func (c *Client) Use(hooks ...Hook) {
 	c.Model.Use(hooks...)
+	c.ModelAPIConfig.Use(hooks...)
 }
 
 // Intercept adds the query interceptors to all the entity clients.
 // In order to add interceptors to a specific client, call: `client.Node.Intercept(...)`.
 func (c *Client) Intercept(interceptors ...Interceptor) {
 	c.Model.Intercept(interceptors...)
+	c.ModelAPIConfig.Intercept(interceptors...)
 }
 
 // Mutate implements the ent.Mutator interface.
@@ -194,6 +203,8 @@ func (c *Client) Mutate(ctx context.Context, m Mutation) (Value, error) {
 	switch m := m.(type) {
 	case *ModelMutation:
 		return c.Model.mutate(ctx, m)
+	case *ModelAPIConfigMutation:
+		return c.ModelAPIConfig.mutate(ctx, m)
 	default:
 		return nil, fmt.Errorf("db: unknown mutation type %T", m)
 	}
@@ -307,6 +318,22 @@ func (c *ModelClient) GetX(ctx context.Context, id uuid.UUID) *Model {
 	return obj
 }
 
+// QueryAPIConfig queries the api_config edge of a Model.
+func (c *ModelClient) QueryAPIConfig(m *Model) *ModelAPIConfigQuery {
+	query := (&ModelAPIConfigClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := m.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(model.Table, model.FieldID, id),
+			sqlgraph.To(modelapiconfig.Table, modelapiconfig.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, model.APIConfigTable, model.APIConfigColumn),
+		)
+		fromV = sqlgraph.Neighbors(m.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
 // Hooks returns the client hooks.
 func (c *ModelClient) Hooks() []Hook {
 	return c.hooks.Model
@@ -332,13 +359,162 @@ func (c *ModelClient) mutate(ctx context.Context, m *ModelMutation) (Value, erro
 	}
 }
 
+// ModelAPIConfigClient is a client for the ModelAPIConfig schema.
+type ModelAPIConfigClient struct {
+	config
+}
+
+// NewModelAPIConfigClient returns a client for the ModelAPIConfig from the given config.
+func NewModelAPIConfigClient(c config) *ModelAPIConfigClient {
+	return &ModelAPIConfigClient{config: c}
+}
+
+// Use adds a list of mutation hooks to the hooks stack.
+// A call to `Use(f, g, h)` equals to `modelapiconfig.Hooks(f(g(h())))`.
+func (c *ModelAPIConfigClient) Use(hooks ...Hook) {
+	c.hooks.ModelAPIConfig = append(c.hooks.ModelAPIConfig, hooks...)
+}
+
+// Intercept adds a list of query interceptors to the interceptors stack.
+// A call to `Intercept(f, g, h)` equals to `modelapiconfig.Intercept(f(g(h())))`.
+func (c *ModelAPIConfigClient) Intercept(interceptors ...Interceptor) {
+	c.inters.ModelAPIConfig = append(c.inters.ModelAPIConfig, interceptors...)
+}
+
+// Create returns a builder for creating a ModelAPIConfig entity.
+func (c *ModelAPIConfigClient) Create() *ModelAPIConfigCreate {
+	mutation := newModelAPIConfigMutation(c.config, OpCreate)
+	return &ModelAPIConfigCreate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// CreateBulk returns a builder for creating a bulk of ModelAPIConfig entities.
+func (c *ModelAPIConfigClient) CreateBulk(builders ...*ModelAPIConfigCreate) *ModelAPIConfigCreateBulk {
+	return &ModelAPIConfigCreateBulk{config: c.config, builders: builders}
+}
+
+// MapCreateBulk creates a bulk creation builder from the given slice. For each item in the slice, the function creates
+// a builder and applies setFunc on it.
+func (c *ModelAPIConfigClient) MapCreateBulk(slice any, setFunc func(*ModelAPIConfigCreate, int)) *ModelAPIConfigCreateBulk {
+	rv := reflect.ValueOf(slice)
+	if rv.Kind() != reflect.Slice {
+		return &ModelAPIConfigCreateBulk{err: fmt.Errorf("calling to ModelAPIConfigClient.MapCreateBulk with wrong type %T, need slice", slice)}
+	}
+	builders := make([]*ModelAPIConfigCreate, rv.Len())
+	for i := 0; i < rv.Len(); i++ {
+		builders[i] = c.Create()
+		setFunc(builders[i], i)
+	}
+	return &ModelAPIConfigCreateBulk{config: c.config, builders: builders}
+}
+
+// Update returns an update builder for ModelAPIConfig.
+func (c *ModelAPIConfigClient) Update() *ModelAPIConfigUpdate {
+	mutation := newModelAPIConfigMutation(c.config, OpUpdate)
+	return &ModelAPIConfigUpdate{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOne returns an update builder for the given entity.
+func (c *ModelAPIConfigClient) UpdateOne(mac *ModelAPIConfig) *ModelAPIConfigUpdateOne {
+	mutation := newModelAPIConfigMutation(c.config, OpUpdateOne, withModelAPIConfig(mac))
+	return &ModelAPIConfigUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// UpdateOneID returns an update builder for the given id.
+func (c *ModelAPIConfigClient) UpdateOneID(id uuid.UUID) *ModelAPIConfigUpdateOne {
+	mutation := newModelAPIConfigMutation(c.config, OpUpdateOne, withModelAPIConfigID(id))
+	return &ModelAPIConfigUpdateOne{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// Delete returns a delete builder for ModelAPIConfig.
+func (c *ModelAPIConfigClient) Delete() *ModelAPIConfigDelete {
+	mutation := newModelAPIConfigMutation(c.config, OpDelete)
+	return &ModelAPIConfigDelete{config: c.config, hooks: c.Hooks(), mutation: mutation}
+}
+
+// DeleteOne returns a builder for deleting the given entity.
+func (c *ModelAPIConfigClient) DeleteOne(mac *ModelAPIConfig) *ModelAPIConfigDeleteOne {
+	return c.DeleteOneID(mac.ID)
+}
+
+// DeleteOneID returns a builder for deleting the given entity by its id.
+func (c *ModelAPIConfigClient) DeleteOneID(id uuid.UUID) *ModelAPIConfigDeleteOne {
+	builder := c.Delete().Where(modelapiconfig.ID(id))
+	builder.mutation.id = &id
+	builder.mutation.op = OpDeleteOne
+	return &ModelAPIConfigDeleteOne{builder}
+}
+
+// Query returns a query builder for ModelAPIConfig.
+func (c *ModelAPIConfigClient) Query() *ModelAPIConfigQuery {
+	return &ModelAPIConfigQuery{
+		config: c.config,
+		ctx:    &QueryContext{Type: TypeModelAPIConfig},
+		inters: c.Interceptors(),
+	}
+}
+
+// Get returns a ModelAPIConfig entity by its id.
+func (c *ModelAPIConfigClient) Get(ctx context.Context, id uuid.UUID) (*ModelAPIConfig, error) {
+	return c.Query().Where(modelapiconfig.ID(id)).Only(ctx)
+}
+
+// GetX is like Get, but panics if an error occurs.
+func (c *ModelAPIConfigClient) GetX(ctx context.Context, id uuid.UUID) *ModelAPIConfig {
+	obj, err := c.Get(ctx, id)
+	if err != nil {
+		panic(err)
+	}
+	return obj
+}
+
+// QueryModel queries the model edge of a ModelAPIConfig.
+func (c *ModelAPIConfigClient) QueryModel(mac *ModelAPIConfig) *ModelQuery {
+	query := (&ModelClient{config: c.config}).Query()
+	query.path = func(context.Context) (fromV *sql.Selector, _ error) {
+		id := mac.ID
+		step := sqlgraph.NewStep(
+			sqlgraph.From(modelapiconfig.Table, modelapiconfig.FieldID, id),
+			sqlgraph.To(model.Table, model.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, true, modelapiconfig.ModelTable, modelapiconfig.ModelColumn),
+		)
+		fromV = sqlgraph.Neighbors(mac.driver.Dialect(), step)
+		return fromV, nil
+	}
+	return query
+}
+
+// Hooks returns the client hooks.
+func (c *ModelAPIConfigClient) Hooks() []Hook {
+	return c.hooks.ModelAPIConfig
+}
+
+// Interceptors returns the client interceptors.
+func (c *ModelAPIConfigClient) Interceptors() []Interceptor {
+	return c.inters.ModelAPIConfig
+}
+
+func (c *ModelAPIConfigClient) mutate(ctx context.Context, m *ModelAPIConfigMutation) (Value, error) {
+	switch m.Op() {
+	case OpCreate:
+		return (&ModelAPIConfigCreate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdate:
+		return (&ModelAPIConfigUpdate{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpUpdateOne:
+		return (&ModelAPIConfigUpdateOne{config: c.config, hooks: c.Hooks(), mutation: m}).Save(ctx)
+	case OpDelete, OpDeleteOne:
+		return (&ModelAPIConfigDelete{config: c.config, hooks: c.Hooks(), mutation: m}).Exec(ctx)
+	default:
+		return nil, fmt.Errorf("db: unknown ModelAPIConfig mutation op: %q", m.Op())
+	}
+}
+
 // hooks and interceptors per client, for fast access.
 type (
 	hooks struct {
-		Model []ent.Hook
+		Model, ModelAPIConfig []ent.Hook
 	}
 	inters struct {
-		Model []ent.Interceptor
+		Model, ModelAPIConfig []ent.Interceptor
 	}
 )
 

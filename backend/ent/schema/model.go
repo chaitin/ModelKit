@@ -6,6 +6,7 @@ import (
 	"entgo.io/ent"
 	"entgo.io/ent/dialect/entsql"
 	"entgo.io/ent/schema"
+	"entgo.io/ent/schema/edge"
 	"entgo.io/ent/schema/field"
 	"github.com/google/uuid"
 
@@ -31,10 +32,6 @@ func (Model) Fields() []ent.Field {
 		field.UUID("id", uuid.UUID{}),
 		field.String("model_name"),
 		field.String("model_type").GoType(consts.ModelType("")),
-		field.String("api_base"),
-		field.String("api_key"),
-		field.String("api_version").Optional(),
-		field.String("api_header").Optional(),
 		field.String("provider").GoType(consts.ModelProvider("")),
 		field.Time("created_at").Default(time.Now),
 		field.Time("updated_at").Default(time.Now).UpdateDefault(time.Now),
@@ -43,5 +40,8 @@ func (Model) Fields() []ent.Field {
 
 // Edges of the Model.
 func (Model) Edges() []ent.Edge {
-	return nil
+	return []ent.Edge{
+		edge.To("api_config", ModelAPIConfig.Type).
+			Unique(),
+	}
 }

@@ -13,7 +13,9 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/chaitin/ModelKit/backend/consts"
 	"github.com/chaitin/ModelKit/backend/db/model"
+	"github.com/chaitin/ModelKit/backend/db/modelapiconfig"
 	"github.com/chaitin/ModelKit/backend/db/predicate"
+	"github.com/google/uuid"
 )
 
 // ModelUpdate is the builder for updating Model entities.
@@ -58,74 +60,6 @@ func (mu *ModelUpdate) SetNillableModelType(ct *consts.ModelType) *ModelUpdate {
 	return mu
 }
 
-// SetAPIBase sets the "api_base" field.
-func (mu *ModelUpdate) SetAPIBase(s string) *ModelUpdate {
-	mu.mutation.SetAPIBase(s)
-	return mu
-}
-
-// SetNillableAPIBase sets the "api_base" field if the given value is not nil.
-func (mu *ModelUpdate) SetNillableAPIBase(s *string) *ModelUpdate {
-	if s != nil {
-		mu.SetAPIBase(*s)
-	}
-	return mu
-}
-
-// SetAPIKey sets the "api_key" field.
-func (mu *ModelUpdate) SetAPIKey(s string) *ModelUpdate {
-	mu.mutation.SetAPIKey(s)
-	return mu
-}
-
-// SetNillableAPIKey sets the "api_key" field if the given value is not nil.
-func (mu *ModelUpdate) SetNillableAPIKey(s *string) *ModelUpdate {
-	if s != nil {
-		mu.SetAPIKey(*s)
-	}
-	return mu
-}
-
-// SetAPIVersion sets the "api_version" field.
-func (mu *ModelUpdate) SetAPIVersion(s string) *ModelUpdate {
-	mu.mutation.SetAPIVersion(s)
-	return mu
-}
-
-// SetNillableAPIVersion sets the "api_version" field if the given value is not nil.
-func (mu *ModelUpdate) SetNillableAPIVersion(s *string) *ModelUpdate {
-	if s != nil {
-		mu.SetAPIVersion(*s)
-	}
-	return mu
-}
-
-// ClearAPIVersion clears the value of the "api_version" field.
-func (mu *ModelUpdate) ClearAPIVersion() *ModelUpdate {
-	mu.mutation.ClearAPIVersion()
-	return mu
-}
-
-// SetAPIHeader sets the "api_header" field.
-func (mu *ModelUpdate) SetAPIHeader(s string) *ModelUpdate {
-	mu.mutation.SetAPIHeader(s)
-	return mu
-}
-
-// SetNillableAPIHeader sets the "api_header" field if the given value is not nil.
-func (mu *ModelUpdate) SetNillableAPIHeader(s *string) *ModelUpdate {
-	if s != nil {
-		mu.SetAPIHeader(*s)
-	}
-	return mu
-}
-
-// ClearAPIHeader clears the value of the "api_header" field.
-func (mu *ModelUpdate) ClearAPIHeader() *ModelUpdate {
-	mu.mutation.ClearAPIHeader()
-	return mu
-}
-
 // SetProvider sets the "provider" field.
 func (mu *ModelUpdate) SetProvider(cp consts.ModelProvider) *ModelUpdate {
 	mu.mutation.SetProvider(cp)
@@ -160,9 +94,34 @@ func (mu *ModelUpdate) SetUpdatedAt(t time.Time) *ModelUpdate {
 	return mu
 }
 
+// SetAPIConfigID sets the "api_config" edge to the ModelAPIConfig entity by ID.
+func (mu *ModelUpdate) SetAPIConfigID(id uuid.UUID) *ModelUpdate {
+	mu.mutation.SetAPIConfigID(id)
+	return mu
+}
+
+// SetNillableAPIConfigID sets the "api_config" edge to the ModelAPIConfig entity by ID if the given value is not nil.
+func (mu *ModelUpdate) SetNillableAPIConfigID(id *uuid.UUID) *ModelUpdate {
+	if id != nil {
+		mu = mu.SetAPIConfigID(*id)
+	}
+	return mu
+}
+
+// SetAPIConfig sets the "api_config" edge to the ModelAPIConfig entity.
+func (mu *ModelUpdate) SetAPIConfig(m *ModelAPIConfig) *ModelUpdate {
+	return mu.SetAPIConfigID(m.ID)
+}
+
 // Mutation returns the ModelMutation object of the builder.
 func (mu *ModelUpdate) Mutation() *ModelMutation {
 	return mu.mutation
+}
+
+// ClearAPIConfig clears the "api_config" edge to the ModelAPIConfig entity.
+func (mu *ModelUpdate) ClearAPIConfig() *ModelUpdate {
+	mu.mutation.ClearAPIConfig()
+	return mu
 }
 
 // Save executes the query and returns the number of nodes affected by the update operation.
@@ -222,24 +181,6 @@ func (mu *ModelUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	if value, ok := mu.mutation.ModelType(); ok {
 		_spec.SetField(model.FieldModelType, field.TypeString, value)
 	}
-	if value, ok := mu.mutation.APIBase(); ok {
-		_spec.SetField(model.FieldAPIBase, field.TypeString, value)
-	}
-	if value, ok := mu.mutation.APIKey(); ok {
-		_spec.SetField(model.FieldAPIKey, field.TypeString, value)
-	}
-	if value, ok := mu.mutation.APIVersion(); ok {
-		_spec.SetField(model.FieldAPIVersion, field.TypeString, value)
-	}
-	if mu.mutation.APIVersionCleared() {
-		_spec.ClearField(model.FieldAPIVersion, field.TypeString)
-	}
-	if value, ok := mu.mutation.APIHeader(); ok {
-		_spec.SetField(model.FieldAPIHeader, field.TypeString, value)
-	}
-	if mu.mutation.APIHeaderCleared() {
-		_spec.ClearField(model.FieldAPIHeader, field.TypeString)
-	}
 	if value, ok := mu.mutation.Provider(); ok {
 		_spec.SetField(model.FieldProvider, field.TypeString, value)
 	}
@@ -248,6 +189,35 @@ func (mu *ModelUpdate) sqlSave(ctx context.Context) (n int, err error) {
 	}
 	if value, ok := mu.mutation.UpdatedAt(); ok {
 		_spec.SetField(model.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if mu.mutation.APIConfigCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   model.APIConfigTable,
+			Columns: []string{model.APIConfigColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(modelapiconfig.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := mu.mutation.APIConfigIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   model.APIConfigTable,
+			Columns: []string{model.APIConfigColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(modelapiconfig.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_spec.AddModifiers(mu.modifiers...)
 	if n, err = sqlgraph.UpdateNodes(ctx, mu.driver, _spec); err != nil {
@@ -299,74 +269,6 @@ func (muo *ModelUpdateOne) SetNillableModelType(ct *consts.ModelType) *ModelUpda
 	return muo
 }
 
-// SetAPIBase sets the "api_base" field.
-func (muo *ModelUpdateOne) SetAPIBase(s string) *ModelUpdateOne {
-	muo.mutation.SetAPIBase(s)
-	return muo
-}
-
-// SetNillableAPIBase sets the "api_base" field if the given value is not nil.
-func (muo *ModelUpdateOne) SetNillableAPIBase(s *string) *ModelUpdateOne {
-	if s != nil {
-		muo.SetAPIBase(*s)
-	}
-	return muo
-}
-
-// SetAPIKey sets the "api_key" field.
-func (muo *ModelUpdateOne) SetAPIKey(s string) *ModelUpdateOne {
-	muo.mutation.SetAPIKey(s)
-	return muo
-}
-
-// SetNillableAPIKey sets the "api_key" field if the given value is not nil.
-func (muo *ModelUpdateOne) SetNillableAPIKey(s *string) *ModelUpdateOne {
-	if s != nil {
-		muo.SetAPIKey(*s)
-	}
-	return muo
-}
-
-// SetAPIVersion sets the "api_version" field.
-func (muo *ModelUpdateOne) SetAPIVersion(s string) *ModelUpdateOne {
-	muo.mutation.SetAPIVersion(s)
-	return muo
-}
-
-// SetNillableAPIVersion sets the "api_version" field if the given value is not nil.
-func (muo *ModelUpdateOne) SetNillableAPIVersion(s *string) *ModelUpdateOne {
-	if s != nil {
-		muo.SetAPIVersion(*s)
-	}
-	return muo
-}
-
-// ClearAPIVersion clears the value of the "api_version" field.
-func (muo *ModelUpdateOne) ClearAPIVersion() *ModelUpdateOne {
-	muo.mutation.ClearAPIVersion()
-	return muo
-}
-
-// SetAPIHeader sets the "api_header" field.
-func (muo *ModelUpdateOne) SetAPIHeader(s string) *ModelUpdateOne {
-	muo.mutation.SetAPIHeader(s)
-	return muo
-}
-
-// SetNillableAPIHeader sets the "api_header" field if the given value is not nil.
-func (muo *ModelUpdateOne) SetNillableAPIHeader(s *string) *ModelUpdateOne {
-	if s != nil {
-		muo.SetAPIHeader(*s)
-	}
-	return muo
-}
-
-// ClearAPIHeader clears the value of the "api_header" field.
-func (muo *ModelUpdateOne) ClearAPIHeader() *ModelUpdateOne {
-	muo.mutation.ClearAPIHeader()
-	return muo
-}
-
 // SetProvider sets the "provider" field.
 func (muo *ModelUpdateOne) SetProvider(cp consts.ModelProvider) *ModelUpdateOne {
 	muo.mutation.SetProvider(cp)
@@ -401,9 +303,34 @@ func (muo *ModelUpdateOne) SetUpdatedAt(t time.Time) *ModelUpdateOne {
 	return muo
 }
 
+// SetAPIConfigID sets the "api_config" edge to the ModelAPIConfig entity by ID.
+func (muo *ModelUpdateOne) SetAPIConfigID(id uuid.UUID) *ModelUpdateOne {
+	muo.mutation.SetAPIConfigID(id)
+	return muo
+}
+
+// SetNillableAPIConfigID sets the "api_config" edge to the ModelAPIConfig entity by ID if the given value is not nil.
+func (muo *ModelUpdateOne) SetNillableAPIConfigID(id *uuid.UUID) *ModelUpdateOne {
+	if id != nil {
+		muo = muo.SetAPIConfigID(*id)
+	}
+	return muo
+}
+
+// SetAPIConfig sets the "api_config" edge to the ModelAPIConfig entity.
+func (muo *ModelUpdateOne) SetAPIConfig(m *ModelAPIConfig) *ModelUpdateOne {
+	return muo.SetAPIConfigID(m.ID)
+}
+
 // Mutation returns the ModelMutation object of the builder.
 func (muo *ModelUpdateOne) Mutation() *ModelMutation {
 	return muo.mutation
+}
+
+// ClearAPIConfig clears the "api_config" edge to the ModelAPIConfig entity.
+func (muo *ModelUpdateOne) ClearAPIConfig() *ModelUpdateOne {
+	muo.mutation.ClearAPIConfig()
+	return muo
 }
 
 // Where appends a list predicates to the ModelUpdate builder.
@@ -493,24 +420,6 @@ func (muo *ModelUpdateOne) sqlSave(ctx context.Context) (_node *Model, err error
 	if value, ok := muo.mutation.ModelType(); ok {
 		_spec.SetField(model.FieldModelType, field.TypeString, value)
 	}
-	if value, ok := muo.mutation.APIBase(); ok {
-		_spec.SetField(model.FieldAPIBase, field.TypeString, value)
-	}
-	if value, ok := muo.mutation.APIKey(); ok {
-		_spec.SetField(model.FieldAPIKey, field.TypeString, value)
-	}
-	if value, ok := muo.mutation.APIVersion(); ok {
-		_spec.SetField(model.FieldAPIVersion, field.TypeString, value)
-	}
-	if muo.mutation.APIVersionCleared() {
-		_spec.ClearField(model.FieldAPIVersion, field.TypeString)
-	}
-	if value, ok := muo.mutation.APIHeader(); ok {
-		_spec.SetField(model.FieldAPIHeader, field.TypeString, value)
-	}
-	if muo.mutation.APIHeaderCleared() {
-		_spec.ClearField(model.FieldAPIHeader, field.TypeString)
-	}
 	if value, ok := muo.mutation.Provider(); ok {
 		_spec.SetField(model.FieldProvider, field.TypeString, value)
 	}
@@ -519,6 +428,35 @@ func (muo *ModelUpdateOne) sqlSave(ctx context.Context) (_node *Model, err error
 	}
 	if value, ok := muo.mutation.UpdatedAt(); ok {
 		_spec.SetField(model.FieldUpdatedAt, field.TypeTime, value)
+	}
+	if muo.mutation.APIConfigCleared() {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   model.APIConfigTable,
+			Columns: []string{model.APIConfigColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(modelapiconfig.FieldID, field.TypeUUID),
+			},
+		}
+		_spec.Edges.Clear = append(_spec.Edges.Clear, edge)
+	}
+	if nodes := muo.mutation.APIConfigIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   model.APIConfigTable,
+			Columns: []string{model.APIConfigColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(modelapiconfig.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges.Add = append(_spec.Edges.Add, edge)
 	}
 	_spec.AddModifiers(muo.modifiers...)
 	_node = &Model{config: muo.config}

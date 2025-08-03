@@ -14,7 +14,6 @@ import (
 
 	"github.com/chaitin/ModelKit/backend/config"
 	"github.com/chaitin/ModelKit/backend/consts"
-	"github.com/chaitin/ModelKit/backend/db"
 	"github.com/chaitin/ModelKit/backend/domain"
 	"github.com/chaitin/ModelKit/backend/pkg/cvt"
 	"github.com/chaitin/ModelKit/backend/pkg/request"
@@ -126,7 +125,12 @@ func (m *ModelUsecase) CheckModel(ctx context.Context, req *domain.CheckModelReq
 		ModelType: req.Type,
 		Provider:  req.Provider,
 		ModelName: req.ModelName,
-		APIBase:   req.APIBase,
+		APIConfig: &domain.ModelAPIConfig{
+			APIBase:    req.APIBase,
+			APIKey:     req.APIKey,
+			APIVersion: req.APIVersion,
+			APIHeader:  req.APIHeader,
+		},
 	}, nil
 }
 
@@ -161,19 +165,7 @@ func getHttpClientWithAPIHeaderMap(header string) *http.Client {
 
 // Update implements domain.ModelUsecase.
 func (m *ModelUsecase) UpdateModel(ctx context.Context, req *domain.UpdateModelReq) (*domain.Model, error) {
-	model, err := m.repo.UpdateModel(ctx, req, func(tx *db.Tx, old *db.Model, up *db.ModelUpdateOne) error {
-		if req.APIKey != "" {
-			up.SetAPIKey(req.APIKey)
-		}
-		if req.APIVersion != "" {
-			up.SetAPIVersion(req.APIVersion)
-		}
-		if req.APIHeader != "" {
-			up.SetAPIHeader(req.APIHeader)
-		}
-
-		return nil
-	})
+	model, err := m.repo.UpdateModel(ctx, req)
 	if err != nil {
 		return nil, err
 	}

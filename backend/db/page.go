@@ -24,3 +24,17 @@ func (m *ModelQuery) Page(ctx context.Context, page, size int) ([]*Model, *PageI
 	has := (page * size) < cnt
 	return rs, &PageInfo{HasNextPage: has, TotalCount: int64(cnt)}, nil
 }
+
+func (mac *ModelAPIConfigQuery) Page(ctx context.Context, page, size int) ([]*ModelAPIConfig, *PageInfo, error) {
+	cnt, err := mac.Count(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+	offset := size * (page - 1)
+	rs, err := mac.Offset(offset).Limit(size).All(ctx)
+	if err != nil {
+		return nil, nil, err
+	}
+	has := (page * size) < cnt
+	return rs, &PageInfo{HasNextPage: has, TotalCount: int64(cnt)}, nil
+}

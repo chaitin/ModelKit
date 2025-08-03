@@ -11,6 +11,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/chaitin/ModelKit/backend/consts"
 	"github.com/chaitin/ModelKit/backend/db/model"
+	"github.com/chaitin/ModelKit/backend/db/modelapiconfig"
 	"github.com/google/uuid"
 )
 
@@ -23,21 +24,36 @@ type Model struct {
 	ModelName string `json:"model_name,omitempty"`
 	// ModelType holds the value of the "model_type" field.
 	ModelType consts.ModelType `json:"model_type,omitempty"`
-	// APIBase holds the value of the "api_base" field.
-	APIBase string `json:"api_base,omitempty"`
-	// APIKey holds the value of the "api_key" field.
-	APIKey string `json:"api_key,omitempty"`
-	// APIVersion holds the value of the "api_version" field.
-	APIVersion string `json:"api_version,omitempty"`
-	// APIHeader holds the value of the "api_header" field.
-	APIHeader string `json:"api_header,omitempty"`
 	// Provider holds the value of the "provider" field.
 	Provider consts.ModelProvider `json:"provider,omitempty"`
 	// CreatedAt holds the value of the "created_at" field.
 	CreatedAt time.Time `json:"created_at,omitempty"`
 	// UpdatedAt holds the value of the "updated_at" field.
-	UpdatedAt    time.Time `json:"updated_at,omitempty"`
+	UpdatedAt time.Time `json:"updated_at,omitempty"`
+	// Edges holds the relations/edges for other nodes in the graph.
+	// The values are being populated by the ModelQuery when eager-loading is set.
+	Edges        ModelEdges `json:"edges"`
 	selectValues sql.SelectValues
+}
+
+// ModelEdges holds the relations/edges for other nodes in the graph.
+type ModelEdges struct {
+	// APIConfig holds the value of the api_config edge.
+	APIConfig *ModelAPIConfig `json:"api_config,omitempty"`
+	// loadedTypes holds the information for reporting if a
+	// type was loaded (or requested) in eager-loading or not.
+	loadedTypes [1]bool
+}
+
+// APIConfigOrErr returns the APIConfig value or an error if the edge
+// was not loaded in eager-loading, or loaded but was not found.
+func (e ModelEdges) APIConfigOrErr() (*ModelAPIConfig, error) {
+	if e.APIConfig != nil {
+		return e.APIConfig, nil
+	} else if e.loadedTypes[0] {
+		return nil, &NotFoundError{label: modelapiconfig.Label}
+	}
+	return nil, &NotLoadedError{edge: "api_config"}
 }
 
 // scanValues returns the types for scanning values from sql.Rows.
@@ -45,7 +61,7 @@ func (*Model) scanValues(columns []string) ([]any, error) {
 	values := make([]any, len(columns))
 	for i := range columns {
 		switch columns[i] {
-		case model.FieldModelName, model.FieldModelType, model.FieldAPIBase, model.FieldAPIKey, model.FieldAPIVersion, model.FieldAPIHeader, model.FieldProvider:
+		case model.FieldModelName, model.FieldModelType, model.FieldProvider:
 			values[i] = new(sql.NullString)
 		case model.FieldCreatedAt, model.FieldUpdatedAt:
 			values[i] = new(sql.NullTime)
@@ -84,30 +100,6 @@ func (m *Model) assignValues(columns []string, values []any) error {
 			} else if value.Valid {
 				m.ModelType = consts.ModelType(value.String)
 			}
-		case model.FieldAPIBase:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field api_base", values[i])
-			} else if value.Valid {
-				m.APIBase = value.String
-			}
-		case model.FieldAPIKey:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field api_key", values[i])
-			} else if value.Valid {
-				m.APIKey = value.String
-			}
-		case model.FieldAPIVersion:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field api_version", values[i])
-			} else if value.Valid {
-				m.APIVersion = value.String
-			}
-		case model.FieldAPIHeader:
-			if value, ok := values[i].(*sql.NullString); !ok {
-				return fmt.Errorf("unexpected type %T for field api_header", values[i])
-			} else if value.Valid {
-				m.APIHeader = value.String
-			}
 		case model.FieldProvider:
 			if value, ok := values[i].(*sql.NullString); !ok {
 				return fmt.Errorf("unexpected type %T for field provider", values[i])
@@ -139,6 +131,11 @@ func (m *Model) Value(name string) (ent.Value, error) {
 	return m.selectValues.Get(name)
 }
 
+// QueryAPIConfig queries the "api_config" edge of the Model entity.
+func (m *Model) QueryAPIConfig() *ModelAPIConfigQuery {
+	return NewModelClient(m.config).QueryAPIConfig(m)
+}
+
 // Update returns a builder for updating this Model.
 // Note that you need to call Model.Unwrap() before calling this method if this Model
 // was returned from a transaction, and the transaction was committed or rolled back.
@@ -167,18 +164,6 @@ func (m *Model) String() string {
 	builder.WriteString(", ")
 	builder.WriteString("model_type=")
 	builder.WriteString(fmt.Sprintf("%v", m.ModelType))
-	builder.WriteString(", ")
-	builder.WriteString("api_base=")
-	builder.WriteString(m.APIBase)
-	builder.WriteString(", ")
-	builder.WriteString("api_key=")
-	builder.WriteString(m.APIKey)
-	builder.WriteString(", ")
-	builder.WriteString("api_version=")
-	builder.WriteString(m.APIVersion)
-	builder.WriteString(", ")
-	builder.WriteString("api_header=")
-	builder.WriteString(m.APIHeader)
 	builder.WriteString(", ")
 	builder.WriteString("provider=")
 	builder.WriteString(fmt.Sprintf("%v", m.Provider))

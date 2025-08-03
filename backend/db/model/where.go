@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 	"github.com/chaitin/ModelKit/backend/consts"
 	"github.com/chaitin/ModelKit/backend/db/predicate"
 	"github.com/google/uuid"
@@ -65,26 +66,6 @@ func ModelName(v string) predicate.Model {
 func ModelType(v consts.ModelType) predicate.Model {
 	vc := string(v)
 	return predicate.Model(sql.FieldEQ(FieldModelType, vc))
-}
-
-// APIBase applies equality check predicate on the "api_base" field. It's identical to APIBaseEQ.
-func APIBase(v string) predicate.Model {
-	return predicate.Model(sql.FieldEQ(FieldAPIBase, v))
-}
-
-// APIKey applies equality check predicate on the "api_key" field. It's identical to APIKeyEQ.
-func APIKey(v string) predicate.Model {
-	return predicate.Model(sql.FieldEQ(FieldAPIKey, v))
-}
-
-// APIVersion applies equality check predicate on the "api_version" field. It's identical to APIVersionEQ.
-func APIVersion(v string) predicate.Model {
-	return predicate.Model(sql.FieldEQ(FieldAPIVersion, v))
-}
-
-// APIHeader applies equality check predicate on the "api_header" field. It's identical to APIHeaderEQ.
-func APIHeader(v string) predicate.Model {
-	return predicate.Model(sql.FieldEQ(FieldAPIHeader, v))
 }
 
 // Provider applies equality check predicate on the "provider" field. It's identical to ProviderEQ.
@@ -252,286 +233,6 @@ func ModelTypeContainsFold(v consts.ModelType) predicate.Model {
 	return predicate.Model(sql.FieldContainsFold(FieldModelType, vc))
 }
 
-// APIBaseEQ applies the EQ predicate on the "api_base" field.
-func APIBaseEQ(v string) predicate.Model {
-	return predicate.Model(sql.FieldEQ(FieldAPIBase, v))
-}
-
-// APIBaseNEQ applies the NEQ predicate on the "api_base" field.
-func APIBaseNEQ(v string) predicate.Model {
-	return predicate.Model(sql.FieldNEQ(FieldAPIBase, v))
-}
-
-// APIBaseIn applies the In predicate on the "api_base" field.
-func APIBaseIn(vs ...string) predicate.Model {
-	return predicate.Model(sql.FieldIn(FieldAPIBase, vs...))
-}
-
-// APIBaseNotIn applies the NotIn predicate on the "api_base" field.
-func APIBaseNotIn(vs ...string) predicate.Model {
-	return predicate.Model(sql.FieldNotIn(FieldAPIBase, vs...))
-}
-
-// APIBaseGT applies the GT predicate on the "api_base" field.
-func APIBaseGT(v string) predicate.Model {
-	return predicate.Model(sql.FieldGT(FieldAPIBase, v))
-}
-
-// APIBaseGTE applies the GTE predicate on the "api_base" field.
-func APIBaseGTE(v string) predicate.Model {
-	return predicate.Model(sql.FieldGTE(FieldAPIBase, v))
-}
-
-// APIBaseLT applies the LT predicate on the "api_base" field.
-func APIBaseLT(v string) predicate.Model {
-	return predicate.Model(sql.FieldLT(FieldAPIBase, v))
-}
-
-// APIBaseLTE applies the LTE predicate on the "api_base" field.
-func APIBaseLTE(v string) predicate.Model {
-	return predicate.Model(sql.FieldLTE(FieldAPIBase, v))
-}
-
-// APIBaseContains applies the Contains predicate on the "api_base" field.
-func APIBaseContains(v string) predicate.Model {
-	return predicate.Model(sql.FieldContains(FieldAPIBase, v))
-}
-
-// APIBaseHasPrefix applies the HasPrefix predicate on the "api_base" field.
-func APIBaseHasPrefix(v string) predicate.Model {
-	return predicate.Model(sql.FieldHasPrefix(FieldAPIBase, v))
-}
-
-// APIBaseHasSuffix applies the HasSuffix predicate on the "api_base" field.
-func APIBaseHasSuffix(v string) predicate.Model {
-	return predicate.Model(sql.FieldHasSuffix(FieldAPIBase, v))
-}
-
-// APIBaseEqualFold applies the EqualFold predicate on the "api_base" field.
-func APIBaseEqualFold(v string) predicate.Model {
-	return predicate.Model(sql.FieldEqualFold(FieldAPIBase, v))
-}
-
-// APIBaseContainsFold applies the ContainsFold predicate on the "api_base" field.
-func APIBaseContainsFold(v string) predicate.Model {
-	return predicate.Model(sql.FieldContainsFold(FieldAPIBase, v))
-}
-
-// APIKeyEQ applies the EQ predicate on the "api_key" field.
-func APIKeyEQ(v string) predicate.Model {
-	return predicate.Model(sql.FieldEQ(FieldAPIKey, v))
-}
-
-// APIKeyNEQ applies the NEQ predicate on the "api_key" field.
-func APIKeyNEQ(v string) predicate.Model {
-	return predicate.Model(sql.FieldNEQ(FieldAPIKey, v))
-}
-
-// APIKeyIn applies the In predicate on the "api_key" field.
-func APIKeyIn(vs ...string) predicate.Model {
-	return predicate.Model(sql.FieldIn(FieldAPIKey, vs...))
-}
-
-// APIKeyNotIn applies the NotIn predicate on the "api_key" field.
-func APIKeyNotIn(vs ...string) predicate.Model {
-	return predicate.Model(sql.FieldNotIn(FieldAPIKey, vs...))
-}
-
-// APIKeyGT applies the GT predicate on the "api_key" field.
-func APIKeyGT(v string) predicate.Model {
-	return predicate.Model(sql.FieldGT(FieldAPIKey, v))
-}
-
-// APIKeyGTE applies the GTE predicate on the "api_key" field.
-func APIKeyGTE(v string) predicate.Model {
-	return predicate.Model(sql.FieldGTE(FieldAPIKey, v))
-}
-
-// APIKeyLT applies the LT predicate on the "api_key" field.
-func APIKeyLT(v string) predicate.Model {
-	return predicate.Model(sql.FieldLT(FieldAPIKey, v))
-}
-
-// APIKeyLTE applies the LTE predicate on the "api_key" field.
-func APIKeyLTE(v string) predicate.Model {
-	return predicate.Model(sql.FieldLTE(FieldAPIKey, v))
-}
-
-// APIKeyContains applies the Contains predicate on the "api_key" field.
-func APIKeyContains(v string) predicate.Model {
-	return predicate.Model(sql.FieldContains(FieldAPIKey, v))
-}
-
-// APIKeyHasPrefix applies the HasPrefix predicate on the "api_key" field.
-func APIKeyHasPrefix(v string) predicate.Model {
-	return predicate.Model(sql.FieldHasPrefix(FieldAPIKey, v))
-}
-
-// APIKeyHasSuffix applies the HasSuffix predicate on the "api_key" field.
-func APIKeyHasSuffix(v string) predicate.Model {
-	return predicate.Model(sql.FieldHasSuffix(FieldAPIKey, v))
-}
-
-// APIKeyEqualFold applies the EqualFold predicate on the "api_key" field.
-func APIKeyEqualFold(v string) predicate.Model {
-	return predicate.Model(sql.FieldEqualFold(FieldAPIKey, v))
-}
-
-// APIKeyContainsFold applies the ContainsFold predicate on the "api_key" field.
-func APIKeyContainsFold(v string) predicate.Model {
-	return predicate.Model(sql.FieldContainsFold(FieldAPIKey, v))
-}
-
-// APIVersionEQ applies the EQ predicate on the "api_version" field.
-func APIVersionEQ(v string) predicate.Model {
-	return predicate.Model(sql.FieldEQ(FieldAPIVersion, v))
-}
-
-// APIVersionNEQ applies the NEQ predicate on the "api_version" field.
-func APIVersionNEQ(v string) predicate.Model {
-	return predicate.Model(sql.FieldNEQ(FieldAPIVersion, v))
-}
-
-// APIVersionIn applies the In predicate on the "api_version" field.
-func APIVersionIn(vs ...string) predicate.Model {
-	return predicate.Model(sql.FieldIn(FieldAPIVersion, vs...))
-}
-
-// APIVersionNotIn applies the NotIn predicate on the "api_version" field.
-func APIVersionNotIn(vs ...string) predicate.Model {
-	return predicate.Model(sql.FieldNotIn(FieldAPIVersion, vs...))
-}
-
-// APIVersionGT applies the GT predicate on the "api_version" field.
-func APIVersionGT(v string) predicate.Model {
-	return predicate.Model(sql.FieldGT(FieldAPIVersion, v))
-}
-
-// APIVersionGTE applies the GTE predicate on the "api_version" field.
-func APIVersionGTE(v string) predicate.Model {
-	return predicate.Model(sql.FieldGTE(FieldAPIVersion, v))
-}
-
-// APIVersionLT applies the LT predicate on the "api_version" field.
-func APIVersionLT(v string) predicate.Model {
-	return predicate.Model(sql.FieldLT(FieldAPIVersion, v))
-}
-
-// APIVersionLTE applies the LTE predicate on the "api_version" field.
-func APIVersionLTE(v string) predicate.Model {
-	return predicate.Model(sql.FieldLTE(FieldAPIVersion, v))
-}
-
-// APIVersionContains applies the Contains predicate on the "api_version" field.
-func APIVersionContains(v string) predicate.Model {
-	return predicate.Model(sql.FieldContains(FieldAPIVersion, v))
-}
-
-// APIVersionHasPrefix applies the HasPrefix predicate on the "api_version" field.
-func APIVersionHasPrefix(v string) predicate.Model {
-	return predicate.Model(sql.FieldHasPrefix(FieldAPIVersion, v))
-}
-
-// APIVersionHasSuffix applies the HasSuffix predicate on the "api_version" field.
-func APIVersionHasSuffix(v string) predicate.Model {
-	return predicate.Model(sql.FieldHasSuffix(FieldAPIVersion, v))
-}
-
-// APIVersionIsNil applies the IsNil predicate on the "api_version" field.
-func APIVersionIsNil() predicate.Model {
-	return predicate.Model(sql.FieldIsNull(FieldAPIVersion))
-}
-
-// APIVersionNotNil applies the NotNil predicate on the "api_version" field.
-func APIVersionNotNil() predicate.Model {
-	return predicate.Model(sql.FieldNotNull(FieldAPIVersion))
-}
-
-// APIVersionEqualFold applies the EqualFold predicate on the "api_version" field.
-func APIVersionEqualFold(v string) predicate.Model {
-	return predicate.Model(sql.FieldEqualFold(FieldAPIVersion, v))
-}
-
-// APIVersionContainsFold applies the ContainsFold predicate on the "api_version" field.
-func APIVersionContainsFold(v string) predicate.Model {
-	return predicate.Model(sql.FieldContainsFold(FieldAPIVersion, v))
-}
-
-// APIHeaderEQ applies the EQ predicate on the "api_header" field.
-func APIHeaderEQ(v string) predicate.Model {
-	return predicate.Model(sql.FieldEQ(FieldAPIHeader, v))
-}
-
-// APIHeaderNEQ applies the NEQ predicate on the "api_header" field.
-func APIHeaderNEQ(v string) predicate.Model {
-	return predicate.Model(sql.FieldNEQ(FieldAPIHeader, v))
-}
-
-// APIHeaderIn applies the In predicate on the "api_header" field.
-func APIHeaderIn(vs ...string) predicate.Model {
-	return predicate.Model(sql.FieldIn(FieldAPIHeader, vs...))
-}
-
-// APIHeaderNotIn applies the NotIn predicate on the "api_header" field.
-func APIHeaderNotIn(vs ...string) predicate.Model {
-	return predicate.Model(sql.FieldNotIn(FieldAPIHeader, vs...))
-}
-
-// APIHeaderGT applies the GT predicate on the "api_header" field.
-func APIHeaderGT(v string) predicate.Model {
-	return predicate.Model(sql.FieldGT(FieldAPIHeader, v))
-}
-
-// APIHeaderGTE applies the GTE predicate on the "api_header" field.
-func APIHeaderGTE(v string) predicate.Model {
-	return predicate.Model(sql.FieldGTE(FieldAPIHeader, v))
-}
-
-// APIHeaderLT applies the LT predicate on the "api_header" field.
-func APIHeaderLT(v string) predicate.Model {
-	return predicate.Model(sql.FieldLT(FieldAPIHeader, v))
-}
-
-// APIHeaderLTE applies the LTE predicate on the "api_header" field.
-func APIHeaderLTE(v string) predicate.Model {
-	return predicate.Model(sql.FieldLTE(FieldAPIHeader, v))
-}
-
-// APIHeaderContains applies the Contains predicate on the "api_header" field.
-func APIHeaderContains(v string) predicate.Model {
-	return predicate.Model(sql.FieldContains(FieldAPIHeader, v))
-}
-
-// APIHeaderHasPrefix applies the HasPrefix predicate on the "api_header" field.
-func APIHeaderHasPrefix(v string) predicate.Model {
-	return predicate.Model(sql.FieldHasPrefix(FieldAPIHeader, v))
-}
-
-// APIHeaderHasSuffix applies the HasSuffix predicate on the "api_header" field.
-func APIHeaderHasSuffix(v string) predicate.Model {
-	return predicate.Model(sql.FieldHasSuffix(FieldAPIHeader, v))
-}
-
-// APIHeaderIsNil applies the IsNil predicate on the "api_header" field.
-func APIHeaderIsNil() predicate.Model {
-	return predicate.Model(sql.FieldIsNull(FieldAPIHeader))
-}
-
-// APIHeaderNotNil applies the NotNil predicate on the "api_header" field.
-func APIHeaderNotNil() predicate.Model {
-	return predicate.Model(sql.FieldNotNull(FieldAPIHeader))
-}
-
-// APIHeaderEqualFold applies the EqualFold predicate on the "api_header" field.
-func APIHeaderEqualFold(v string) predicate.Model {
-	return predicate.Model(sql.FieldEqualFold(FieldAPIHeader, v))
-}
-
-// APIHeaderContainsFold applies the ContainsFold predicate on the "api_header" field.
-func APIHeaderContainsFold(v string) predicate.Model {
-	return predicate.Model(sql.FieldContainsFold(FieldAPIHeader, v))
-}
-
 // ProviderEQ applies the EQ predicate on the "provider" field.
 func ProviderEQ(v consts.ModelProvider) predicate.Model {
 	vc := string(v)
@@ -694,6 +395,29 @@ func UpdatedAtLT(v time.Time) predicate.Model {
 // UpdatedAtLTE applies the LTE predicate on the "updated_at" field.
 func UpdatedAtLTE(v time.Time) predicate.Model {
 	return predicate.Model(sql.FieldLTE(FieldUpdatedAt, v))
+}
+
+// HasAPIConfig applies the HasEdge predicate on the "api_config" edge.
+func HasAPIConfig() predicate.Model {
+	return predicate.Model(func(s *sql.Selector) {
+		step := sqlgraph.NewStep(
+			sqlgraph.From(Table, FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, APIConfigTable, APIConfigColumn),
+		)
+		sqlgraph.HasNeighbors(s, step)
+	})
+}
+
+// HasAPIConfigWith applies the HasEdge predicate on the "api_config" edge with a given conditions (other predicates).
+func HasAPIConfigWith(preds ...predicate.ModelAPIConfig) predicate.Model {
+	return predicate.Model(func(s *sql.Selector) {
+		step := newAPIConfigStep()
+		sqlgraph.HasNeighborsWith(s, step, func(s *sql.Selector) {
+			for _, p := range preds {
+				p(s)
+			}
+		})
+	})
 }
 
 // And groups predicates with the AND operator between them.

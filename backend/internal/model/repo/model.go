@@ -21,7 +21,7 @@ func NewModelRepo(db *db.Client) domain.ModelRepo {
 	return &ModelRepo{db: db}
 }
 
-func (r *ModelRepo) UpdateModel(ctx context.Context, req *domain.UpdateModelReq, fn func(tx *db.Tx, old *db.Model, up *db.ModelUpdateOne) error) (*db.Model, error) {
+func (r *ModelRepo) UpdateModel(ctx context.Context, req *domain.UpdateModelReq) (*db.Model, error) {
 	var m *db.Model
 	err := entx.WithTx(ctx, r.db, func(tx *db.Tx) error {
 		var old *db.Model
@@ -34,11 +34,15 @@ func (r *ModelRepo) UpdateModel(ctx context.Context, req *domain.UpdateModelReq,
 			if parseErr != nil {
 				return parseErr
 			}
-			old, err = tx.Model.Get(ctx, modelID)
+			old, err = tx.Model.Query().
+				Where(model.ID(modelID)).
+				WithAPIConfig().
+				Only(ctx)
 		} else if req.ModelName != "" && req.Provider != "" {
 			// 通过 ModelName + Provider 查找
 			old, err = tx.Model.Query().
 				Where(model.ModelName(req.ModelName), model.Provider(req.Provider)).
+				WithAPIConfig().
 				Only(ctx)
 		} else {
 			return fmt.Errorf("必须提供 ID 或者 ModelName+Provider 来查找模型")
@@ -46,17 +50,29 @@ func (r *ModelRepo) UpdateModel(ctx context.Context, req *domain.UpdateModelReq,
 
 		if err != nil {
 			return err
+		} else {
+			m = old
 		}
 
-		up := tx.Model.UpdateOneID(old.ID)
-		if err := fn(tx, old, up); err != nil {
-			return err
+		// 更新API配置
+		if old.Edges.APIConfig != nil {
+			apiConfigUpdate := tx.ModelAPIConfig.UpdateOneID(old.Edges.APIConfig.ID)
+
+			if req.APIKey != "" {
+				apiConfigUpdate.SetAPIKey(req.APIKey)
+			}
+			if req.APIVersion != "" {
+				apiConfigUpdate.SetAPIVersion(req.APIVersion)
+			}
+			if req.APIHeader != "" {
+				apiConfigUpdate.SetAPIHeader(req.APIHeader)
+			}
+
+			if _, err := apiConfigUpdate.Save(ctx); err != nil {
+				return err
+			}
 		}
-		if n, err := up.Save(ctx); err != nil {
-			return err
-		} else {
-			m = n
-		}
+
 		return nil
 	})
 	return m, err
@@ -72,10 +88,14 @@ func (r *ModelRepo) GetModel(ctx context.Context, req *domain.GetModelReq) (*db.
 		if err != nil {
 			return nil, err
 		}
-		return query.Where(model.ID(modelID)).Only(ctx)
+		return query.Where(model.ID(modelID)).
+			WithAPIConfig().
+			Only(ctx)
 	} else if req.ModelName != "" && req.Provider != "" {
 		// 通过 ModelName + Provider 查找
-		return query.Where(model.ModelName(req.ModelName), model.Provider(req.Provider)).Only(ctx)
+		return query.Where(model.ModelName(req.ModelName), model.Provider(req.Provider)).
+			WithAPIConfig().
+			Only(ctx)
 	} else {
 		return nil, fmt.Errorf("必须提供 ID 或者 ModelName+Provider 来查找模型")
 	}
@@ -100,8 +120,9 @@ func (r *ModelRepo) ListModel(ctx context.Context, req *domain.ListModelReq) ([]
 		query = query.Where(model.ModelType(req.ModelType))
 	}
 
-	// 按创建时间降序排列
-	query = query.Order(model.ByCreatedAt(sql.OrderDesc()))
+	// 按创建时间降序排列并加载API配置
+	query = query.Order(model.ByCreatedAt(sql.OrderDesc())).
+		WithAPIConfig()
 
 	return query.All(ctx)
 }

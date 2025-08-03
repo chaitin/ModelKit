@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/chaitin/ModelKit/backend/db/model"
+	"github.com/chaitin/ModelKit/backend/db/modelapiconfig"
 	"github.com/chaitin/ModelKit/backend/ent/schema"
 )
 
@@ -16,13 +17,25 @@ func init() {
 	modelFields := schema.Model{}.Fields()
 	_ = modelFields
 	// modelDescCreatedAt is the schema descriptor for created_at field.
-	modelDescCreatedAt := modelFields[8].Descriptor()
+	modelDescCreatedAt := modelFields[4].Descriptor()
 	// model.DefaultCreatedAt holds the default value on creation for the created_at field.
 	model.DefaultCreatedAt = modelDescCreatedAt.Default.(func() time.Time)
 	// modelDescUpdatedAt is the schema descriptor for updated_at field.
-	modelDescUpdatedAt := modelFields[9].Descriptor()
+	modelDescUpdatedAt := modelFields[5].Descriptor()
 	// model.DefaultUpdatedAt holds the default value on creation for the updated_at field.
 	model.DefaultUpdatedAt = modelDescUpdatedAt.Default.(func() time.Time)
 	// model.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
 	model.UpdateDefaultUpdatedAt = modelDescUpdatedAt.UpdateDefault.(func() time.Time)
+	modelapiconfigFields := schema.ModelAPIConfig{}.Fields()
+	_ = modelapiconfigFields
+	// modelapiconfigDescCreatedAt is the schema descriptor for created_at field.
+	modelapiconfigDescCreatedAt := modelapiconfigFields[6].Descriptor()
+	// modelapiconfig.DefaultCreatedAt holds the default value on creation for the created_at field.
+	modelapiconfig.DefaultCreatedAt = modelapiconfigDescCreatedAt.Default.(func() time.Time)
+	// modelapiconfigDescUpdatedAt is the schema descriptor for updated_at field.
+	modelapiconfigDescUpdatedAt := modelapiconfigFields[7].Descriptor()
+	// modelapiconfig.DefaultUpdatedAt holds the default value on creation for the updated_at field.
+	modelapiconfig.DefaultUpdatedAt = modelapiconfigDescUpdatedAt.Default.(func() time.Time)
+	// modelapiconfig.UpdateDefaultUpdatedAt holds the default value on update for the updated_at field.
+	modelapiconfig.UpdateDefaultUpdatedAt = modelapiconfigDescUpdatedAt.UpdateDefault.(func() time.Time)
 }

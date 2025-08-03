@@ -9,6 +9,7 @@ import (
 	"entgo.io/ent/dialect/sql"
 	"github.com/chaitin/ModelKit/backend/db"
 	"github.com/chaitin/ModelKit/backend/db/model"
+	"github.com/chaitin/ModelKit/backend/db/modelapiconfig"
 	"github.com/chaitin/ModelKit/backend/db/predicate"
 )
 
@@ -95,11 +96,40 @@ func (f TraverseModel) Traverse(ctx context.Context, q db.Query) error {
 	return fmt.Errorf("unexpected query type %T. expect *db.ModelQuery", q)
 }
 
+// The ModelAPIConfigFunc type is an adapter to allow the use of ordinary function as a Querier.
+type ModelAPIConfigFunc func(context.Context, *db.ModelAPIConfigQuery) (db.Value, error)
+
+// Query calls f(ctx, q).
+func (f ModelAPIConfigFunc) Query(ctx context.Context, q db.Query) (db.Value, error) {
+	if q, ok := q.(*db.ModelAPIConfigQuery); ok {
+		return f(ctx, q)
+	}
+	return nil, fmt.Errorf("unexpected query type %T. expect *db.ModelAPIConfigQuery", q)
+}
+
+// The TraverseModelAPIConfig type is an adapter to allow the use of ordinary function as Traverser.
+type TraverseModelAPIConfig func(context.Context, *db.ModelAPIConfigQuery) error
+
+// Intercept is a dummy implementation of Intercept that returns the next Querier in the pipeline.
+func (f TraverseModelAPIConfig) Intercept(next db.Querier) db.Querier {
+	return next
+}
+
+// Traverse calls f(ctx, q).
+func (f TraverseModelAPIConfig) Traverse(ctx context.Context, q db.Query) error {
+	if q, ok := q.(*db.ModelAPIConfigQuery); ok {
+		return f(ctx, q)
+	}
+	return fmt.Errorf("unexpected query type %T. expect *db.ModelAPIConfigQuery", q)
+}
+
 // NewQuery returns the generic Query interface for the given typed query.
 func NewQuery(q db.Query) (Query, error) {
 	switch q := q.(type) {
 	case *db.ModelQuery:
 		return &query[*db.ModelQuery, predicate.Model, model.OrderOption]{typ: db.TypeModel, tq: q}, nil
+	case *db.ModelAPIConfigQuery:
+		return &query[*db.ModelAPIConfigQuery, predicate.ModelAPIConfig, modelapiconfig.OrderOption]{typ: db.TypeModelAPIConfig, tq: q}, nil
 	default:
 		return nil, fmt.Errorf("unknown query type %T", q)
 	}

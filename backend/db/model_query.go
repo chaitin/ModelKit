@@ -4,6 +4,7 @@ package db
 
 import (
 	"context"
+	"database/sql/driver"
 	"fmt"
 	"math"
 
@@ -13,6 +14,7 @@ import (
 	"entgo.io/ent/dialect/sql/sqlgraph"
 	"entgo.io/ent/schema/field"
 	"github.com/chaitin/ModelKit/backend/db/model"
+	"github.com/chaitin/ModelKit/backend/db/modelapiconfig"
 	"github.com/chaitin/ModelKit/backend/db/predicate"
 	"github.com/google/uuid"
 )
@@ -20,11 +22,12 @@ import (
 // ModelQuery is the builder for querying Model entities.
 type ModelQuery struct {
 	config
-	ctx        *QueryContext
-	order      []model.OrderOption
-	inters     []Interceptor
-	predicates []predicate.Model
-	modifiers  []func(*sql.Selector)
+	ctx           *QueryContext
+	order         []model.OrderOption
+	inters        []Interceptor
+	predicates    []predicate.Model
+	withAPIConfig *ModelAPIConfigQuery
+	modifiers     []func(*sql.Selector)
 	// intermediate query (i.e. traversal path).
 	sql  *sql.Selector
 	path func(context.Context) (*sql.Selector, error)
@@ -59,6 +62,28 @@ func (mq *ModelQuery) Unique(unique bool) *ModelQuery {
 func (mq *ModelQuery) Order(o ...model.OrderOption) *ModelQuery {
 	mq.order = append(mq.order, o...)
 	return mq
+}
+
+// QueryAPIConfig chains the current query on the "api_config" edge.
+func (mq *ModelQuery) QueryAPIConfig() *ModelAPIConfigQuery {
+	query := (&ModelAPIConfigClient{config: mq.config}).Query()
+	query.path = func(ctx context.Context) (fromU *sql.Selector, err error) {
+		if err := mq.prepareQuery(ctx); err != nil {
+			return nil, err
+		}
+		selector := mq.sqlQuery(ctx)
+		if err := selector.Err(); err != nil {
+			return nil, err
+		}
+		step := sqlgraph.NewStep(
+			sqlgraph.From(model.Table, model.FieldID, selector),
+			sqlgraph.To(modelapiconfig.Table, modelapiconfig.FieldID),
+			sqlgraph.Edge(sqlgraph.O2O, false, model.APIConfigTable, model.APIConfigColumn),
+		)
+		fromU = sqlgraph.SetNeighbors(mq.driver.Dialect(), step)
+		return fromU, nil
+	}
+	return query
 }
 
 // First returns the first Model entity from the query.
@@ -248,16 +273,28 @@ func (mq *ModelQuery) Clone() *ModelQuery {
 		return nil
 	}
 	return &ModelQuery{
-		config:     mq.config,
-		ctx:        mq.ctx.Clone(),
-		order:      append([]model.OrderOption{}, mq.order...),
-		inters:     append([]Interceptor{}, mq.inters...),
-		predicates: append([]predicate.Model{}, mq.predicates...),
+		config:        mq.config,
+		ctx:           mq.ctx.Clone(),
+		order:         append([]model.OrderOption{}, mq.order...),
+		inters:        append([]Interceptor{}, mq.inters...),
+		predicates:    append([]predicate.Model{}, mq.predicates...),
+		withAPIConfig: mq.withAPIConfig.Clone(),
 		// clone intermediate query.
 		sql:       mq.sql.Clone(),
 		path:      mq.path,
 		modifiers: append([]func(*sql.Selector){}, mq.modifiers...),
 	}
+}
+
+// WithAPIConfig tells the query-builder to eager-load the nodes that are connected to
+// the "api_config" edge. The optional arguments are used to configure the query builder of the edge.
+func (mq *ModelQuery) WithAPIConfig(opts ...func(*ModelAPIConfigQuery)) *ModelQuery {
+	query := (&ModelAPIConfigClient{config: mq.config}).Query()
+	for _, opt := range opts {
+		opt(query)
+	}
+	mq.withAPIConfig = query
+	return mq
 }
 
 // GroupBy is used to group vertices by one or more fields/columns.
@@ -336,8 +373,11 @@ func (mq *ModelQuery) prepareQuery(ctx context.Context) error {
 
 func (mq *ModelQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Model, error) {
 	var (
-		nodes = []*Model{}
-		_spec = mq.querySpec()
+		nodes       = []*Model{}
+		_spec       = mq.querySpec()
+		loadedTypes = [1]bool{
+			mq.withAPIConfig != nil,
+		}
 	)
 	_spec.ScanValues = func(columns []string) ([]any, error) {
 		return (*Model).scanValues(nil, columns)
@@ -345,6 +385,7 @@ func (mq *ModelQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Model,
 	_spec.Assign = func(columns []string, values []any) error {
 		node := &Model{config: mq.config}
 		nodes = append(nodes, node)
+		node.Edges.loadedTypes = loadedTypes
 		return node.assignValues(columns, values)
 	}
 	if len(mq.modifiers) > 0 {
@@ -359,7 +400,41 @@ func (mq *ModelQuery) sqlAll(ctx context.Context, hooks ...queryHook) ([]*Model,
 	if len(nodes) == 0 {
 		return nodes, nil
 	}
+	if query := mq.withAPIConfig; query != nil {
+		if err := mq.loadAPIConfig(ctx, query, nodes, nil,
+			func(n *Model, e *ModelAPIConfig) { n.Edges.APIConfig = e }); err != nil {
+			return nil, err
+		}
+	}
 	return nodes, nil
+}
+
+func (mq *ModelQuery) loadAPIConfig(ctx context.Context, query *ModelAPIConfigQuery, nodes []*Model, init func(*Model), assign func(*Model, *ModelAPIConfig)) error {
+	fks := make([]driver.Value, 0, len(nodes))
+	nodeids := make(map[uuid.UUID]*Model)
+	for i := range nodes {
+		fks = append(fks, nodes[i].ID)
+		nodeids[nodes[i].ID] = nodes[i]
+	}
+	if len(query.ctx.Fields) > 0 {
+		query.ctx.AppendFieldOnce(modelapiconfig.FieldModelID)
+	}
+	query.Where(predicate.ModelAPIConfig(func(s *sql.Selector) {
+		s.Where(sql.InValues(s.C(model.APIConfigColumn), fks...))
+	}))
+	neighbors, err := query.All(ctx)
+	if err != nil {
+		return err
+	}
+	for _, n := range neighbors {
+		fk := n.ModelID
+		node, ok := nodeids[fk]
+		if !ok {
+			return fmt.Errorf(`unexpected referenced foreign-key "model_id" returned %v for node %v`, fk, n.ID)
+		}
+		assign(node, n)
+	}
+	return nil
 }
 
 func (mq *ModelQuery) sqlCount(ctx context.Context) (int, error) {

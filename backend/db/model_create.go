@@ -14,6 +14,7 @@ import (
 	"entgo.io/ent/schema/field"
 	"github.com/chaitin/ModelKit/backend/consts"
 	"github.com/chaitin/ModelKit/backend/db/model"
+	"github.com/chaitin/ModelKit/backend/db/modelapiconfig"
 	"github.com/google/uuid"
 )
 
@@ -34,46 +35,6 @@ func (mc *ModelCreate) SetModelName(s string) *ModelCreate {
 // SetModelType sets the "model_type" field.
 func (mc *ModelCreate) SetModelType(ct consts.ModelType) *ModelCreate {
 	mc.mutation.SetModelType(ct)
-	return mc
-}
-
-// SetAPIBase sets the "api_base" field.
-func (mc *ModelCreate) SetAPIBase(s string) *ModelCreate {
-	mc.mutation.SetAPIBase(s)
-	return mc
-}
-
-// SetAPIKey sets the "api_key" field.
-func (mc *ModelCreate) SetAPIKey(s string) *ModelCreate {
-	mc.mutation.SetAPIKey(s)
-	return mc
-}
-
-// SetAPIVersion sets the "api_version" field.
-func (mc *ModelCreate) SetAPIVersion(s string) *ModelCreate {
-	mc.mutation.SetAPIVersion(s)
-	return mc
-}
-
-// SetNillableAPIVersion sets the "api_version" field if the given value is not nil.
-func (mc *ModelCreate) SetNillableAPIVersion(s *string) *ModelCreate {
-	if s != nil {
-		mc.SetAPIVersion(*s)
-	}
-	return mc
-}
-
-// SetAPIHeader sets the "api_header" field.
-func (mc *ModelCreate) SetAPIHeader(s string) *ModelCreate {
-	mc.mutation.SetAPIHeader(s)
-	return mc
-}
-
-// SetNillableAPIHeader sets the "api_header" field if the given value is not nil.
-func (mc *ModelCreate) SetNillableAPIHeader(s *string) *ModelCreate {
-	if s != nil {
-		mc.SetAPIHeader(*s)
-	}
 	return mc
 }
 
@@ -115,6 +76,25 @@ func (mc *ModelCreate) SetNillableUpdatedAt(t *time.Time) *ModelCreate {
 func (mc *ModelCreate) SetID(u uuid.UUID) *ModelCreate {
 	mc.mutation.SetID(u)
 	return mc
+}
+
+// SetAPIConfigID sets the "api_config" edge to the ModelAPIConfig entity by ID.
+func (mc *ModelCreate) SetAPIConfigID(id uuid.UUID) *ModelCreate {
+	mc.mutation.SetAPIConfigID(id)
+	return mc
+}
+
+// SetNillableAPIConfigID sets the "api_config" edge to the ModelAPIConfig entity by ID if the given value is not nil.
+func (mc *ModelCreate) SetNillableAPIConfigID(id *uuid.UUID) *ModelCreate {
+	if id != nil {
+		mc = mc.SetAPIConfigID(*id)
+	}
+	return mc
+}
+
+// SetAPIConfig sets the "api_config" edge to the ModelAPIConfig entity.
+func (mc *ModelCreate) SetAPIConfig(m *ModelAPIConfig) *ModelCreate {
+	return mc.SetAPIConfigID(m.ID)
 }
 
 // Mutation returns the ModelMutation object of the builder.
@@ -170,12 +150,6 @@ func (mc *ModelCreate) check() error {
 	if _, ok := mc.mutation.ModelType(); !ok {
 		return &ValidationError{Name: "model_type", err: errors.New(`db: missing required field "Model.model_type"`)}
 	}
-	if _, ok := mc.mutation.APIBase(); !ok {
-		return &ValidationError{Name: "api_base", err: errors.New(`db: missing required field "Model.api_base"`)}
-	}
-	if _, ok := mc.mutation.APIKey(); !ok {
-		return &ValidationError{Name: "api_key", err: errors.New(`db: missing required field "Model.api_key"`)}
-	}
 	if _, ok := mc.mutation.Provider(); !ok {
 		return &ValidationError{Name: "provider", err: errors.New(`db: missing required field "Model.provider"`)}
 	}
@@ -229,22 +203,6 @@ func (mc *ModelCreate) createSpec() (*Model, *sqlgraph.CreateSpec) {
 		_spec.SetField(model.FieldModelType, field.TypeString, value)
 		_node.ModelType = value
 	}
-	if value, ok := mc.mutation.APIBase(); ok {
-		_spec.SetField(model.FieldAPIBase, field.TypeString, value)
-		_node.APIBase = value
-	}
-	if value, ok := mc.mutation.APIKey(); ok {
-		_spec.SetField(model.FieldAPIKey, field.TypeString, value)
-		_node.APIKey = value
-	}
-	if value, ok := mc.mutation.APIVersion(); ok {
-		_spec.SetField(model.FieldAPIVersion, field.TypeString, value)
-		_node.APIVersion = value
-	}
-	if value, ok := mc.mutation.APIHeader(); ok {
-		_spec.SetField(model.FieldAPIHeader, field.TypeString, value)
-		_node.APIHeader = value
-	}
 	if value, ok := mc.mutation.Provider(); ok {
 		_spec.SetField(model.FieldProvider, field.TypeString, value)
 		_node.Provider = value
@@ -256,6 +214,22 @@ func (mc *ModelCreate) createSpec() (*Model, *sqlgraph.CreateSpec) {
 	if value, ok := mc.mutation.UpdatedAt(); ok {
 		_spec.SetField(model.FieldUpdatedAt, field.TypeTime, value)
 		_node.UpdatedAt = value
+	}
+	if nodes := mc.mutation.APIConfigIDs(); len(nodes) > 0 {
+		edge := &sqlgraph.EdgeSpec{
+			Rel:     sqlgraph.O2O,
+			Inverse: false,
+			Table:   model.APIConfigTable,
+			Columns: []string{model.APIConfigColumn},
+			Bidi:    false,
+			Target: &sqlgraph.EdgeTarget{
+				IDSpec: sqlgraph.NewFieldSpec(modelapiconfig.FieldID, field.TypeUUID),
+			},
+		}
+		for _, k := range nodes {
+			edge.Target.Nodes = append(edge.Target.Nodes, k)
+		}
+		_spec.Edges = append(_spec.Edges, edge)
 	}
 	return _node, _spec
 }
@@ -330,66 +304,6 @@ func (u *ModelUpsert) SetModelType(v consts.ModelType) *ModelUpsert {
 // UpdateModelType sets the "model_type" field to the value that was provided on create.
 func (u *ModelUpsert) UpdateModelType() *ModelUpsert {
 	u.SetExcluded(model.FieldModelType)
-	return u
-}
-
-// SetAPIBase sets the "api_base" field.
-func (u *ModelUpsert) SetAPIBase(v string) *ModelUpsert {
-	u.Set(model.FieldAPIBase, v)
-	return u
-}
-
-// UpdateAPIBase sets the "api_base" field to the value that was provided on create.
-func (u *ModelUpsert) UpdateAPIBase() *ModelUpsert {
-	u.SetExcluded(model.FieldAPIBase)
-	return u
-}
-
-// SetAPIKey sets the "api_key" field.
-func (u *ModelUpsert) SetAPIKey(v string) *ModelUpsert {
-	u.Set(model.FieldAPIKey, v)
-	return u
-}
-
-// UpdateAPIKey sets the "api_key" field to the value that was provided on create.
-func (u *ModelUpsert) UpdateAPIKey() *ModelUpsert {
-	u.SetExcluded(model.FieldAPIKey)
-	return u
-}
-
-// SetAPIVersion sets the "api_version" field.
-func (u *ModelUpsert) SetAPIVersion(v string) *ModelUpsert {
-	u.Set(model.FieldAPIVersion, v)
-	return u
-}
-
-// UpdateAPIVersion sets the "api_version" field to the value that was provided on create.
-func (u *ModelUpsert) UpdateAPIVersion() *ModelUpsert {
-	u.SetExcluded(model.FieldAPIVersion)
-	return u
-}
-
-// ClearAPIVersion clears the value of the "api_version" field.
-func (u *ModelUpsert) ClearAPIVersion() *ModelUpsert {
-	u.SetNull(model.FieldAPIVersion)
-	return u
-}
-
-// SetAPIHeader sets the "api_header" field.
-func (u *ModelUpsert) SetAPIHeader(v string) *ModelUpsert {
-	u.Set(model.FieldAPIHeader, v)
-	return u
-}
-
-// UpdateAPIHeader sets the "api_header" field to the value that was provided on create.
-func (u *ModelUpsert) UpdateAPIHeader() *ModelUpsert {
-	u.SetExcluded(model.FieldAPIHeader)
-	return u
-}
-
-// ClearAPIHeader clears the value of the "api_header" field.
-func (u *ModelUpsert) ClearAPIHeader() *ModelUpsert {
-	u.SetNull(model.FieldAPIHeader)
 	return u
 }
 
@@ -502,76 +416,6 @@ func (u *ModelUpsertOne) SetModelType(v consts.ModelType) *ModelUpsertOne {
 func (u *ModelUpsertOne) UpdateModelType() *ModelUpsertOne {
 	return u.Update(func(s *ModelUpsert) {
 		s.UpdateModelType()
-	})
-}
-
-// SetAPIBase sets the "api_base" field.
-func (u *ModelUpsertOne) SetAPIBase(v string) *ModelUpsertOne {
-	return u.Update(func(s *ModelUpsert) {
-		s.SetAPIBase(v)
-	})
-}
-
-// UpdateAPIBase sets the "api_base" field to the value that was provided on create.
-func (u *ModelUpsertOne) UpdateAPIBase() *ModelUpsertOne {
-	return u.Update(func(s *ModelUpsert) {
-		s.UpdateAPIBase()
-	})
-}
-
-// SetAPIKey sets the "api_key" field.
-func (u *ModelUpsertOne) SetAPIKey(v string) *ModelUpsertOne {
-	return u.Update(func(s *ModelUpsert) {
-		s.SetAPIKey(v)
-	})
-}
-
-// UpdateAPIKey sets the "api_key" field to the value that was provided on create.
-func (u *ModelUpsertOne) UpdateAPIKey() *ModelUpsertOne {
-	return u.Update(func(s *ModelUpsert) {
-		s.UpdateAPIKey()
-	})
-}
-
-// SetAPIVersion sets the "api_version" field.
-func (u *ModelUpsertOne) SetAPIVersion(v string) *ModelUpsertOne {
-	return u.Update(func(s *ModelUpsert) {
-		s.SetAPIVersion(v)
-	})
-}
-
-// UpdateAPIVersion sets the "api_version" field to the value that was provided on create.
-func (u *ModelUpsertOne) UpdateAPIVersion() *ModelUpsertOne {
-	return u.Update(func(s *ModelUpsert) {
-		s.UpdateAPIVersion()
-	})
-}
-
-// ClearAPIVersion clears the value of the "api_version" field.
-func (u *ModelUpsertOne) ClearAPIVersion() *ModelUpsertOne {
-	return u.Update(func(s *ModelUpsert) {
-		s.ClearAPIVersion()
-	})
-}
-
-// SetAPIHeader sets the "api_header" field.
-func (u *ModelUpsertOne) SetAPIHeader(v string) *ModelUpsertOne {
-	return u.Update(func(s *ModelUpsert) {
-		s.SetAPIHeader(v)
-	})
-}
-
-// UpdateAPIHeader sets the "api_header" field to the value that was provided on create.
-func (u *ModelUpsertOne) UpdateAPIHeader() *ModelUpsertOne {
-	return u.Update(func(s *ModelUpsert) {
-		s.UpdateAPIHeader()
-	})
-}
-
-// ClearAPIHeader clears the value of the "api_header" field.
-func (u *ModelUpsertOne) ClearAPIHeader() *ModelUpsertOne {
-	return u.Update(func(s *ModelUpsert) {
-		s.ClearAPIHeader()
 	})
 }
 
@@ -857,76 +701,6 @@ func (u *ModelUpsertBulk) SetModelType(v consts.ModelType) *ModelUpsertBulk {
 func (u *ModelUpsertBulk) UpdateModelType() *ModelUpsertBulk {
 	return u.Update(func(s *ModelUpsert) {
 		s.UpdateModelType()
-	})
-}
-
-// SetAPIBase sets the "api_base" field.
-func (u *ModelUpsertBulk) SetAPIBase(v string) *ModelUpsertBulk {
-	return u.Update(func(s *ModelUpsert) {
-		s.SetAPIBase(v)
-	})
-}
-
-// UpdateAPIBase sets the "api_base" field to the value that was provided on create.
-func (u *ModelUpsertBulk) UpdateAPIBase() *ModelUpsertBulk {
-	return u.Update(func(s *ModelUpsert) {
-		s.UpdateAPIBase()
-	})
-}
-
-// SetAPIKey sets the "api_key" field.
-func (u *ModelUpsertBulk) SetAPIKey(v string) *ModelUpsertBulk {
-	return u.Update(func(s *ModelUpsert) {
-		s.SetAPIKey(v)
-	})
-}
-
-// UpdateAPIKey sets the "api_key" field to the value that was provided on create.
-func (u *ModelUpsertBulk) UpdateAPIKey() *ModelUpsertBulk {
-	return u.Update(func(s *ModelUpsert) {
-		s.UpdateAPIKey()
-	})
-}
-
-// SetAPIVersion sets the "api_version" field.
-func (u *ModelUpsertBulk) SetAPIVersion(v string) *ModelUpsertBulk {
-	return u.Update(func(s *ModelUpsert) {
-		s.SetAPIVersion(v)
-	})
-}
-
-// UpdateAPIVersion sets the "api_version" field to the value that was provided on create.
-func (u *ModelUpsertBulk) UpdateAPIVersion() *ModelUpsertBulk {
-	return u.Update(func(s *ModelUpsert) {
-		s.UpdateAPIVersion()
-	})
-}
-
-// ClearAPIVersion clears the value of the "api_version" field.
-func (u *ModelUpsertBulk) ClearAPIVersion() *ModelUpsertBulk {
-	return u.Update(func(s *ModelUpsert) {
-		s.ClearAPIVersion()
-	})
-}
-
-// SetAPIHeader sets the "api_header" field.
-func (u *ModelUpsertBulk) SetAPIHeader(v string) *ModelUpsertBulk {
-	return u.Update(func(s *ModelUpsert) {
-		s.SetAPIHeader(v)
-	})
-}
-
-// UpdateAPIHeader sets the "api_header" field to the value that was provided on create.
-func (u *ModelUpsertBulk) UpdateAPIHeader() *ModelUpsertBulk {
-	return u.Update(func(s *ModelUpsert) {
-		s.UpdateAPIHeader()
-	})
-}
-
-// ClearAPIHeader clears the value of the "api_header" field.
-func (u *ModelUpsertBulk) ClearAPIHeader() *ModelUpsertBulk {
-	return u.Update(func(s *ModelUpsert) {
-		s.ClearAPIHeader()
 	})
 }
 

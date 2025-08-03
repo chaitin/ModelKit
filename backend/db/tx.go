@@ -16,6 +16,8 @@ type Tx struct {
 	config
 	// Model is the client for interacting with the Model builders.
 	Model *ModelClient
+	// ModelAPIConfig is the client for interacting with the ModelAPIConfig builders.
+	ModelAPIConfig *ModelAPIConfigClient
 
 	// lazily loaded.
 	client     *Client
@@ -148,6 +150,7 @@ func (tx *Tx) Client() *Client {
 
 func (tx *Tx) init() {
 	tx.Model = NewModelClient(tx.config)
+	tx.ModelAPIConfig = NewModelAPIConfigClient(tx.config)
 }
 
 // txDriver wraps the given dialect.Tx with a nop dialect.Driver implementation.

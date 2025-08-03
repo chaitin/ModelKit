@@ -8,3 +8,6 @@ import (
 
 // Model is the predicate function for model builders.
 type Model func(*sql.Selector)
+
+// ModelAPIConfig is the predicate function for modelapiconfig builders.
+type ModelAPIConfig func(*sql.Selector)

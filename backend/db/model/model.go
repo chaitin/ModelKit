@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"entgo.io/ent/dialect/sql"
+	"entgo.io/ent/dialect/sql/sqlgraph"
 )
 
 const (
@@ -17,22 +18,23 @@ const (
 	FieldModelName = "model_name"
 	// FieldModelType holds the string denoting the model_type field in the database.
 	FieldModelType = "model_type"
-	// FieldAPIBase holds the string denoting the api_base field in the database.
-	FieldAPIBase = "api_base"
-	// FieldAPIKey holds the string denoting the api_key field in the database.
-	FieldAPIKey = "api_key"
-	// FieldAPIVersion holds the string denoting the api_version field in the database.
-	FieldAPIVersion = "api_version"
-	// FieldAPIHeader holds the string denoting the api_header field in the database.
-	FieldAPIHeader = "api_header"
 	// FieldProvider holds the string denoting the provider field in the database.
 	FieldProvider = "provider"
 	// FieldCreatedAt holds the string denoting the created_at field in the database.
 	FieldCreatedAt = "created_at"
 	// FieldUpdatedAt holds the string denoting the updated_at field in the database.
 	FieldUpdatedAt = "updated_at"
+	// EdgeAPIConfig holds the string denoting the api_config edge name in mutations.
+	EdgeAPIConfig = "api_config"
 	// Table holds the table name of the model in the database.
 	Table = "modelkit_models"
+	// APIConfigTable is the table that holds the api_config relation/edge.
+	APIConfigTable = "modelkit_model_api_configs"
+	// APIConfigInverseTable is the table name for the ModelAPIConfig entity.
+	// It exists in this package in order to avoid circular dependency with the "modelapiconfig" package.
+	APIConfigInverseTable = "modelkit_model_api_configs"
+	// APIConfigColumn is the table column denoting the api_config relation/edge.
+	APIConfigColumn = "model_id"
 )
 
 // Columns holds all SQL columns for model fields.
@@ -40,10 +42,6 @@ var Columns = []string{
 	FieldID,
 	FieldModelName,
 	FieldModelType,
-	FieldAPIBase,
-	FieldAPIKey,
-	FieldAPIVersion,
-	FieldAPIHeader,
 	FieldProvider,
 	FieldCreatedAt,
 	FieldUpdatedAt,
@@ -86,26 +84,6 @@ func ByModelType(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldModelType, opts...).ToFunc()
 }
 
-// ByAPIBase orders the results by the api_base field.
-func ByAPIBase(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAPIBase, opts...).ToFunc()
-}
-
-// ByAPIKey orders the results by the api_key field.
-func ByAPIKey(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAPIKey, opts...).ToFunc()
-}
-
-// ByAPIVersion orders the results by the api_version field.
-func ByAPIVersion(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAPIVersion, opts...).ToFunc()
-}
-
-// ByAPIHeader orders the results by the api_header field.
-func ByAPIHeader(opts ...sql.OrderTermOption) OrderOption {
-	return sql.OrderByField(FieldAPIHeader, opts...).ToFunc()
-}
-
 // ByProvider orders the results by the provider field.
 func ByProvider(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldProvider, opts...).ToFunc()
@@ -119,4 +97,18 @@ func ByCreatedAt(opts ...sql.OrderTermOption) OrderOption {
 // ByUpdatedAt orders the results by the updated_at field.
 func ByUpdatedAt(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldUpdatedAt, opts...).ToFunc()
+}
+
+// ByAPIConfigField orders the results by api_config field.
+func ByAPIConfigField(field string, opts ...sql.OrderTermOption) OrderOption {
+	return func(s *sql.Selector) {
+		sqlgraph.OrderByNeighborTerms(s, newAPIConfigStep(), sql.OrderByField(field, opts...))
+	}
+}
+func newAPIConfigStep() *sqlgraph.Step {
+	return sqlgraph.NewStep(
+		sqlgraph.From(Table, FieldID),
+		sqlgraph.To(APIConfigInverseTable, FieldID),
+		sqlgraph.Edge(sqlgraph.O2O, false, APIConfigTable, APIConfigColumn),
+	)
 }
