@@ -83,6 +83,7 @@ func (m *ModelUsecase) CheckModel(ctx context.Context, req *domain.CheckModelReq
 		BaseURL: domain.ModelOwners[req.Owner].APIBase,
 		Model:   string(req.ModelID),
 	}
+	fmt.Println("BaseURL", domain.ModelOwners[req.Owner].APIBase)
 	// for azure openai
 	if req.Owner == consts.ModelOwnerAzureOpenAI {
 		config.ByAzure = true

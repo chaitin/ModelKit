@@ -49,7 +49,11 @@ func (h *ModelHandler) CheckModel(c echo.Context) error {
 			Message: err.Error(),
 		})
 	}
-	return c.JSON(http.StatusOK, m)
+	return c.JSON(http.StatusOK, domain.Resp{
+		Code:    0,
+		Message: "success",
+		Data:    m,
+	})
 }
 
 // List 获取模型列表
@@ -66,11 +70,21 @@ func (h *ModelHandler) CheckModel(c echo.Context) error {
 func (h *ModelHandler) ListModel(c echo.Context) error {
 	var req domain.ListModelReq
 	if err := c.Bind(&req); err != nil {
-		return err
+		return c.JSON(http.StatusBadRequest, domain.Resp{
+			Code:    1,
+			Message: err.Error(),
+		})
 	}
 	models, err := h.usecase.ListModel(c.Request().Context(), &req)
 	if err != nil {
-		return err
+		return c.JSON(http.StatusInternalServerError, domain.Resp{
+			Code:    1,
+			Message: err.Error(),
+		})
 	}
-	return c.JSON(http.StatusOK, models)
+	return c.JSON(http.StatusOK, domain.Resp{
+		Code:    0,
+		Message: "success",
+		Data:    models,
+	})
 }
