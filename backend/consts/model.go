@@ -16,17 +16,17 @@ const (
 	ModelTypeReranker  ModelType = "reranker"
 )
 
-type ModelProvider string
+type ModelOwner string
 
 const (
-	ModelProviderSiliconFlow ModelProvider = "SiliconFlow"
-	ModelProviderOpenAI      ModelProvider = "OpenAI"
-	ModelProviderOllama      ModelProvider = "Ollama"
-	ModelProviderDeepSeek    ModelProvider = "DeepSeek"
-	ModelProviderMoonshot    ModelProvider = "Moonshot"
-	ModelProviderAzureOpenAI ModelProvider = "AzureOpenAI"
-	ModelProviderBaiZhiCloud ModelProvider = "BaiZhiCloud"
-	ModelProviderHunyuan     ModelProvider = "Hunyuan"
-	ModelProviderBaiLian     ModelProvider = "BaiLian"
-	ModelProviderVolcengine  ModelProvider = "Volcengine"
+	ModelOwnerSiliconFlow ModelOwner = "SiliconFlow"
+	ModelOwnerOpenAI      ModelOwner = "OpenAI"
+	ModelOwnerOllama      ModelOwner = "Ollama"
+	ModelOwnerDeepSeek    ModelOwner = "DeepSeek"
+	ModelOwnerMoonshot    ModelOwner = "Moonshot"
+	ModelOwnerAzureOpenAI ModelOwner = "AzureOpenAI"
+	ModelOwnerBaiZhiCloud ModelOwner = "BaiZhiCloud"
+	ModelOwnerHunyuan     ModelOwner = "Hunyuan"
+	ModelOwnerBaiLian     ModelOwner = "BaiLian"
+	ModelOwnerVolcengine  ModelOwner = "Volcengine"
 )

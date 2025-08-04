@@ -12,7 +12,6 @@ import (
 	"github.com/cloudwego/eino-ext/components/model/openai"
 	"github.com/cloudwego/eino/schema"
 
-	"github.com/chaitin/ModelKit/backend/config"
 	"github.com/chaitin/ModelKit/backend/consts"
 	"github.com/chaitin/ModelKit/backend/domain"
 	"github.com/chaitin/ModelKit/backend/pkg/request"
@@ -20,13 +19,11 @@ import (
 
 type ModelUsecase struct {
 	logger *slog.Logger
-	cfg    *config.Config
 	client *http.Client
 }
 
 func NewModelUsecase(
 	logger *slog.Logger,
-	cfg *config.Config,
 ) domain.ModelUsecase {
 	client := &http.Client{
 		Timeout: time.Second * 30,
@@ -37,12 +34,12 @@ func NewModelUsecase(
 			IdleConnTimeout:     time.Second * 30,
 		},
 	}
-	return &ModelUsecase{cfg: cfg, logger: logger, client: client}
+	return &ModelUsecase{logger: logger, client: client}
 }
 
 func (m *ModelUsecase) CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.Model, error) {
 	if req.Type == consts.ModelTypeEmbedding || req.Type == consts.ModelTypeReranker {
-		url := req.APIBase
+		url := domain.ModelOwners[req.Owner].APIBase
 		reqBody := map[string]any{}
 		if req.Type == consts.ModelTypeEmbedding {
 			reqBody = map[string]any{
@@ -50,7 +47,7 @@ func (m *ModelUsecase) CheckModel(ctx context.Context, req *domain.CheckModelReq
 				"input":           "ModelKit一个基于大模型的代码生成器，它可以根据用户的需求生成代码。",
 				"encoding_format": "float",
 			}
-			url = req.APIBase + "/embeddings"
+			url = domain.ModelOwners[req.Owner].APIBase + "/embeddings"
 		}
 		if req.Type == consts.ModelTypeReranker {
 			reqBody = map[string]any{
@@ -62,7 +59,7 @@ func (m *ModelUsecase) CheckModel(ctx context.Context, req *domain.CheckModelReq
 				},
 				"query": "ModelKit",
 			}
-			url = req.APIBase + "/rerank"
+			url = domain.ModelOwners[req.Owner].APIBase + "/rerank"
 		}
 		body, err := json.Marshal(reqBody)
 		if err != nil {
@@ -86,19 +83,20 @@ func (m *ModelUsecase) CheckModel(ctx context.Context, req *domain.CheckModelReq
 	}
 	config := &openai.ChatModelConfig{
 		APIKey:  req.APIKey,
-		BaseURL: req.APIBase,
+		BaseURL: domain.ModelOwners[req.Owner].APIBase,
 		Model:   string(req.ModelID),
 	}
 	// for azure openai
-	if req.Provider == consts.ModelProviderAzureOpenAI {
+	if req.Owner == consts.ModelOwnerAzureOpenAI {
 		config.ByAzure = true
-		config.APIVersion = req.APIVersion
+		config.APIVersion = domain.ModelOwners[req.Owner].APIVersion
 		if config.APIVersion == "" {
 			config.APIVersion = "2024-10-21"
 		}
 	}
-	if req.APIHeader != "" {
-		client := getHttpClientWithAPIHeaderMap(req.APIHeader)
+	// end
+	if domain.ModelOwners[req.Owner].APIHeader != "" {
+		client := getHttpClientWithAPIHeaderMap(domain.ModelOwners[req.Owner].APIHeader)
 		if client != nil {
 			config.HTTPClient = client
 		}
@@ -120,7 +118,7 @@ func (m *ModelUsecase) CheckModel(ctx context.Context, req *domain.CheckModelReq
 	}
 	return &domain.Model{
 		ModelType: req.Type,
-		OwnedBy:   req.Provider,
+		OwnedBy:   req.Owner,
 		ID:        req.ModelID,
 	}, nil
 }
@@ -157,7 +155,7 @@ func getHttpClientWithAPIHeaderMap(header string) *http.Client {
 // ListModel implements domain.ModelUsecase.
 func (m *ModelUsecase) ListModel(ctx context.Context, req *domain.ListModelReq) ([]*domain.Model, error) {
 	// 如果没有请求参数或参数为空，返回全体模型
-	if req == nil || (req.Owner == "" && req.Type == "") {
+	if req == nil || (req.OwnedBy == "" && req.SubType == "") {
 		result := make([]*domain.Model, len(domain.Models))
 		for i := range domain.Models {
 			result[i] = &domain.Models[i]
@@ -165,22 +163,22 @@ func (m *ModelUsecase) ListModel(ctx context.Context, req *domain.ListModelReq) 
 		return result, nil
 	}
 
-	var models []domain.Model
+	var models []*domain.Model
 
 	// 只有 Owner 参数
-	if req.Owner != "" && req.Type == "" {
-		if ownerModels, exists := domain.OwnerModelMap[consts.ModelProvider(req.Owner)]; exists {
-			models = ownerModels
+	if req.OwnedBy != "" && req.SubType == "" {
+		if owner, exists := domain.ModelOwners[req.OwnedBy]; exists {
+			models = owner.Models
 		}
-	} else if req.Owner == "" && req.Type != "" {
+	} else if req.OwnedBy == "" && req.SubType != "" {
 		// 只有 Type 参数
-		if typeModels, exists := domain.TypeModelMap[req.Type]; exists {
+		if typeModels, exists := domain.TypeModelMap[req.SubType]; exists {
 			models = typeModels
 		}
 	} else {
 		// 同时有 Owner 和 Type 参数，需要取交集
-		ownerModels, ownerExists := domain.OwnerModelMap[consts.ModelProvider(req.Owner)]
-		typeModels, typeExists := domain.TypeModelMap[req.Type]
+		ownerModels, ownerExists := domain.ModelOwners[req.OwnedBy]
+		typeModels, typeExists := domain.TypeModelMap[req.SubType]
 
 		if ownerExists && typeExists {
 			// 构建一个map用于快速查找
@@ -190,7 +188,7 @@ func (m *ModelUsecase) ListModel(ctx context.Context, req *domain.ListModelReq) 
 			}
 
 			// 找出交集
-			for _, model := range ownerModels {
+			for _, model := range ownerModels.Models {
 				if typeModelMap[model.ID] {
 					models = append(models, model)
 				}
@@ -198,11 +196,5 @@ func (m *ModelUsecase) ListModel(ctx context.Context, req *domain.ListModelReq) 
 		}
 	}
 
-	// 转换为指针数组
-	result := make([]*domain.Model, len(models))
-	for i := range models {
-		result[i] = &models[i]
-	}
-
-	return result, nil
+	return models, nil
 }
