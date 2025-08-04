@@ -20,7 +20,7 @@ func NewModelHandler(
 
 	g := echo.Group("/api/v1/model")
 
-	g.POST("/check",m.CheckModel)
+	g.POST("/check", m.CheckModel)
 	g.GET("/list", m.ListModel)
 
 	return m
@@ -35,7 +35,7 @@ func NewModelHandler(
 //	@Accept			json
 //	@Produce		json
 //	@Param			model	body		domain.CheckModelReq	true	"模型"
-//	@Success		200		{object}	web.Resp{data=domain.Model}
+//	@Success		200		{object}	domain.Resp{data=domain.Model}
 //	@Router			/api/v1/model/check [post]
 func (h *ModelHandler) CheckModel(c echo.Context) error {
 	var req domain.CheckModelReq
@@ -44,7 +44,10 @@ func (h *ModelHandler) CheckModel(c echo.Context) error {
 	}
 	m, err := h.usecase.CheckModel(c.Request().Context(), &req)
 	if err != nil {
-		return err
+		return c.JSON(http.StatusInternalServerError, domain.Resp{
+			Code:    1,
+			Message: err.Error(),
+		})
 	}
 	return c.JSON(http.StatusOK, m)
 }
@@ -57,8 +60,8 @@ func (h *ModelHandler) CheckModel(c echo.Context) error {
 //	@ID				list-model
 //	@Accept			json
 //	@Produce		json
-//	@Param			req	query	domain.ListModelReq	true	"模型"
-//	@Success		200			{object}	web.Resp{data=[]domain.Model}
+//	@Param			req	query		domain.ListModelReq	true	"模型"
+//	@Success		200	{object}	domain.Resp{data=[]domain.Model}
 //	@Router			/api/v1/model/list [get]
 func (h *ModelHandler) ListModel(c echo.Context) error {
 	var req domain.ListModelReq

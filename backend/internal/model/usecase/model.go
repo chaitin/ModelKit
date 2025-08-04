@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"log/slog"
 	"net/http"
 	"time"
 
@@ -18,12 +17,10 @@ import (
 )
 
 type ModelUsecase struct {
-	logger *slog.Logger
 	client *http.Client
 }
 
 func NewModelUsecase(
-	logger *slog.Logger,
 ) domain.ModelUsecase {
 	client := &http.Client{
 		Timeout: time.Second * 30,
@@ -34,14 +31,14 @@ func NewModelUsecase(
 			IdleConnTimeout:     time.Second * 30,
 		},
 	}
-	return &ModelUsecase{logger: logger, client: client}
+	return &ModelUsecase{client: client}
 }
 
 func (m *ModelUsecase) CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.Model, error) {
-	if req.Type == consts.ModelTypeEmbedding || req.Type == consts.ModelTypeReranker {
+	if req.SubType == consts.ModelTypeEmbedding || req.SubType == consts.ModelTypeReranker {
 		url := domain.ModelOwners[req.Owner].APIBase
 		reqBody := map[string]any{}
-		if req.Type == consts.ModelTypeEmbedding {
+		if req.SubType == consts.ModelTypeEmbedding {
 			reqBody = map[string]any{
 				"model":           req.ModelID,
 				"input":           "ModelKit一个基于大模型的代码生成器，它可以根据用户的需求生成代码。",
@@ -49,7 +46,7 @@ func (m *ModelUsecase) CheckModel(ctx context.Context, req *domain.CheckModelReq
 			}
 			url = domain.ModelOwners[req.Owner].APIBase + "/embeddings"
 		}
-		if req.Type == consts.ModelTypeReranker {
+		if req.SubType == consts.ModelTypeReranker {
 			reqBody = map[string]any{
 				"model": req.ModelID,
 				"documents": []string{
@@ -117,7 +114,7 @@ func (m *ModelUsecase) CheckModel(ctx context.Context, req *domain.CheckModelReq
 		return nil, fmt.Errorf("generate failed")
 	}
 	return &domain.Model{
-		ModelType: req.Type,
+		ModelType: req.SubType,
 		OwnedBy:   req.Owner,
 		ID:        req.ModelID,
 	}, nil

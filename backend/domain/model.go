@@ -12,10 +12,10 @@ type ModelUsecase interface {
 }
 
 type CheckModelReq struct {
-	Owner   consts.ModelOwner `json:"provider" validate:"required"`   // 提供商
+	Owner   consts.ModelOwner `json:"owner" validate:"required"`      // 提供商
 	ModelID string            `json:"model_name" validate:"required"` // 模型名称
 	APIKey  string            `json:"api_key" validate:"required"`    // 接口密钥
-	Type    consts.ModelType  `json:"type" validate:"required"`       // 模型类型
+	SubType consts.ModelType  `json:"sub_type" validate:"required"`   // 模型类型
 }
 
 type ListModelReq struct {
@@ -141,4 +141,10 @@ func initModels() {
 		model := &Models[i]
 		TypeModelMap[model.ModelType] = append(TypeModelMap[model.ModelType], model)
 	}
+}
+
+type Resp struct {
+	Code    int    `json:"code"`
+	Message string `json:"message"`
+	Data    any    `json:"data,omitempty"`
 }
