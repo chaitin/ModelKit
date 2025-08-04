@@ -323,7 +323,6 @@ const ModelAdd = ({
 
   return (
     <Modal
-      title={data ? `修改${titleMap[type]}` : `添加${titleMap[type]}`}
       open={open}
       width={800}
       onCancel={handleReset}
@@ -493,10 +492,6 @@ const ModelAdd = ({
                 helperText={errors.api_key?.message}
                 onChange={(e) => {
                   field.onChange(e.target.value);
-                  setModelUserList([]);
-                  setModelListInfo([]);
-                  setValue('model', '');
-                  setSuccess(false);
                   setCheckSuccess(false); // 重置检查成功状态
                 }}
               />

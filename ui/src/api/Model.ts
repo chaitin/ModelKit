@@ -24,7 +24,7 @@ import {
  * @tags Model
  * @name PostCheckModel
  * @summary 检查模型
- * @request POST:/api/v1/model/check
+ * @request POST:/api/v1/model/modelkit/check
  * @response `200` `(DomainResp & {
     data?: DomainModel,
 
@@ -40,7 +40,7 @@ export const postCheckModel = (
       data?: DomainModel;
     }
   >({
-    path: `/api/v1/model/check`,
+    path: `/api/v1/model/modelkit/check`,
     method: "POST",
     body: model,
     type: ContentType.Json,
@@ -54,7 +54,7 @@ export const postCheckModel = (
  * @tags Model
  * @name GetListModel
  * @summary 获取模型列表
- * @request GET:/api/v1/model/list
+ * @request GET:/api/v1/model/modelkit/models
  * @response `200` `(DomainResp & {
     data?: (DomainModel)[],
 
@@ -70,7 +70,7 @@ export const getListModel = (
       data?: DomainModel[];
     }
   >({
-    path: `/api/v1/model/list`,
+    path: `/api/v1/model/modelkit/models`,
     method: "GET",
     query: query,
     type: ContentType.Json,

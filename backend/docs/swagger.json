@@ -9,7 +9,7 @@
     "host": "localhost:8080",
     "basePath": "/",
     "paths": {
-        "/api/v1/model/check": {
+        "/api/v1/model/modelkit/check": {
             "post": {
                 "description": "检查模型",
                 "consumes": [
@@ -56,7 +56,7 @@
                 }
             }
         },
-        "/api/v1/model/list": {
+        "/api/v1/model/modelkit/models": {
             "get": {
                 "description": "根据筛选条件获取模型列表，支持分页，按创建时间降序排列",
                 "consumes": [
@@ -106,14 +106,18 @@
                             "chat",
                             "coder",
                             "embedding",
-                            "reranker"
+                            "reranker",
+                            "vision",
+                            "function_call"
                         ],
                         "type": "string",
                         "x-enum-varnames": [
                             "ModelTypeChat",
                             "ModelTypeCoder",
                             "ModelTypeEmbedding",
-                            "ModelTypeReranker"
+                            "ModelTypeReranker",
+                            "ModelTypeVision",
+                            "ModelTypeFunctionCall"
                         ],
                         "description": "模型类型",
                         "name": "sub_type",
@@ -180,13 +184,17 @@
                 "chat",
                 "coder",
                 "embedding",
-                "reranker"
+                "reranker",
+                "vision",
+                "function_call"
             ],
             "x-enum-varnames": [
                 "ModelTypeChat",
                 "ModelTypeCoder",
                 "ModelTypeEmbedding",
-                "ModelTypeReranker"
+                "ModelTypeReranker",
+                "ModelTypeVision",
+                "ModelTypeFunctionCall"
             ]
         },
         "domain.CheckModelReq": {

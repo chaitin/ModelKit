@@ -15,6 +15,8 @@ export enum ConstsModelType {
   ModelTypeCoder = "coder",
   ModelTypeEmbedding = "embedding",
   ModelTypeReranker = "reranker",
+  ModelTypeVision = "vision",
+  ModelTypeFunctionCall = "function_call",
 }
 
 export enum ConstsModelOwner {
@@ -74,5 +76,11 @@ export interface GetListModelParams {
     | "BaiLian"
     | "Volcengine";
   /** 模型类型 */
-  sub_type?: "chat" | "coder" | "embedding" | "reranker";
+  sub_type?:
+    | "chat"
+    | "coder"
+    | "embedding"
+    | "reranker"
+    | "vision"
+    | "function_call";
 }

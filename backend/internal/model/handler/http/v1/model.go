@@ -18,10 +18,10 @@ func NewModelHandler(
 ) *ModelHandler {
 	m := &ModelHandler{usecase: usecase}
 
-	g := echo.Group("/api/v1/model")
+	g := echo.Group("/api/v1/model/modelkit")
 
 	g.POST("/check", m.CheckModel)
-	g.GET("/list", m.ListModel)
+	g.GET("/models", m.ListModel)
 
 	return m
 }
@@ -36,7 +36,7 @@ func NewModelHandler(
 //	@Produce		json
 //	@Param			model	body		domain.CheckModelReq	true	"模型"
 //	@Success		200		{object}	domain.Resp{data=domain.Model}
-//	@Router			/api/v1/model/check [post]
+//	@Router			/api/v1/model/modelkit/check [post]
 func (h *ModelHandler) CheckModel(c echo.Context) error {
 	var req domain.CheckModelReq
 	if err := c.Bind(&req); err != nil {
@@ -66,7 +66,7 @@ func (h *ModelHandler) CheckModel(c echo.Context) error {
 //	@Produce		json
 //	@Param			req	query		domain.ListModelReq	true	"模型"
 //	@Success		200	{object}	domain.Resp{data=[]domain.Model}
-//	@Router			/api/v1/model/list [get]
+//	@Router			/api/v1/model/modelkit/models [get]
 func (h *ModelHandler) ListModel(c echo.Context) error {
 	var req domain.ListModelReq
 	if err := c.Bind(&req); err != nil {

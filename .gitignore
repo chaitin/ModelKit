@@ -2,3 +2,4 @@ backend/main
 backend/main.go
 ui2
 ui/node_modules
+backend/.DS_Store
