@@ -10,10 +10,9 @@ const (
 type ModelType string
 
 const (
-	ModelTypeLLM       ModelType = "llm"
+	ModelTypeChat      ModelType = "chat"
 	ModelTypeCoder     ModelType = "coder"
 	ModelTypeEmbedding ModelType = "embedding"
-	ModelTypeAudio     ModelType = "audio"
 	ModelTypeReranker  ModelType = "reranker"
 )
 

@@ -15,20 +15,17 @@ import (
 	"github.com/chaitin/ModelKit/backend/config"
 	"github.com/chaitin/ModelKit/backend/consts"
 	"github.com/chaitin/ModelKit/backend/domain"
-	"github.com/chaitin/ModelKit/backend/pkg/cvt"
 	"github.com/chaitin/ModelKit/backend/pkg/request"
 )
 
 type ModelUsecase struct {
 	logger *slog.Logger
-	repo   domain.ModelRepo
 	cfg    *config.Config
 	client *http.Client
 }
 
 func NewModelUsecase(
 	logger *slog.Logger,
-	repo domain.ModelRepo,
 	cfg *config.Config,
 ) domain.ModelUsecase {
 	client := &http.Client{
@@ -40,7 +37,7 @@ func NewModelUsecase(
 			IdleConnTimeout:     time.Second * 30,
 		},
 	}
-	return &ModelUsecase{repo: repo, cfg: cfg, logger: logger, client: client}
+	return &ModelUsecase{cfg: cfg, logger: logger, client: client}
 }
 
 func (m *ModelUsecase) CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.Model, error) {
@@ -49,7 +46,7 @@ func (m *ModelUsecase) CheckModel(ctx context.Context, req *domain.CheckModelReq
 		reqBody := map[string]any{}
 		if req.Type == consts.ModelTypeEmbedding {
 			reqBody = map[string]any{
-				"model":           req.ModelName,
+				"model":           req.ModelID,
 				"input":           "ModelKit一个基于大模型的代码生成器，它可以根据用户的需求生成代码。",
 				"encoding_format": "float",
 			}
@@ -57,7 +54,7 @@ func (m *ModelUsecase) CheckModel(ctx context.Context, req *domain.CheckModelReq
 		}
 		if req.Type == consts.ModelTypeReranker {
 			reqBody = map[string]any{
-				"model": req.ModelName,
+				"model": req.ModelID,
 				"documents": []string{
 					"ModelKit一个基于大模型的代码生成器，它可以根据用户的需求生成代码。",
 					"ModelKit一个基于大模型的代码生成器，它可以根据用户的需求生成代码。",
@@ -90,7 +87,7 @@ func (m *ModelUsecase) CheckModel(ctx context.Context, req *domain.CheckModelReq
 	config := &openai.ChatModelConfig{
 		APIKey:  req.APIKey,
 		BaseURL: req.APIBase,
-		Model:   string(req.ModelName),
+		Model:   string(req.ModelID),
 	}
 	// for azure openai
 	if req.Provider == consts.ModelProviderAzureOpenAI {
@@ -123,14 +120,8 @@ func (m *ModelUsecase) CheckModel(ctx context.Context, req *domain.CheckModelReq
 	}
 	return &domain.Model{
 		ModelType: req.Type,
-		Provider:  req.Provider,
-		ModelName: req.ModelName,
-		APIConfig: &domain.ModelAPIConfig{
-			APIBase:    req.APIBase,
-			APIKey:     req.APIKey,
-			APIVersion: req.APIVersion,
-			APIHeader:  req.APIHeader,
-		},
+		OwnedBy:   req.Provider,
+		ID:        req.ModelID,
 	}, nil
 }
 
@@ -163,34 +154,55 @@ func getHttpClientWithAPIHeaderMap(header string) *http.Client {
 	return nil
 }
 
-// Update implements domain.ModelUsecase.
-func (m *ModelUsecase) UpdateModel(ctx context.Context, req *domain.UpdateModelReq) (*domain.Model, error) {
-	model, err := m.repo.UpdateModel(ctx, req)
-	if err != nil {
-		return nil, err
-	}
-	return cvt.From(model, &domain.Model{}), nil
-}
-
-// GetModel implements domain.ModelUsecase.
-func (m *ModelUsecase) GetModel(ctx context.Context, req *domain.GetModelReq) (*domain.Model, error) {
-	model, err := m.repo.GetModel(ctx, req)
-	if err != nil {
-		return nil, err
-	}
-	return cvt.From(model, &domain.Model{}), nil
-}
-
 // ListModel implements domain.ModelUsecase.
 func (m *ModelUsecase) ListModel(ctx context.Context, req *domain.ListModelReq) ([]*domain.Model, error) {
-	models, err := m.repo.ListModel(ctx, req)
-	if err != nil {
-		return nil, err
+	// 如果没有请求参数或参数为空，返回全体模型
+	if req == nil || (req.Owner == "" && req.Type == "") {
+		result := make([]*domain.Model, len(domain.Models))
+		for i := range domain.Models {
+			result[i] = &domain.Models[i]
+		}
+		return result, nil
 	}
 
-	result := make([]*domain.Model, len(models))
-	for i, model := range models {
-		result[i] = cvt.From(model, &domain.Model{})
+	var models []domain.Model
+
+	// 只有 Owner 参数
+	if req.Owner != "" && req.Type == "" {
+		if ownerModels, exists := domain.OwnerModelMap[consts.ModelProvider(req.Owner)]; exists {
+			models = ownerModels
+		}
+	} else if req.Owner == "" && req.Type != "" {
+		// 只有 Type 参数
+		if typeModels, exists := domain.TypeModelMap[req.Type]; exists {
+			models = typeModels
+		}
+	} else {
+		// 同时有 Owner 和 Type 参数，需要取交集
+		ownerModels, ownerExists := domain.OwnerModelMap[consts.ModelProvider(req.Owner)]
+		typeModels, typeExists := domain.TypeModelMap[req.Type]
+
+		if ownerExists && typeExists {
+			// 构建一个map用于快速查找
+			typeModelMap := make(map[string]bool)
+			for _, model := range typeModels {
+				typeModelMap[model.ID] = true
+			}
+
+			// 找出交集
+			for _, model := range ownerModels {
+				if typeModelMap[model.ID] {
+					models = append(models, model)
+				}
+			}
+		}
 	}
+
+	// 转换为指针数组
+	result := make([]*domain.Model, len(models))
+	for i := range models {
+		result[i] = &models[i]
+	}
+
 	return result, nil
 }
