@@ -6,7 +6,7 @@ import (
 	"net/http"
 
 	"github.com/chaitin/ModelKit/backend/domain"
-	"github.com/chaitin/ModelKit/backend/internal/usecase"
+	"github.com/chaitin/ModelKit/backend/modelkit"
 	"github.com/chaitin/ModelKit/backend/pkg/log"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
@@ -15,7 +15,7 @@ import (
 )
 
 type ModelKitPandaAdapter struct {
-	usecase      domain.ModelUsecase
+	usecase      domain.ModelKit
 	isApmEnabled bool
 	baseLogger   *log.Logger
 }
@@ -26,7 +26,7 @@ func NewModelKitPandaAdapter(
 	isApmEnabled bool,
 ) *ModelKitPandaAdapter {
 	m := &ModelKitPandaAdapter{
-		usecase:      usecase.NewModelUsecase(),
+		usecase:      modelkit.NewModelKit(),
 		isApmEnabled: isApmEnabled,
 		baseLogger:   logger.WithModule("http_base_handler"),
 	}

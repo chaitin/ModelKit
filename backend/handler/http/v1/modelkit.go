@@ -6,17 +6,17 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"github.com/chaitin/ModelKit/backend/domain"
-	"github.com/chaitin/ModelKit/backend/internal/usecase"
+	"github.com/chaitin/ModelKit/backend/modelkit"
 )
 
-type ModelKit struct {
-	usecase domain.ModelUsecase
+type ModelKitHandler struct {
+	usecase domain.ModelKit
 }
 
-func NewModelKit(
+func NewModelKitHandler(
 	echo *echo.Echo,
-) *ModelKit {
-	m := &ModelKit{usecase: usecase.NewModelUsecase()}
+) *ModelKitHandler {
+	m := &ModelKitHandler{usecase: modelkit.NewModelKit()}
 
 	g := echo.Group("/api/v1/model/modelkit")
 
@@ -37,7 +37,7 @@ func NewModelKit(
 //	@Param			model	body		domain.CheckModelReq	true	"模型"
 //	@Success		200		{object}	domain.Resp{data=domain.Model}
 //	@Router			/api/v1/model/modelkit/check [post]
-func (h *ModelKit) CheckModel(c echo.Context) error {
+func (h *ModelKitHandler) CheckModel(c echo.Context) error {
 	var req domain.CheckModelReq
 	if err := c.Bind(&req); err != nil {
 		return err
@@ -67,7 +67,7 @@ func (h *ModelKit) CheckModel(c echo.Context) error {
 //	@Param			req	query		domain.ListModelReq	true	"模型"
 //	@Success		200	{object}	domain.Resp{data=[]domain.Model}
 //	@Router			/api/v1/model/modelkit/models [get]
-func (h *ModelKit) ListModel(c echo.Context) error {
+func (h *ModelKitHandler) ListModel(c echo.Context) error {
 	var req domain.ListModelReq
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, domain.Resp{
