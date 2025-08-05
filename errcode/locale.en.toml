@@ -1,0 +1,35 @@
+[err-permission]
+other = "Permission denied"
+
+[err-user-not-found]
+other = "User not found"
+
+[err-user-lock]
+other = "User is locked"
+
+[err-password]
+other = "Incorrect password"
+
+[err-invite-code-invalid]
+other = "Invalid invitation code"
+
+[err-email-invalid]
+other = "Invalid email format"
+
+[err-oauth-state-invalid]
+other = "Invalid OAuth state"
+
+[err-unsupported-platform]
+other = "Unsupported platform"
+
+[err-not-invited]
+other = "Not invited"
+
+[err-dingtalk-not-enabled]
+other = "DingTalk is not enabled"
+
+[err-custom-not-enabled]
+other = "OAuth is not enabled"
+
+[err-user-limit]
+other = "User limit reached"
