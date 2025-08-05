@@ -1,0 +1,281 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "ModelKit API server for model management",
+        "title": "ModelKit API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/",
+    "paths": {
+        "/api/v1/model/modelkit/check": {
+            "post": {
+                "description": "检查模型",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Model"
+                ],
+                "summary": "检查模型",
+                "operationId": "check-model",
+                "parameters": [
+                    {
+                        "description": "模型",
+                        "name": "model",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/domain.CheckModelReq"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/domain.Resp"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/domain.Model"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/model/modelkit/models": {
+            "get": {
+                "description": "根据筛选条件获取模型列表，支持分页，按创建时间降序排列",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "Model"
+                ],
+                "summary": "获取模型列表",
+                "operationId": "list-model",
+                "parameters": [
+                    {
+                        "enum": [
+                            "SiliconFlow",
+                            "OpenAI",
+                            "Ollama",
+                            "DeepSeek",
+                            "Moonshot",
+                            "AzureOpenAI",
+                            "BaiZhiCloud",
+                            "Hunyuan",
+                            "BaiLian",
+                            "Volcengine"
+                        ],
+                        "type": "string",
+                        "x-enum-varnames": [
+                            "ModelOwnerSiliconFlow",
+                            "ModelOwnerOpenAI",
+                            "ModelOwnerOllama",
+                            "ModelOwnerDeepSeek",
+                            "ModelOwnerMoonshot",
+                            "ModelOwnerAzureOpenAI",
+                            "ModelOwnerBaiZhiCloud",
+                            "ModelOwnerHunyuan",
+                            "ModelOwnerBaiLian",
+                            "ModelOwnerVolcengine"
+                        ],
+                        "description": "提供商",
+                        "name": "owned_by",
+                        "in": "query"
+                    },
+                    {
+                        "enum": [
+                            "chat",
+                            "coder",
+                            "embedding",
+                            "reranker",
+                            "vision",
+                            "function_call"
+                        ],
+                        "type": "string",
+                        "x-enum-varnames": [
+                            "ModelTypeChat",
+                            "ModelTypeCoder",
+                            "ModelTypeEmbedding",
+                            "ModelTypeReranker",
+                            "ModelTypeVision",
+                            "ModelTypeFunctionCall"
+                        ],
+                        "description": "模型类型",
+                        "name": "sub_type",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/domain.Resp"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "type": "array",
+                                            "items": {
+                                                "$ref": "#/definitions/domain.Model"
+                                            }
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "consts.ModelOwner": {
+            "type": "string",
+            "enum": [
+                "SiliconFlow",
+                "OpenAI",
+                "Ollama",
+                "DeepSeek",
+                "Moonshot",
+                "AzureOpenAI",
+                "BaiZhiCloud",
+                "Hunyuan",
+                "BaiLian",
+                "Volcengine"
+            ],
+            "x-enum-varnames": [
+                "ModelOwnerSiliconFlow",
+                "ModelOwnerOpenAI",
+                "ModelOwnerOllama",
+                "ModelOwnerDeepSeek",
+                "ModelOwnerMoonshot",
+                "ModelOwnerAzureOpenAI",
+                "ModelOwnerBaiZhiCloud",
+                "ModelOwnerHunyuan",
+                "ModelOwnerBaiLian",
+                "ModelOwnerVolcengine"
+            ]
+        },
+        "consts.ModelType": {
+            "type": "string",
+            "enum": [
+                "chat",
+                "coder",
+                "embedding",
+                "reranker",
+                "vision",
+                "function_call"
+            ],
+            "x-enum-varnames": [
+                "ModelTypeChat",
+                "ModelTypeCoder",
+                "ModelTypeEmbedding",
+                "ModelTypeReranker",
+                "ModelTypeVision",
+                "ModelTypeFunctionCall"
+            ]
+        },
+        "domain.CheckModelReq": {
+            "type": "object",
+            "required": [
+                "api_key",
+                "model_name",
+                "owner",
+                "sub_type"
+            ],
+            "properties": {
+                "api_key": {
+                    "description": "接口密钥",
+                    "type": "string"
+                },
+                "model_name": {
+                    "description": "模型名称",
+                    "type": "string"
+                },
+                "owner": {
+                    "description": "提供商",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/consts.ModelOwner"
+                        }
+                    ]
+                },
+                "sub_type": {
+                    "description": "模型类型",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/consts.ModelType"
+                        }
+                    ]
+                }
+            }
+        },
+        "domain.Model": {
+            "type": "object",
+            "properties": {
+                "created": {
+                    "description": "创建时间",
+                    "type": "integer"
+                },
+                "id": {
+                    "description": "模型的名字",
+                    "type": "string"
+                },
+                "model_type": {
+                    "description": "模型类型",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/consts.ModelType"
+                        }
+                    ]
+                },
+                "object": {
+                    "description": "总是model",
+                    "type": "string"
+                },
+                "owned_by": {
+                    "description": "提供商",
+                    "allOf": [
+                        {
+                            "$ref": "#/definitions/consts.ModelOwner"
+                        }
+                    ]
+                }
+            }
+        },
+        "domain.Resp": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {},
+                "message": {
+                    "type": "string"
+                }
+            }
+        }
+    }
+}
