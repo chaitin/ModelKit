@@ -21,7 +21,7 @@ import {
 /**
  * @description 检查模型
  *
- * @tags Model
+ * @tags ModelKitModel
  * @name PostCheckModel
  * @summary 检查模型
  * @request POST:/api/v1/model/modelkit/check
@@ -51,7 +51,7 @@ export const postCheckModel = (
 /**
  * @description 根据筛选条件获取模型列表，支持分页，按创建时间降序排列
  *
- * @tags Model
+ * @tags ModelKitModel
  * @name GetListModel
  * @summary 获取模型列表
  * @request GET:/api/v1/model/modelkit/models

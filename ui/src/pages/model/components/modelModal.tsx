@@ -1,7 +1,7 @@
 import {
   postCheckModel,
   getListModel,
-} from '@/api/Model';
+} from '@/api/ModelKitModel';
 import { ConstsModelType, DomainModel, DomainResp } from '@/api/types';
 
 // 扩展 DomainModel 类型以包含高级设置参数

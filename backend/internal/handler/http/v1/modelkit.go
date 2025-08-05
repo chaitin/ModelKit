@@ -6,17 +6,17 @@ import (
 	"github.com/labstack/echo/v4"
 
 	"github.com/chaitin/ModelKit/backend/domain"
+	"github.com/chaitin/ModelKit/backend/internal/usecase"
 )
 
-type ModelHandler struct {
+type ModelKit struct {
 	usecase domain.ModelUsecase
 }
 
-func NewModelHandler(
+func NewModelKit(
 	echo *echo.Echo,
-	usecase domain.ModelUsecase,
-) *ModelHandler {
-	m := &ModelHandler{usecase: usecase}
+) *ModelKit {
+	m := &ModelKit{usecase: usecase.NewModelUsecase()}
 
 	g := echo.Group("/api/v1/model/modelkit")
 
@@ -28,7 +28,7 @@ func NewModelHandler(
 
 // Check 检查模型
 //
-//	@Tags			Model
+//	@Tags			ModelKitModel
 //	@Summary		检查模型
 //	@Description	检查模型
 //	@ID				check-model
@@ -37,7 +37,7 @@ func NewModelHandler(
 //	@Param			model	body		domain.CheckModelReq	true	"模型"
 //	@Success		200		{object}	domain.Resp{data=domain.Model}
 //	@Router			/api/v1/model/modelkit/check [post]
-func (h *ModelHandler) CheckModel(c echo.Context) error {
+func (h *ModelKit) CheckModel(c echo.Context) error {
 	var req domain.CheckModelReq
 	if err := c.Bind(&req); err != nil {
 		return err
@@ -58,7 +58,7 @@ func (h *ModelHandler) CheckModel(c echo.Context) error {
 
 // List 获取模型列表
 //
-//	@Tags			Model
+//	@Tags			ModelKitModel
 //	@Summary		获取模型列表
 //	@Description	根据筛选条件获取模型列表，支持分页，按创建时间降序排列
 //	@ID				list-model
@@ -67,7 +67,7 @@ func (h *ModelHandler) CheckModel(c echo.Context) error {
 //	@Param			req	query		domain.ListModelReq	true	"模型"
 //	@Success		200	{object}	domain.Resp{data=[]domain.Model}
 //	@Router			/api/v1/model/modelkit/models [get]
-func (h *ModelHandler) ListModel(c echo.Context) error {
+func (h *ModelKit) ListModel(c echo.Context) error {
 	var req domain.ListModelReq
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, domain.Resp{

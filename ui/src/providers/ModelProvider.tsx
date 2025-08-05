@@ -1,6 +1,6 @@
 import React, { createContext, useContext, useState, useEffect } from 'react';
 import { DomainModel, ConstsModelType } from '@/api/types';
-import { getListModel } from '@/api/Model';
+import { getListModel } from '@/api/ModelKitModel';
 
 interface ModelContextType {
   coderModel: DomainModel[];

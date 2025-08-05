@@ -31,4 +31,6 @@ const (
 	ModelOwnerHunyuan     ModelOwner = "Hunyuan"
 	ModelOwnerBaiLian     ModelOwner = "BaiLian"
 	ModelOwnerVolcengine  ModelOwner = "Volcengine"
+	ModelOwnerGemini      ModelOwner = "Gemini"
+	ModelOwnerZhiPu       ModelOwner = "ZhiPu"
 )
