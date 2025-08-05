@@ -204,6 +204,7 @@ func (m *ModelKit) ListModel(ctx context.Context, req *domain.ListModelReq) ([]*
 }
 
 func (m *ModelKit) PandaModelList(ctx context.Context, req *domain.GetProviderModelListReq) (*domain.GetProviderModelListResp, error) {
+	modelType := consts.ModelType(req.Type)
 	switch provider := consts.ModelOwner(req.Provider); provider {
 	case consts.ModelOwnerMoonshot,
 		consts.ModelOwnerDeepSeek,
@@ -326,9 +327,9 @@ func (m *ModelKit) PandaModelList(ctx context.Context, req *domain.GetProviderMo
 		}
 		return &models, nil
 	case consts.ModelOwnerSiliconFlow, consts.ModelOwnerBaiZhiCloud:
-		if req.Type == consts.ModelTypeEmbedding || req.Type == consts.ModelTypeReranker {
+		if modelType == consts.ModelTypeEmbedding || modelType == consts.ModelTypeReranker {
 			if provider == consts.ModelOwnerBaiZhiCloud {
-				if req.Type == consts.ModelTypeEmbedding {
+				if modelType == consts.ModelTypeEmbedding {
 					return &domain.GetProviderModelListResp{
 						Models: []domain.ProviderModelListItem{
 							{
