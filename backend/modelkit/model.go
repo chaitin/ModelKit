@@ -1,4 +1,4 @@
-package usecase
+package modelkit
 
 import (
 	"bytes"
@@ -23,11 +23,11 @@ import (
 	"github.com/chaitin/ModelKit/backend/pkg/request"
 )
 
-type ModelUsecase struct {
+type ModelKit struct {
 	client *http.Client
 }
 
-func NewModelUsecase() domain.ModelUsecase {
+func NewModelKit() domain.ModelKit {
 	client := &http.Client{
 		Timeout: time.Second * 30,
 		Transport: &http.Transport{
@@ -37,10 +37,10 @@ func NewModelUsecase() domain.ModelUsecase {
 			IdleConnTimeout:     time.Second * 30,
 		},
 	}
-	return &ModelUsecase{client: client}
+	return &ModelKit{client: client}
 }
 
-func (m *ModelUsecase) CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.Model, error) {
+func (m *ModelKit) CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.Model, error) {
 	if req.SubType == consts.ModelTypeEmbedding || req.SubType == consts.ModelTypeReranker {
 		url := domain.ModelOwners[req.Owner].APIBase
 		reqBody := map[string]any{}
@@ -157,7 +157,7 @@ func getHttpClientWithAPIHeaderMap(header string) *http.Client {
 }
 
 // ListModel implements domain.ModelUsecase.
-func (m *ModelUsecase) ListModel(ctx context.Context, req *domain.ListModelReq) ([]*domain.Model, error) {
+func (m *ModelKit) ListModel(ctx context.Context, req *domain.ListModelReq) ([]*domain.Model, error) {
 	// 如果没有请求参数或参数为空，返回全体模型
 	if req == nil || (req.OwnedBy == "" && req.SubType == "") {
 		result := make([]*domain.Model, len(domain.Models))
@@ -203,7 +203,7 @@ func (m *ModelUsecase) ListModel(ctx context.Context, req *domain.ListModelReq) 
 	return models, nil
 }
 
-func (m *ModelUsecase) PandaModelList(ctx context.Context, req *domain.GetProviderModelListReq) (*domain.GetProviderModelListResp, error) {
+func (m *ModelKit) PandaModelList(ctx context.Context, req *domain.GetProviderModelListReq) (*domain.GetProviderModelListResp, error) {
 	switch provider := consts.ModelOwner(req.Provider); provider {
 	case consts.ModelOwnerMoonshot,
 		consts.ModelOwnerDeepSeek,
