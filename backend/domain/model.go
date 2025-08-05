@@ -9,6 +9,7 @@ import (
 type ModelUsecase interface {
 	CheckModel(ctx context.Context, req *CheckModelReq) (*Model, error)
 	ListModel(ctx context.Context, req *ListModelReq) ([]*Model, error)
+	PandaModelList(ctx context.Context, req *GetProviderModelListReq) (*GetProviderModelListResp, error)
 }
 
 type CheckModelReq struct {
@@ -46,7 +47,7 @@ type Model struct {
 }
 
 var Models []Model
-var ModelOwners map[consts.ModelOwner]ModelOwner
+var ModelOwners map[consts.ModelOwner]*ModelOwner
 var TypeModelMap map[consts.ModelType][]*Model
 
 func getModelsByOwner(owner consts.ModelOwner) []*Model {
@@ -61,11 +62,12 @@ func getModelsByOwner(owner consts.ModelOwner) []*Model {
 
 func init() {
 	initModels()
+	initModelOwners()
 }
 
-func initModels() {
-	Models = []Model{
-		// 百智云模型
+// getBaiZhiCloudModels 返回百智云模型列表
+func getBaiZhiCloudModels() []Model {
+	return []Model{
 		{ID: "qwen-plus", Object: "model", OwnedBy: consts.ModelOwnerBaiZhiCloud, ModelType: consts.ModelTypeChat},
 		{ID: "qwen2.5-72b-instruct", Object: "model", OwnedBy: consts.ModelOwnerBaiZhiCloud, ModelType: consts.ModelTypeChat},
 		{ID: "qwen2.5-14b-instruct", Object: "model", OwnedBy: consts.ModelOwnerBaiZhiCloud, ModelType: consts.ModelTypeChat},
@@ -77,10 +79,20 @@ func initModels() {
 		{ID: "deepseek-v3", Object: "model", OwnedBy: consts.ModelOwnerBaiZhiCloud, ModelType: consts.ModelTypeChat},
 		{ID: "qwen-turbo", Object: "model", OwnedBy: consts.ModelOwnerBaiZhiCloud, ModelType: consts.ModelTypeChat},
 		{ID: "qwen2.5-32b-instruct", Object: "model", OwnedBy: consts.ModelOwnerBaiZhiCloud, ModelType: consts.ModelTypeChat},
-		// Deepseek
+	}
+}
+
+// getDeepSeekModels 返回Deepseek模型列表
+func getDeepSeekModels() []Model {
+	return []Model{
 		{ID: "deepseek-chat", Object: "model", OwnedBy: consts.ModelOwnerDeepSeek, ModelType: consts.ModelTypeChat},
 		{ID: "deepseek-reasoner", Object: "model", OwnedBy: consts.ModelOwnerDeepSeek, ModelType: consts.ModelTypeChat},
-		// 腾讯混元
+	}
+}
+
+// getHunyuanModels 返回腾讯混元模型列表
+func getHunyuanModels() []Model {
+	return []Model{
 		{ID: "hunyuan-pro", Object: "model", OwnedBy: consts.ModelOwnerHunyuan, ModelType: consts.ModelTypeChat},
 		{ID: "hunyuan-vision", Object: "model", OwnedBy: consts.ModelOwnerHunyuan, ModelType: consts.ModelTypeVision},
 		{ID: "hunyuan-lite", Object: "model", OwnedBy: consts.ModelOwnerHunyuan, ModelType: consts.ModelTypeChat},
@@ -111,7 +123,12 @@ func initModels() {
 		{ID: "hunyuan-t1-20250711", Object: "model", OwnedBy: consts.ModelOwnerHunyuan, ModelType: consts.ModelTypeChat},
 		{ID: "hunyuan-turbos-20250716", Object: "model", OwnedBy: consts.ModelOwnerHunyuan, ModelType: consts.ModelTypeChat},
 		{ID: "hunyuan-vision-7b-20250720", Object: "model", OwnedBy: consts.ModelOwnerHunyuan, ModelType: consts.ModelTypeVision},
-		// 阿里百炼模型
+	}
+}
+
+// getBaiLianModels 返回阿里百炼模型列表
+func getBaiLianModels() []Model {
+	return []Model{
 		{ID: "qwen3-coder-plus", Object: "model", OwnedBy: consts.ModelOwnerBaiLian, ModelType: consts.ModelTypeCoder},
 		{ID: "qwen3-coder-plus-2025-07-22", Object: "model", OwnedBy: consts.ModelOwnerBaiLian, ModelType: consts.ModelTypeCoder},
 		{ID: "qwen-plus-2025-07-14", Object: "model", OwnedBy: consts.ModelOwnerBaiLian, ModelType: consts.ModelTypeChat},
@@ -194,13 +211,26 @@ func initModels() {
 		{ID: "qwen-plus", Object: "model", OwnedBy: consts.ModelOwnerBaiLian, ModelType: consts.ModelTypeChat},
 		{ID: "qwen-max-0403", Object: "model", OwnedBy: consts.ModelOwnerBaiLian, ModelType: consts.ModelTypeChat},
 		{ID: "qwen-max-0107", Object: "model", OwnedBy: consts.ModelOwnerBaiLian, ModelType: consts.ModelTypeChat},
-		// 火山引擎
+	}
+}
+
+// getVolcengineModels 返回火山引擎模型列表
+func getVolcengineModels() []Model {
+	return []Model{
 		{ID: "doubao-seed-1.6-250615", Object: "model", OwnedBy: consts.ModelOwnerVolcengine, ModelType: consts.ModelTypeChat},
 		{ID: "doubao-seed-1.6-flash-250615", Object: "model", OwnedBy: consts.ModelOwnerVolcengine, ModelType: consts.ModelTypeChat},
+		{ID: "doubao-seed-1.6-flash-250715", Object: "model", OwnedBy: consts.ModelOwnerVolcengine, ModelType: consts.ModelTypeChat},
 		{ID: "doubao-seed-1.6-thinking-250615", Object: "model", OwnedBy: consts.ModelOwnerVolcengine, ModelType: consts.ModelTypeChat},
+		{ID: "doubao-seed-1.6-thinking-250715", Object: "model", OwnedBy: consts.ModelOwnerVolcengine, ModelType: consts.ModelTypeChat},
 		{ID: "doubao-1.5-thinking-vision-pro-250428", Object: "model", OwnedBy: consts.ModelOwnerVolcengine, ModelType: consts.ModelTypeVision},
+		{ID: "Doubao-1.5-thinking-pro-250415", Object: "model", OwnedBy: consts.ModelOwnerVolcengine, ModelType: consts.ModelTypeChat},
 		{ID: "deepseek-r1-250528", Object: "model", OwnedBy: consts.ModelOwnerVolcengine, ModelType: consts.ModelTypeChat},
-		// OpenAI
+	}
+}
+
+// getOpenAIModels 返回OpenAI模型列表
+func getOpenAIModels() []Model {
+	return []Model{
 		{ID: "text-embedding-ada-002", Object: "model", OwnedBy: consts.ModelOwnerOpenAI, ModelType: consts.ModelTypeEmbedding},
 		{ID: "whisper-1", Object: "model", OwnedBy: consts.ModelOwnerOpenAI, ModelType: consts.ModelTypeFunctionCall},
 		{ID: "gpt-3.5-turbo", Object: "model", OwnedBy: consts.ModelOwnerOpenAI, ModelType: consts.ModelTypeChat},
@@ -249,8 +279,12 @@ func initModels() {
 		{ID: "gpt-4.1-nano", Object: "model", OwnedBy: consts.ModelOwnerOpenAI, ModelType: consts.ModelTypeChat},
 		{ID: "gpt-image-1", Object: "model", OwnedBy: consts.ModelOwnerOpenAI, ModelType: consts.ModelTypeVision},
 		{ID: "gpt-4o-audio-preview-2025-06-03", Object: "model", OwnedBy: consts.ModelOwnerOpenAI, ModelType: consts.ModelTypeFunctionCall},
-		// 硅基流动
-		// 硅基流动 SiliconFlow
+	}
+}
+
+// getSiliconFlowModels 返回硅基流动模型列表
+func getSiliconFlowModels() []Model {
+	return []Model{
 		{ID: "stabilityai/stable-diffusion-xl-base-1.0", Object: "model", OwnedBy: consts.ModelOwnerSiliconFlow, ModelType: consts.ModelTypeVision},
 		{ID: "THUDM/glm-4-9b-chat", Object: "model", OwnedBy: consts.ModelOwnerSiliconFlow, ModelType: consts.ModelTypeChat},
 		{ID: "Qwen/Qwen2-7B-Instruct", Object: "model", OwnedBy: consts.ModelOwnerSiliconFlow, ModelType: consts.ModelTypeChat},
@@ -346,11 +380,95 @@ func initModels() {
 		{ID: "Qwen/Qwen3-30B-A3B-Instruct-2507", Object: "model", OwnedBy: consts.ModelOwnerSiliconFlow, ModelType: consts.ModelTypeChat},
 		{ID: "Qwen/Qwen3-30B-A3B-Thinking-2507", Object: "model", OwnedBy: consts.ModelOwnerSiliconFlow, ModelType: consts.ModelTypeChat},
 		{ID: "Qwen/Qwen3-Coder-30B-A3B-Instruct", Object: "model", OwnedBy: consts.ModelOwnerSiliconFlow, ModelType: consts.ModelTypeCoder},
+	}
+}
 
+func getMoonshotModels() []Model {
+	return []Model{
+		{ID: "moonshot-v1-auto", Object: "model", OwnedBy: consts.ModelOwnerMoonshot, ModelType: consts.ModelTypeChat},
+		{ID: "moonshot-v1-8k", Object: "model", OwnedBy: consts.ModelOwnerMoonshot, ModelType: consts.ModelTypeChat},
+		{ID: "moonshot-v1-32k", Object: "model", OwnedBy: consts.ModelOwnerMoonshot, ModelType: consts.ModelTypeChat},
+		{ID: "moonshot-v1-128k", Object: "model", OwnedBy: consts.ModelOwnerMoonshot, ModelType: consts.ModelTypeChat},
 	}
 
+}
+
+func getAzureOpenAIModels() []Model {
+	return []Model{
+		{ID: "gpt-4", Object: "model", OwnedBy: consts.ModelOwnerAzureOpenAI, ModelType: consts.ModelTypeChat},
+		{ID: "gpt-4o", Object: "model", OwnedBy: consts.ModelOwnerAzureOpenAI, ModelType: consts.ModelTypeChat},
+		{ID: "gpt-4o-mini", Object: "model", OwnedBy: consts.ModelOwnerAzureOpenAI, ModelType: consts.ModelTypeChat},
+		{ID: "gpt-4o-nano", Object: "model", OwnedBy: consts.ModelOwnerAzureOpenAI, ModelType: consts.ModelTypeChat},
+		{ID: "gpt-4.1", Object: "model", OwnedBy: consts.ModelOwnerAzureOpenAI, ModelType: consts.ModelTypeChat},
+		{ID: "gpt-4.1-mini", Object: "model", OwnedBy: consts.ModelOwnerAzureOpenAI, ModelType: consts.ModelTypeChat},
+		{ID: "gpt-4.1-nano", Object: "model", OwnedBy: consts.ModelOwnerAzureOpenAI, ModelType: consts.ModelTypeChat},
+		{ID: "o1", Object: "model", OwnedBy: consts.ModelOwnerAzureOpenAI, ModelType: consts.ModelTypeChat},
+		{ID: "o1-mini", Object: "model", OwnedBy: consts.ModelOwnerAzureOpenAI, ModelType: consts.ModelTypeChat},
+		{ID: "o3", Object: "model", OwnedBy: consts.ModelOwnerAzureOpenAI, ModelType: consts.ModelTypeChat},
+		{ID: "o3-mini", Object: "model", OwnedBy: consts.ModelOwnerAzureOpenAI, ModelType: consts.ModelTypeChat},
+		{ID: "o4-mini", Object: "model", OwnedBy: consts.ModelOwnerAzureOpenAI, ModelType: consts.ModelTypeChat},
+	}
+}
+
+// getGeminiModels 返回Google Gemini模型列表
+func getGeminiModels() []Model {
+	return []Model{
+		{ID: "gemini-2.5-pro", Object: "model", OwnedBy: consts.ModelOwnerGemini, ModelType: consts.ModelTypeChat},
+		{ID: "gemini-2.5-flash", Object: "model", OwnedBy: consts.ModelOwnerGemini, ModelType: consts.ModelTypeChat},
+		{ID: "gemini-2.5-flash-lite-preview-06-17", Object: "model", OwnedBy: consts.ModelOwnerGemini, ModelType: consts.ModelTypeChat},
+		{ID: "gemini-2.5-flash-preview-tts", Object: "model", OwnedBy: consts.ModelOwnerGemini, ModelType: consts.ModelTypeChat},
+		{ID: "gemini-2.5-pro-preview-tts", Object: "model", OwnedBy: consts.ModelOwnerGemini, ModelType: consts.ModelTypeChat},
+		{ID: "gemini-2.0-flash", Object: "model", OwnedBy: consts.ModelOwnerGemini, ModelType: consts.ModelTypeChat},
+		{ID: "gemini-2.0-flash-lite", Object: "model", OwnedBy: consts.ModelOwnerGemini, ModelType: consts.ModelTypeChat},
+		{ID: "gemini-1.5-flash", Object: "model", OwnedBy: consts.ModelOwnerGemini, ModelType: consts.ModelTypeChat},
+		{ID: "gemini-1.5-flash-8b", Object: "model", OwnedBy: consts.ModelOwnerGemini, ModelType: consts.ModelTypeChat},
+		{ID: "gemini-1.5-pro", Object: "model", OwnedBy: consts.ModelOwnerGemini, ModelType: consts.ModelTypeChat},
+		{ID: "gemini-embedding-001", Object: "model", OwnedBy: consts.ModelOwnerGemini, ModelType: consts.ModelTypeEmbedding},
+	}
+}
+
+// getZhiPuModels 返回智谱模型列表
+func getZhiPuModels() []Model {
+	return []Model{
+		{ID: "glm-4.5", Object: "model", OwnedBy: consts.ModelOwnerZhiPu, ModelType: consts.ModelTypeChat},
+		{ID: "glm-4.5-x", Object: "model", OwnedBy: consts.ModelOwnerZhiPu, ModelType: consts.ModelTypeChat},
+		{ID: "glm-4.5-air", Object: "model", OwnedBy: consts.ModelOwnerZhiPu, ModelType: consts.ModelTypeChat},
+		{ID: "glm-4.5-airx", Object: "model", OwnedBy: consts.ModelOwnerZhiPu, ModelType: consts.ModelTypeChat},
+		{ID: "glm-4.5-flash", Object: "model", OwnedBy: consts.ModelOwnerZhiPu, ModelType: consts.ModelTypeChat},
+		{ID: "glm-4-plus", Object: "model", OwnedBy: consts.ModelOwnerZhiPu, ModelType: consts.ModelTypeChat},
+		{ID: "glm-4-air-250414", Object: "model", OwnedBy: consts.ModelOwnerZhiPu, ModelType: consts.ModelTypeChat},
+		{ID: "glm-4-airx", Object: "model", OwnedBy: consts.ModelOwnerZhiPu, ModelType: consts.ModelTypeChat},
+		{ID: "glm-4-long", Object: "model", OwnedBy: consts.ModelOwnerZhiPu, ModelType: consts.ModelTypeChat},
+		{ID: "glm-4-flashx-250414", Object: "model", OwnedBy: consts.ModelOwnerZhiPu, ModelType: consts.ModelTypeChat},
+		{ID: "glm-4-flash-250414", Object: "model", OwnedBy: consts.ModelOwnerZhiPu, ModelType: consts.ModelTypeChat},
+		{ID: "glm-z1-air", Object: "model", OwnedBy: consts.ModelOwnerZhiPu, ModelType: consts.ModelTypeChat},
+		{ID: "glm-z1-airx", Object: "model", OwnedBy: consts.ModelOwnerZhiPu, ModelType: consts.ModelTypeChat},
+		{ID: "glm-z1-flashx", Object: "model", OwnedBy: consts.ModelOwnerZhiPu, ModelType: consts.ModelTypeChat},
+		{ID: "glm-z1-flash", Object: "model", OwnedBy: consts.ModelOwnerZhiPu, ModelType: consts.ModelTypeChat},
+		{ID: "glm-4v-plus-0111", Object: "model", OwnedBy: consts.ModelOwnerZhiPu, ModelType: consts.ModelTypeVision},
+		{ID: "glm-4v-flash", Object: "model", OwnedBy: consts.ModelOwnerZhiPu, ModelType: consts.ModelTypeVision},
+	}
+}
+
+func initModels() {
+	Models = make([]Model, 0, 200)
+
+	Models = append(Models, getBaiZhiCloudModels()...)
+	Models = append(Models, getDeepSeekModels()...)
+	Models = append(Models, getHunyuanModels()...)
+	Models = append(Models, getBaiLianModels()...)
+	Models = append(Models, getVolcengineModels()...)
+	Models = append(Models, getOpenAIModels()...)
+	Models = append(Models, getSiliconFlowModels()...)
+	Models = append(Models, getMoonshotModels()...)
+	Models = append(Models, getAzureOpenAIModels()...)
+	Models = append(Models, getZhiPuModels()...)
+	Models = append(Models, getGeminiModels()...)
+}
+
+func initModelOwners() {
 	// 初始化模型提供商及其模型
-	ModelOwners = map[consts.ModelOwner]ModelOwner{
+	ModelOwners = map[consts.ModelOwner]*ModelOwner{
 		consts.ModelOwnerBaiZhiCloud: {
 			OwnerName: consts.ModelOwnerBaiZhiCloud,
 			Models:    getModelsByOwner(consts.ModelOwnerBaiZhiCloud),
@@ -414,4 +532,14 @@ type Resp struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
 	Data    any    `json:"data,omitempty"`
+}
+
+func From(modelOwner *ModelOwner) []ProviderModelListItem {
+	var result []ProviderModelListItem
+	for _, model := range modelOwner.Models {
+		result = append(result, ProviderModelListItem{
+			Model: model.ID,
+		})
+	}
+	return result
 }

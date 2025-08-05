@@ -30,6 +30,8 @@ export enum ConstsModelOwner {
   ModelOwnerHunyuan = "Hunyuan",
   ModelOwnerBaiLian = "BaiLian",
   ModelOwnerVolcengine = "Volcengine",
+  ModelOwnerGemini = "Gemini",
+  ModelOwnerZhiPu = "ZhiPu",
 }
 
 export interface DomainCheckModelReq {
@@ -74,7 +76,9 @@ export interface GetListModelParams {
     | "BaiZhiCloud"
     | "Hunyuan"
     | "BaiLian"
-    | "Volcengine";
+    | "Volcengine"
+    | "Gemini"
+    | "ZhiPu";
   /** 模型类型 */
   sub_type?:
     | "chat"

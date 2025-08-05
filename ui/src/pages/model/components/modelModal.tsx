@@ -1,7 +1,7 @@
 import {
   postCheckModel,
   getListModel,
-} from '@/api/Model';
+} from '@/api/ModelKitModel';
 import { ConstsModelType, DomainModel, DomainResp } from '@/api/types';
 
 // 扩展 DomainModel 类型以包含高级设置参数
@@ -32,11 +32,42 @@ import {
   Checkbox,
   FormControlLabel,
 } from '@mui/material';
-import { Icon, message, Modal } from '@c-x/ui';
+import { message, Modal } from '@c-x/ui';
 import { useEffect, useState } from 'react';
 // @ts-ignore
 import { Controller, useForm } from 'react-hook-form';
 import ExpandMoreIcon from '@mui/icons-material/ExpandMore';
+// 引入 iconfont 图标
+import '@/assets/fonts/iconfont.js';
+
+// 自定义 Iconfont 图标组件
+interface IconfontIconProps {
+  type: string;
+  style?: React.CSSProperties;
+  sx?: any;
+}
+
+const IconfontIcon: React.FC<IconfontIconProps> = ({ type, style = {}, sx = {} }) => {
+  // 将 sx 属性转换为 style 属性
+  const sxStyle = typeof sx === 'object' ? sx : {};
+  const defaultStyle: React.CSSProperties = {
+    width: '18px',
+    height: '18px',
+    fontSize: '18px',
+    color: 'currentColor',
+    display: 'inline-block',
+    verticalAlign: 'middle',
+    ...style,
+    ...sxStyle,
+  };
+
+  return (
+    <svg style={defaultStyle} viewBox="0 0 1024 1024">
+      <use xlinkHref={`#${type}`} />
+    </svg>
+  );
+};
+
 interface AddModelProps {
   open: boolean;
   data: ExtendedDomainModel | null;
@@ -91,7 +122,7 @@ const ModelAdd = ({
     watch,
   } = useForm<AddModelForm>({
     defaultValues: {
-      type,
+      type: ConstsModelType.ModelTypeChat,
       provider: 'BaiZhiCloud',
       base_url: providers['BaiZhiCloud'].defaultBaseUrl,
       model: '',
@@ -119,13 +150,14 @@ const ModelAdd = ({
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
   const [checkSuccess, setCheckSuccess] = useState(false);
+  const [checkFailed, setCheckFailed] = useState(false);
   const [expandAdvanced, setExpandAdvanced] = useState(false);
   const [modelListInfo, setModelListInfo] = useState<DomainModel[]>([]);
 
   const handleReset = () => {
     onClose();
     reset({
-      type,
+      type: ConstsModelType.ModelTypeChat,
       provider: 'BaiZhiCloud',
       model: '',
       base_url: '',
@@ -144,6 +176,7 @@ const ModelAdd = ({
     setModelUserList([]);
     setSuccess(false);
     setCheckSuccess(false); // 重置检查成功状态
+    setCheckFailed(false); // 重置检查失败状态
     setLoading(false);
     setModelLoading(false);
     setError('');
@@ -211,6 +244,7 @@ const ModelAdd = ({
     }
     setError('');
     setCheckSuccess(false); // 开始检查时重置成功状态
+    setCheckFailed(false); // 开始检查时重置失败状态
     setLoading(true);
     postCheckModel({
       api_key: value.api_key,
@@ -218,34 +252,21 @@ const ModelAdd = ({
       // @ts-ignore
       owner: value.provider,
       // @ts-ignore  
-      sub_type: type,
+      sub_type: value.type,
     })
       .then((res) => {
         // 清除之前的错误信息
         setError('');
         // 设置检查成功状态，改变按钮样式
         setCheckSuccess(true);
+        setCheckFailed(false);
         setLoading(false);
       })
       .catch((error) => {
-        // 提取详细的错误信息
-        let errorMessage = '模型检查失败';
-        if (typeof error === 'string') {
-          errorMessage = error;
-        } else if (error?.response?.data?.message) {
-          errorMessage = error.response.data.message;
-        } else if (error?.message) {
-          errorMessage = error.message;
-        } else if (error?.data?.message) {
-          errorMessage = error.data.message;
-        }
-        
-        // 在界面上显示错误信息
-        setError(errorMessage);
-        setCheckSuccess(false); // 出错时重置成功状态
-        
-        // 同时弹出错误提示
-        message.error(errorMessage);
+        // 设置检查失败状态，改变按钮样式为红色
+        setCheckSuccess(false);
+        setCheckFailed(true);
+        setError('');
         
         setLoading(false);
       });
@@ -262,7 +283,7 @@ const ModelAdd = ({
         api_version:  '',
         api_header_key: '',
         api_header_value: '',
-        type,
+        type: value.model_type || ConstsModelType.ModelTypeChat,
         show_name: '',
         context_window_size: 64000,
         max_output_tokens: 8192,
@@ -280,7 +301,7 @@ const ModelAdd = ({
         api_version:  '',
         api_header_key: '',
         api_header_value: '',
-        type,
+        type: value.model_type || ConstsModelType.ModelTypeChat,
         show_name: '',
         context_window_size: 64000,
         max_output_tokens: 8192,
@@ -297,7 +318,7 @@ const ModelAdd = ({
         resetCurData(data);
       } else {
         reset({
-          type,
+          type: ConstsModelType.ModelTypeChat,
           provider: 'BaiZhiCloud',
           model: '',
           base_url: providers['BaiZhiCloud'].defaultBaseUrl,
@@ -326,13 +347,18 @@ const ModelAdd = ({
       open={open}
       width={800}
       onCancel={handleReset}
-      okText={checkSuccess ? '成功！' : 'Check'}
+      okText={checkSuccess ? '成功！' : checkFailed ? '检查失败' : 'Check'}
       onOk={handleSubmit(onSubmit)}
       okButtonProps={{
         loading,
         disabled: false,
-        style: checkSuccess ? { backgroundColor: '#4caf50', borderColor: '#4caf50', color: 'white' } : undefined,
+        style: checkSuccess 
+          ? { backgroundColor: '#4caf50', borderColor: '#4caf50', color: 'white' }
+          : checkFailed
+          ? { backgroundColor: '#f44336', borderColor: '#f44336', color: 'white' }
+          : undefined,
       }}
+      cancelButtonProps={{ style: { display: 'none' } }}
     >
       <Stack direction={'row'} alignItems={'stretch'} gap={3}>
         <Stack
@@ -382,7 +408,9 @@ const ModelAdd = ({
                   setModelLoading(false);
                   setSuccess(false);
                   setCheckSuccess(false); // 重置检查成功状态
+                  setCheckFailed(false); // 重置检查失败状态
                   reset({
+                    type: ConstsModelType.ModelTypeChat,
                     provider: it.label as keyof typeof ModelProvider,
                     base_url:
                       it.label === 'AzureOpenAI' ? '' : it.defaultBaseUrl,
@@ -403,7 +431,7 @@ const ModelAdd = ({
                 }
               }}
             >
-              <Icon type={it.icon} sx={{ fontSize: 18 }} />
+              <IconfontIcon type={it.icon} sx={{ fontSize: 18 }} />
               {it.cn || it.label || '其他'}
             </Stack>
           ))}
@@ -440,6 +468,7 @@ const ModelAdd = ({
                   setValue('model', '');
                   setSuccess(false);
                   setCheckSuccess(false); // 重置检查成功状态
+                  setCheckFailed(false); // 重置检查失败状态
                 }}
               />
             )}
@@ -493,8 +522,52 @@ const ModelAdd = ({
                 onChange={(e) => {
                   field.onChange(e.target.value);
                   setCheckSuccess(false); // 重置检查成功状态
+                  setCheckFailed(false); // 重置检查失败状态
+                  setCheckFailed(false); // 重置检查失败状态
                 }}
               />
+            )}
+          />
+          <Box sx={{ fontSize: 14, lineHeight: '32px', mt: 2 }}>
+            模型类型{' '}
+            <Box component={'span'} sx={{ color: 'red' }}>
+              *
+            </Box>
+          </Box>
+          <Controller
+            control={control}
+            name='type'
+            rules={{
+              required: {
+                value: true,
+                message: '模型类型不能为空',
+              },
+            }}
+            render={({ field }: { field: any }) => (
+              <TextField
+                {...field}
+                fullWidth
+                select
+                size='small'
+                error={!!errors.type}
+                helperText={errors.type?.message}
+                onChange={(e) => {
+                  field.onChange(e.target.value);
+                  setModelUserList([]);
+                  setModelListInfo([]);
+                  setValue('model', '');
+                  setSuccess(false);
+                  setCheckSuccess(false); // 重置检查成功状态
+                  setCheckFailed(false); // 重置检查失败状态
+                }}
+              >
+                <MenuItem value={ConstsModelType.ModelTypeChat}>对话模型</MenuItem>
+                <MenuItem value={ConstsModelType.ModelTypeCoder}>代码补全模型</MenuItem>
+                <MenuItem value={ConstsModelType.ModelTypeEmbedding}>向量模型</MenuItem>
+                <MenuItem value={ConstsModelType.ModelTypeReranker}>重排序模型</MenuItem>
+                <MenuItem value={ConstsModelType.ModelTypeVision}>视觉模型</MenuItem>
+                <MenuItem value={ConstsModelType.ModelTypeFunctionCall}>函数调用模型</MenuItem>
+              </TextField>
             )}
           />
           {providerBrand === 'AzureOpenAI' && (
@@ -519,6 +592,7 @@ const ModelAdd = ({
                       setValue('model', '');
                       setSuccess(false);
                       setCheckSuccess(false); // 重置检查成功状态
+                      setCheckFailed(false); // 重置检查失败状态
                     }}
                   />
                 )}
@@ -589,6 +663,7 @@ const ModelAdd = ({
                     onChange={(e) => {
                       field.onChange(e.target.value);
                       setCheckSuccess(false); // 切换模型时重置检查成功状态
+                      setCheckFailed(false); // 切换模型时重置检查失败状态
                     }}
                   >
                     {modelUserList.map((it) => (
@@ -642,21 +717,7 @@ const ModelAdd = ({
               
             </>
           )}
-          {error && (
-            <Card
-              sx={{
-                color: 'error.main',
-                mt: 2,
-                fontSize: 12,
-                p: 2,
-                bgcolor: 'background.paper2',
-                border: '1px solid',
-                borderColor: 'error.main',
-              }}
-            >
-              {error}
-            </Card>
-          )}
+
         </Box>
       </Stack>
     </Modal>

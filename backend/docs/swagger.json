@@ -19,7 +19,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Model"
+                    "ModelKitModel"
                 ],
                 "summary": "检查模型",
                 "operationId": "check-model",
@@ -66,7 +66,7 @@
                     "application/json"
                 ],
                 "tags": [
-                    "Model"
+                    "ModelKitModel"
                 ],
                 "summary": "获取模型列表",
                 "operationId": "list-model",
@@ -82,7 +82,9 @@
                             "BaiZhiCloud",
                             "Hunyuan",
                             "BaiLian",
-                            "Volcengine"
+                            "Volcengine",
+                            "Gemini",
+                            "ZhiPu"
                         ],
                         "type": "string",
                         "x-enum-varnames": [
@@ -95,7 +97,9 @@
                             "ModelOwnerBaiZhiCloud",
                             "ModelOwnerHunyuan",
                             "ModelOwnerBaiLian",
-                            "ModelOwnerVolcengine"
+                            "ModelOwnerVolcengine",
+                            "ModelOwnerGemini",
+                            "ModelOwnerZhiPu"
                         ],
                         "description": "提供商",
                         "name": "owned_by",
@@ -163,7 +167,9 @@
                 "BaiZhiCloud",
                 "Hunyuan",
                 "BaiLian",
-                "Volcengine"
+                "Volcengine",
+                "Gemini",
+                "ZhiPu"
             ],
             "x-enum-varnames": [
                 "ModelOwnerSiliconFlow",
@@ -175,7 +181,9 @@
                 "ModelOwnerBaiZhiCloud",
                 "ModelOwnerHunyuan",
                 "ModelOwnerBaiLian",
-                "ModelOwnerVolcengine"
+                "ModelOwnerVolcengine",
+                "ModelOwnerGemini",
+                "ModelOwnerZhiPu"
             ]
         },
         "consts.ModelType": {
