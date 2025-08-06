@@ -1,5 +1,5 @@
 package domain
 
-type ModelProvider[T any] interface {
-	ListModel(subType string) ([]T, error)
+type IModelProvider[T any] interface {
+	ListModel(subType string, provider string) ([]T, error)
 }

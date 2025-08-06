@@ -14,24 +14,24 @@ export enum ConstsModelType {
   ModelTypeChat = "chat",
   ModelTypeCoder = "coder",
   ModelTypeEmbedding = "embedding",
-  ModelTypeReranker = "reranker",
+  ModelTypeRerank = "reranker",
   ModelTypeVision = "vision",
   ModelTypeFunctionCall = "function_call",
 }
 
-export enum ConstsModelOwner {
-  ModelOwnerSiliconFlow = "SiliconFlow",
-  ModelOwnerOpenAI = "OpenAI",
-  ModelOwnerOllama = "Ollama",
-  ModelOwnerDeepSeek = "DeepSeek",
-  ModelOwnerMoonshot = "Moonshot",
-  ModelOwnerAzureOpenAI = "AzureOpenAI",
-  ModelOwnerBaiZhiCloud = "BaiZhiCloud",
-  ModelOwnerHunyuan = "Hunyuan",
-  ModelOwnerBaiLian = "BaiLian",
-  ModelOwnerVolcengine = "Volcengine",
-  ModelOwnerGemini = "Gemini",
-  ModelOwnerZhiPu = "ZhiPu",
+export enum ConstsModelProvider {
+  ModelProviderSiliconFlow = "SiliconFlow",
+  ModelProviderOpenAI = "OpenAI",
+  ModelProviderOllama = "Ollama",
+  ModelProviderDeepSeek = "DeepSeek",
+  ModelProviderMoonshot = "Moonshot",
+  ModelProviderAzureOpenAI = "AzureOpenAI",
+  ModelProviderBaiZhiCloud = "BaiZhiCloud",
+  ModelProviderHunyuan = "Hunyuan",
+  ModelProviderBaiLian = "BaiLian",
+  ModelProviderVolcengine = "Volcengine",
+  ModelProviderGemini = "Gemini",
+  ModelProviderZhiPu = "ZhiPu",
 }
 
 export interface DomainCheckModelReq {
@@ -40,7 +40,7 @@ export interface DomainCheckModelReq {
   /** 模型名称 */
   model_name: string;
   /** 提供商 */
-  owner: ConstsModelOwner;
+  owner: ConstsModelProvider;
   /** 模型类型 */
   sub_type: ConstsModelType;
 }
@@ -55,7 +55,7 @@ export interface DomainModel {
   /** 总是model */
   object?: string;
   /** 提供商 */
-  owned_by?: ConstsModelOwner;
+  owned_by?: ConstsModelProvider;
 }
 
 export interface DomainResp {

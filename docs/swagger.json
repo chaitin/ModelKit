@@ -9,9 +9,9 @@
     "host": "localhost:8080",
     "basePath": "/",
     "paths": {
-        "/api/v1/model/modelkit/check": {
+        "/api/v1/panda/check": {
             "post": {
-                "description": "检查模型",
+                "description": "检查模型配置是否正确",
                 "consumes": [
                     "application/json"
                 ],
@@ -19,13 +19,13 @@
                     "application/json"
                 ],
                 "tags": [
-                    "ModelKitModel"
+                    "Panda"
                 ],
                 "summary": "检查模型",
-                "operationId": "check-model",
+                "operationId": "panda-check-model",
                 "parameters": [
                     {
-                        "description": "模型",
+                        "description": "模型配置",
                         "name": "model",
                         "in": "body",
                         "required": true,
@@ -40,13 +40,13 @@
                         "schema": {
                             "allOf": [
                                 {
-                                    "$ref": "#/definitions/domain.Resp"
+                                    "$ref": "#/definitions/domain.Response"
                                 },
                                 {
                                     "type": "object",
                                     "properties": {
                                         "data": {
-                                            "$ref": "#/definitions/domain.Model"
+                                            "$ref": "#/definitions/domain.CheckModelResp"
                                         }
                                     }
                                 }
@@ -56,9 +56,9 @@
                 }
             }
         },
-        "/api/v1/model/modelkit/models": {
+        "/api/v1/panda/models": {
             "get": {
-                "description": "根据筛选条件获取模型列表，支持分页，按创建时间降序排列",
+                "description": "获取指定提供商的模型列表",
                 "consumes": [
                     "application/json"
                 ],
@@ -66,235 +66,40 @@
                     "application/json"
                 ],
                 "tags": [
-                    "ModelKitModel"
+                    "Panda"
                 ],
                 "summary": "获取模型列表",
-                "operationId": "list-model",
+                "operationId": "panda-get-model-list",
                 "parameters": [
                     {
-                        "enum": [
-                            "SiliconFlow",
-                            "OpenAI",
-                            "Ollama",
-                            "DeepSeek",
-                            "Moonshot",
-                            "AzureOpenAI",
-                            "BaiZhiCloud",
-                            "Hunyuan",
-                            "BaiLian",
-                            "Volcengine",
-                            "Gemini",
-                            "ZhiPu"
-                        ],
                         "type": "string",
-                        "x-enum-varnames": [
-                            "ModelOwnerSiliconFlow",
-                            "ModelOwnerOpenAI",
-                            "ModelOwnerOllama",
-                            "ModelOwnerDeepSeek",
-                            "ModelOwnerMoonshot",
-                            "ModelOwnerAzureOpenAI",
-                            "ModelOwnerBaiZhiCloud",
-                            "ModelOwnerHunyuan",
-                            "ModelOwnerBaiLian",
-                            "ModelOwnerVolcengine",
-                            "ModelOwnerGemini",
-                            "ModelOwnerZhiPu"
-                        ],
-                        "description": "提供商",
-                        "name": "owned_by",
+                        "description": "模型提供商",
+                        "name": "provider",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Base URL",
+                        "name": "base_url",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "API Key",
+                        "name": "api_key",
                         "in": "query"
                     },
                     {
-                        "enum": [
-                            "chat",
-                            "coder",
-                            "embedding",
-                            "reranker",
-                            "vision",
-                            "function_call"
-                        ],
                         "type": "string",
-                        "x-enum-varnames": [
-                            "ModelTypeChat",
-                            "ModelTypeCoder",
-                            "ModelTypeEmbedding",
-                            "ModelTypeReranker",
-                            "ModelTypeVision",
-                            "ModelTypeFunctionCall"
-                        ],
+                        "description": "API Header",
+                        "name": "api_header",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
                         "description": "模型类型",
-                        "name": "sub_type",
-                        "in": "query"
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/domain.Resp"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "type": "array",
-                                            "items": {
-                                                "$ref": "#/definitions/domain.Model"
-                                            }
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/model/modelkit/panda/models": {
-            "get": {
-                "description": "获取模型列表",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "ModelKitModel"
-                ],
-                "summary": "获取模型列表",
-                "operationId": "panda-model-list",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "name": "api_header",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "api_key",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "base_url",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "enum": [
-                            "SiliconFlow",
-                            "OpenAI",
-                            "Ollama",
-                            "DeepSeek",
-                            "Moonshot",
-                            "AzureOpenAI",
-                            "BaiZhiCloud",
-                            "Hunyuan",
-                            "BaiLian",
-                            "Volcengine",
-                            "Gemini",
-                            "ZhiPu"
-                        ],
-                        "type": "string",
-                        "name": "provider",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "enum": [
-                            "chat",
-                            "embedding",
-                            "rerank"
-                        ],
-                        "type": "string",
-                        "name": "type",
-                        "in": "query",
-                        "required": true
-                    }
-                ],
-                "responses": {
-                    "200": {
-                        "description": "OK",
-                        "schema": {
-                            "allOf": [
-                                {
-                                    "$ref": "#/definitions/domain.Resp"
-                                },
-                                {
-                                    "type": "object",
-                                    "properties": {
-                                        "data": {
-                                            "$ref": "#/definitions/domain.GetProviderModelListResp"
-                                        }
-                                    }
-                                }
-                            ]
-                        }
-                    }
-                }
-            }
-        },
-        "/api/v1/model/provider/supported": {
-            "get": {
-                "description": "get provider supported model list",
-                "consumes": [
-                    "application/json"
-                ],
-                "produces": [
-                    "application/json"
-                ],
-                "tags": [
-                    "model"
-                ],
-                "summary": "get provider supported model list",
-                "parameters": [
-                    {
-                        "type": "string",
-                        "name": "api_header",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "api_key",
-                        "in": "query"
-                    },
-                    {
-                        "type": "string",
-                        "name": "base_url",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "enum": [
-                            "SiliconFlow",
-                            "OpenAI",
-                            "Ollama",
-                            "DeepSeek",
-                            "Moonshot",
-                            "AzureOpenAI",
-                            "BaiZhiCloud",
-                            "Hunyuan",
-                            "BaiLian",
-                            "Volcengine",
-                            "Gemini",
-                            "ZhiPu"
-                        ],
-                        "type": "string",
-                        "name": "provider",
-                        "in": "query",
-                        "required": true
-                    },
-                    {
-                        "enum": [
-                            "chat",
-                            "embedding",
-                            "rerank"
-                        ],
-                        "type": "string",
                         "name": "type",
                         "in": "query",
                         "required": true
@@ -324,88 +129,67 @@
         }
     },
     "definitions": {
-        "consts.ModelOwner": {
-            "type": "string",
-            "enum": [
-                "SiliconFlow",
-                "OpenAI",
-                "Ollama",
-                "DeepSeek",
-                "Moonshot",
-                "AzureOpenAI",
-                "BaiZhiCloud",
-                "Hunyuan",
-                "BaiLian",
-                "Volcengine",
-                "Gemini",
-                "ZhiPu"
-            ],
-            "x-enum-varnames": [
-                "ModelOwnerSiliconFlow",
-                "ModelOwnerOpenAI",
-                "ModelOwnerOllama",
-                "ModelOwnerDeepSeek",
-                "ModelOwnerMoonshot",
-                "ModelOwnerAzureOpenAI",
-                "ModelOwnerBaiZhiCloud",
-                "ModelOwnerHunyuan",
-                "ModelOwnerBaiLian",
-                "ModelOwnerVolcengine",
-                "ModelOwnerGemini",
-                "ModelOwnerZhiPu"
-            ]
-        },
-        "consts.ModelType": {
-            "type": "string",
-            "enum": [
-                "chat",
-                "coder",
-                "embedding",
-                "reranker",
-                "vision",
-                "function_call"
-            ],
-            "x-enum-varnames": [
-                "ModelTypeChat",
-                "ModelTypeCoder",
-                "ModelTypeEmbedding",
-                "ModelTypeReranker",
-                "ModelTypeVision",
-                "ModelTypeFunctionCall"
-            ]
-        },
         "domain.CheckModelReq": {
             "type": "object",
             "required": [
-                "api_key",
-                "model_name",
-                "owner",
-                "sub_type"
+                "base_url",
+                "model",
+                "provider",
+                "type"
             ],
             "properties": {
+                "api_header": {
+                    "type": "string"
+                },
                 "api_key": {
-                    "description": "接口密钥",
                     "type": "string"
                 },
-                "model_name": {
-                    "description": "模型名称",
+                "api_version": {
+                    "description": "for azure openai",
                     "type": "string"
                 },
-                "owner": {
-                    "description": "提供商",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/consts.ModelOwner"
-                        }
+                "base_url": {
+                    "type": "string"
+                },
+                "model": {
+                    "type": "string"
+                },
+                "provider": {
+                    "type": "string",
+                    "enum": [
+                        "OpenAI",
+                        "Ollama",
+                        "DeepSeek",
+                        "SiliconFlow",
+                        "Moonshot",
+                        "Other",
+                        "AzureOpenAI",
+                        "BaiZhiCloud",
+                        "Hunyuan",
+                        "BaiLian",
+                        "Volcengine",
+                        "Gemini",
+                        "ZhiPu"
                     ]
                 },
-                "sub_type": {
-                    "description": "模型类型",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/consts.ModelType"
-                        }
+                "type": {
+                    "type": "string",
+                    "enum": [
+                        "chat",
+                        "embedding",
+                        "rerank"
                     ]
+                }
+            }
+        },
+        "domain.CheckModelResp": {
+            "type": "object",
+            "properties": {
+                "content": {
+                    "type": "string"
+                },
+                "error": {
+                    "type": "string"
                 }
             }
         },
@@ -420,55 +204,10 @@
                 }
             }
         },
-        "domain.Model": {
-            "type": "object",
-            "properties": {
-                "created": {
-                    "description": "创建时间",
-                    "type": "integer"
-                },
-                "id": {
-                    "description": "模型的名字",
-                    "type": "string"
-                },
-                "model_type": {
-                    "description": "模型类型",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/consts.ModelType"
-                        }
-                    ]
-                },
-                "object": {
-                    "description": "总是model",
-                    "type": "string"
-                },
-                "owned_by": {
-                    "description": "提供商",
-                    "allOf": [
-                        {
-                            "$ref": "#/definitions/consts.ModelOwner"
-                        }
-                    ]
-                }
-            }
-        },
         "domain.ProviderModelListItem": {
             "type": "object",
             "properties": {
                 "model": {
-                    "type": "string"
-                }
-            }
-        },
-        "domain.Resp": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "integer"
-                },
-                "data": {},
-                "message": {
                     "type": "string"
                 }
             }

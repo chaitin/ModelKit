@@ -13,7 +13,7 @@ import (
 func main() {
 	echo := echo.New()
 
-	v1.NewModelKitHandler(echo)
+	v1.NewPanda(echo, nil, false)
 
 	echo.Start(":8080")
 }
