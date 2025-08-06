@@ -6,8 +6,8 @@ import (
 	"net/http"
 
 	"github.com/chaitin/ModelKit/domain"
-	"github.com/chaitin/ModelKit/modelkit"
 	"github.com/chaitin/ModelKit/pkg/log"
+	"github.com/chaitin/ModelKit/usecase"
 	"github.com/google/uuid"
 	"github.com/labstack/echo/v4"
 	"go.opentelemetry.io/otel/attribute"
@@ -26,7 +26,7 @@ func NewModelKitPandaAdapter(
 	isApmEnabled bool,
 ) *ModelKitPandaAdapter {
 	m := &ModelKitPandaAdapter{
-		usecase:      modelkit.NewModelKit(),
+		usecase:      usecase.NewModelKit(),
 		isApmEnabled: isApmEnabled,
 		baseLogger:   logger.WithModule("http_base_handler"),
 	}
@@ -54,7 +54,7 @@ func (h *ModelKitPandaAdapter) GetProviderSupportedModelList(c echo.Context) err
 	}
 	ctx := c.Request().Context()
 
-	models, err := h.usecase.PandaModelList(ctx, &req)
+	models, err := usecase.PandaModelList(ctx, req.Provider, req.APIKey, req.BaseURL, req.APIHeader, req.Type, req.Type)
 	if err != nil {
 		return h.NewResponseWithError(c, "get user model list failed", err)
 	}

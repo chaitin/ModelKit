@@ -152,6 +152,175 @@
                     }
                 }
             }
+        },
+        "/api/v1/model/modelkit/panda/models": {
+            "get": {
+                "description": "获取模型列表",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "ModelKitModel"
+                ],
+                "summary": "获取模型列表",
+                "operationId": "panda-model-list",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "api_header",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "api_key",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "base_url",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "SiliconFlow",
+                            "OpenAI",
+                            "Ollama",
+                            "DeepSeek",
+                            "Moonshot",
+                            "AzureOpenAI",
+                            "BaiZhiCloud",
+                            "Hunyuan",
+                            "BaiLian",
+                            "Volcengine",
+                            "Gemini",
+                            "ZhiPu"
+                        ],
+                        "type": "string",
+                        "name": "provider",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "chat",
+                            "embedding",
+                            "rerank"
+                        ],
+                        "type": "string",
+                        "name": "type",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/domain.Resp"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/domain.GetProviderModelListResp"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
+        },
+        "/api/v1/model/provider/supported": {
+            "get": {
+                "description": "get provider supported model list",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "model"
+                ],
+                "summary": "get provider supported model list",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "name": "api_header",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "api_key",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "name": "base_url",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "SiliconFlow",
+                            "OpenAI",
+                            "Ollama",
+                            "DeepSeek",
+                            "Moonshot",
+                            "AzureOpenAI",
+                            "BaiZhiCloud",
+                            "Hunyuan",
+                            "BaiLian",
+                            "Volcengine",
+                            "Gemini",
+                            "ZhiPu"
+                        ],
+                        "type": "string",
+                        "name": "provider",
+                        "in": "query",
+                        "required": true
+                    },
+                    {
+                        "enum": [
+                            "chat",
+                            "embedding",
+                            "rerank"
+                        ],
+                        "type": "string",
+                        "name": "type",
+                        "in": "query",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "allOf": [
+                                {
+                                    "$ref": "#/definitions/domain.Response"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "data": {
+                                            "$ref": "#/definitions/domain.GetProviderModelListResp"
+                                        }
+                                    }
+                                }
+                            ]
+                        }
+                    }
+                }
+            }
         }
     },
     "definitions": {
@@ -240,6 +409,17 @@
                 }
             }
         },
+        "domain.GetProviderModelListResp": {
+            "type": "object",
+            "properties": {
+                "models": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/domain.ProviderModelListItem"
+                    }
+                }
+            }
+        },
         "domain.Model": {
             "type": "object",
             "properties": {
@@ -273,6 +453,14 @@
                 }
             }
         },
+        "domain.ProviderModelListItem": {
+            "type": "object",
+            "properties": {
+                "model": {
+                    "type": "string"
+                }
+            }
+        },
         "domain.Resp": {
             "type": "object",
             "properties": {
@@ -282,6 +470,18 @@
                 "data": {},
                 "message": {
                     "type": "string"
+                }
+            }
+        },
+        "domain.Response": {
+            "type": "object",
+            "properties": {
+                "data": {},
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
                 }
             }
         }

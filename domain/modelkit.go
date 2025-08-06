@@ -9,7 +9,6 @@ import (
 type ModelKit interface {
 	CheckModel(ctx context.Context, req *CheckModelReq) (*Model, error)
 	ListModel(ctx context.Context, req *ListModelReq) ([]*Model, error)
-	PandaModelList(ctx context.Context, req *GetProviderModelListReq) (*GetProviderModelListResp, error)
 }
 
 type CheckModelReq struct {
