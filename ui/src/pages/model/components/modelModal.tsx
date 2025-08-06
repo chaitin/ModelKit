@@ -99,7 +99,7 @@ const titleMap = {
   [ConstsModelType.ModelTypeChat]: '对话模型',
   [ConstsModelType.ModelTypeCoder]: '代码补全模型',
   [ConstsModelType.ModelTypeEmbedding]: '向量模型',
-  [ConstsModelType.ModelTypeReranker]: '重排序模型',
+  [ConstsModelType.ModelTypeRerank]: '重排序模型',
 };
 
 const ModelAdd = ({
@@ -564,7 +564,7 @@ const ModelAdd = ({
                 <MenuItem value={ConstsModelType.ModelTypeChat}>对话模型</MenuItem>
                 <MenuItem value={ConstsModelType.ModelTypeCoder}>代码补全模型</MenuItem>
                 <MenuItem value={ConstsModelType.ModelTypeEmbedding}>向量模型</MenuItem>
-                <MenuItem value={ConstsModelType.ModelTypeReranker}>重排序模型</MenuItem>
+                <MenuItem value={ConstsModelType.ModelTypeRerank}>重排序模型</MenuItem>
                 <MenuItem value={ConstsModelType.ModelTypeVision}>视觉模型</MenuItem>
                 <MenuItem value={ConstsModelType.ModelTypeFunctionCall}>函数调用模型</MenuItem>
               </TextField>

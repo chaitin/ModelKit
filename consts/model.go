@@ -13,24 +13,24 @@ const (
 	ModelTypeChat         ModelType = "chat"
 	ModelTypeCoder        ModelType = "coder"
 	ModelTypeEmbedding    ModelType = "embedding"
-	ModelTypeReranker     ModelType = "reranker"
+	ModelTypeRerank       ModelType = "rerank"
 	ModelTypeVision       ModelType = "vision"
 	ModelTypeFunctionCall ModelType = "function_call"
 )
 
-type ModelOwner string
+type ModelProvider string
 
 const (
-	ModelOwnerSiliconFlow ModelOwner = "SiliconFlow"
-	ModelOwnerOpenAI      ModelOwner = "OpenAI"
-	ModelOwnerOllama      ModelOwner = "Ollama"
-	ModelOwnerDeepSeek    ModelOwner = "DeepSeek"
-	ModelOwnerMoonshot    ModelOwner = "Moonshot"
-	ModelOwnerAzureOpenAI ModelOwner = "AzureOpenAI"
-	ModelOwnerBaiZhiCloud ModelOwner = "BaiZhiCloud"
-	ModelOwnerHunyuan     ModelOwner = "Hunyuan"
-	ModelOwnerBaiLian     ModelOwner = "BaiLian"
-	ModelOwnerVolcengine  ModelOwner = "Volcengine"
-	ModelOwnerGemini      ModelOwner = "Gemini"
-	ModelOwnerZhiPu       ModelOwner = "ZhiPu"
+	ModelProviderSiliconFlow ModelProvider = "SiliconFlow"
+	ModelProviderOpenAI      ModelProvider = "OpenAI"
+	ModelProviderOllama      ModelProvider = "Ollama"
+	ModelProviderDeepSeek    ModelProvider = "DeepSeek"
+	ModelProviderMoonshot    ModelProvider = "Moonshot"
+	ModelProviderAzureOpenAI ModelProvider = "AzureOpenAI"
+	ModelProviderBaiZhiCloud ModelProvider = "BaiZhiCloud"
+	ModelProviderHunyuan     ModelProvider = "Hunyuan"
+	ModelProviderBaiLian     ModelProvider = "BaiLian"
+	ModelProviderVolcengine  ModelProvider = "Volcengine"
+	ModelProviderGemini      ModelProvider = "Gemini"
+	ModelProviderZhiPu       ModelProvider = "ZhiPu"
 )
