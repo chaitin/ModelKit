@@ -27,18 +27,37 @@ export default defineConfig(({ mode }) => {
       'process.env.REACT_APP_MONACO_CDN': JSON.stringify('false'),
     },
     // 优化构建配置
-    // build: {
-    //   rollupOptions: {
-    //     output: {
-    //       manualChunks: {
-    //         'monaco-editor': ['monaco-editor'],
-    //         'monaco-react': ['@monaco-editor/react'],
-    //       },
-    //     },
-    //   },
-    //   // 复制 Monaco Editor 的静态资源
-    //   copyPublicDir: true,
-    // },
+    build: {
+      emptyOutDir: false, // 不清空输出目录，保留 TypeScript 生成的声明文件
+      lib: {
+        entry: path.resolve(__dirname, 'src/index.ts'),
+        name: 'MonkeyCodeUI',
+        formats: ['es', 'cjs'],
+        fileName: (format) => `index.${format === 'es' ? 'es.js' : 'js'}`,
+      },
+      rollupOptions: {
+        external: [
+          'react',
+          'react-dom',
+          'react-hook-form',
+          '@mui/material',
+          '@mui/icons-material',
+          '@c-x/ui',
+          'axios'
+        ],
+        output: {
+          globals: {
+            react: 'React',
+            'react-dom': 'ReactDOM',
+            'react-hook-form': 'ReactHookForm',
+            '@mui/material': 'Material',
+            '@mui/icons-material': 'MaterialIcons',
+            '@c-x/ui': 'CXUi',
+            axios: 'axios'
+          },
+        },
+      },
+    },
     // 确保 Monaco Editor 被正确优化
     // optimizeDeps: {
     //   include: ['monaco-editor', '@monaco-editor/react'],
