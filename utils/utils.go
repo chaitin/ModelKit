@@ -17,6 +17,7 @@ import (
 	"github.com/JohannesKaufmann/html-to-markdown/v2/converter"
 	"github.com/JohannesKaufmann/html-to-markdown/v2/plugin/base"
 	"github.com/JohannesKaufmann/html-to-markdown/v2/plugin/commonmark"
+	"github.com/chaitin/ModelKit/pkg/request"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/ast"
 	"github.com/yuin/goldmark/renderer/html"
@@ -258,4 +259,33 @@ func ExchangeMarkDownImageUrl(
 		return "", err
 	}
 	return string(converted), nil
+}
+
+type headerTransport struct {
+	headers map[string]string
+	base    http.RoundTripper
+}
+
+func (t *headerTransport) RoundTrip(req *http.Request) (*http.Response, error) {
+	for k, v := range t.headers {
+		req.Header.Set(k, v)
+	}
+	return t.base.RoundTrip(req)
+}
+
+func GetHttpClientWithAPIHeaderMap(header string) *http.Client {
+	headerMap := request.GetHeaderMap(header)
+	if len(headerMap) > 0 {
+		// create http client with custom transport for headers
+		client := &http.Client{
+			Timeout: 0,
+		}
+		// Wrap the transport to add headers
+		client.Transport = &headerTransport{
+			headers: headerMap,
+			base:    http.DefaultTransport,
+		}
+		return client
+	}
+	return nil
 }
