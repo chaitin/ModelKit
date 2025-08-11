@@ -1,10 +1,21 @@
-import { styled } from '@mui/material';
-import React from 'react';
+import { Paper, SxProps } from "@mui/material"
 
-const StyledCard = styled('div')<React.HTMLAttributes<HTMLDivElement>>(({ theme }) => ({
-  padding: theme.spacing(2),
-  borderRadius: theme.shape.borderRadius * 2.5,
-  backgroundColor: theme.palette.background.default,
-})) as React.ComponentType<React.HTMLAttributes<HTMLDivElement>>;
+interface CardProps {
+  sx?: SxProps
+  children: React.ReactNode
+  onClick?: () => void
+  className?: string
+}
+const Card = ({ sx, children, onClick, className }: CardProps) => {
+  return <Paper className={`paper-item ${className}`} sx={{
+    borderRadius: '10px',
+    boxShadow: 'none',
+    border: 'none',
+    overflow: 'hidden',
+    ...sx
+  }} onClick={onClick ? onClick : undefined}>
+    {children}
+  </Paper>
+}
 
-export default StyledCard;
+export default Card

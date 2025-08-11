@@ -1,9 +1,8 @@
 import React, { useState } from 'react';
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
-import { ModelProvider } from '@/providers/ModelProvider';
+import { ModelProvider } from "@/constant/enums"
 import Model from '@/pages/model';
 import ModelAdd from '@/pages/model/components/modelModal';
-import { ConstsModelType } from '@/api/types';
 
 function App() {
   const [modalOpen, setModalOpen] = useState(true); // 启动时就显示模态框
@@ -17,7 +16,6 @@ function App() {
   };
 
   return (
-    <ModelProvider>
       <Router>
         <div className="App">
           <Routes>
@@ -29,14 +27,13 @@ function App() {
           <ModelAdd
             open={modalOpen}
             data={null}
-            type={ConstsModelType.ModelTypeChat}
+            type={'chat'}
             onClose={handleModalClose}
             refresh={handleRefresh}
           />
 
         </div>
       </Router>
-    </ModelProvider>
   );
 }
 

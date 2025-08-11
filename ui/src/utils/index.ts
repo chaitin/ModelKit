@@ -2,6 +2,27 @@
  * 工具函数集合
  */
 
+export function addOpacityToColor(color: string, opacity: number) {
+  let red, green, blue;
+
+  if (color.startsWith("#")) {
+    red = parseInt(color.slice(1, 3), 16);
+    green = parseInt(color.slice(3, 5), 16);
+    blue = parseInt(color.slice(5, 7), 16);
+  } else if (color.startsWith("rgb")) {
+    const matches = color.match(/^rgba?\((\d+),\s*(\d+),\s*(\d+)/) as RegExpMatchArray;
+    red = parseInt(matches[1], 10);
+    green = parseInt(matches[2], 10);
+    blue = parseInt(matches[3], 10);
+  } else {
+    return "";
+  }
+
+  const alpha = opacity;
+
+  return `rgba(${red}, ${green}, ${blue}, ${alpha})`;
+}
+
 // 格式化日期
 export const formatDate = (date: Date | string | number, format = 'YYYY-MM-DD HH:mm:ss'): string => {
   const d = new Date(date);
@@ -20,19 +41,6 @@ export const formatDate = (date: Date | string | number, format = 'YYYY-MM-DD HH
     .replace('HH', hour)
     .replace('mm', minute)
     .replace('ss', second);
-};
-
-// 防抖函数
-export const debounce = <T extends (...args: any[]) => any>(
-  func: T,
-  wait: number
-): (...args: Parameters<T>) => void => {
-  let timeout: number;
-  
-  return (...args: Parameters<T>) => {
-    clearTimeout(timeout);
-    timeout = setTimeout(() => func(...args), wait);
-  };
 };
 
 // 节流函数
