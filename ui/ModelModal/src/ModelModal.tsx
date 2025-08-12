@@ -1,5 +1,3 @@
-import React, { useEffect, useState } from 'react';
-import { useForm, Controller } from 'react-hook-form';
 import {
   Box,
   Button,
@@ -7,96 +5,41 @@ import {
   Stack,
   TextField,
   useTheme,
-  Paper,
+  alpha as addOpacityToColor,
+  Accordion,
+  AccordionSummary,
+  AccordionDetails,
+  Checkbox,
+  FormControlLabel,
 } from '@mui/material';
-import { Info as InfoIcon } from '@mui/icons-material';
-
+import { Icon, message, Modal } from '@c-x/ui';
+import Card from './components/card';
+import React, { useEffect, useState } from 'react';
+import { useForm, Controller } from 'react-hook-form';
 import {
-  ModelModalProps,
   AddModelForm,
-  ModelListItem,
-  ModelService,
-  ModelModalConfig,
+  DomainModel,
+  ConstsModelType,
+  ModelModalProps,
 } from './types';
-import { DEFAULT_MODEL_PROVIDERS, getProvidersByType } from './constants/providers';
-import { getLocaleMessage, getTitleMap } from './constants/locale';
+import { DEFAULT_MODEL_PROVIDERS } from './constants/providers';
+import { getTitleMap } from './constants/locale';
+import { ModelProvider } from './constants/providers';
+import './assets/fonts/iconfont';
 
-// 简单的Card组件，避免外部依赖
-const SimpleCard: React.FC<{ children: React.ReactNode; sx?: any }> = ({ children, sx }) => (
-  <Paper
-    sx={{
-      borderRadius: '10px',
-      boxShadow: 'none',
-      border: 'none',
-      overflow: 'hidden',
-      ...sx,
-    }}
-  >
-    {children}
-  </Paper>
-);
-
-// 添加透明度到颜色的工具函数
-const addOpacityToColor = (color: string, opacity: number): string => {
-  if (color.startsWith('#')) {
-    const hex = color.slice(1);
-    const r = parseInt(hex.slice(0, 2), 16);
-    const g = parseInt(hex.slice(2, 4), 16);
-    const b = parseInt(hex.slice(4, 6), 16);
-    return `rgba(${r}, ${g}, ${b}, ${opacity})`;
-  }
-  return color;
-};
+const titleMap = getTitleMap();
 
 export const ModelModal: React.FC<ModelModalProps> = ({
   open,
-  data,
-  type,
   onClose,
   refresh,
+  data,
+  type = ConstsModelType.ModelTypeLLM,
   modelService,
-  config = {},
-  onBeforeSubmit,
-  onAfterSubmit,
-  onError,
-  customProviders,
-  customValidation,
-  customStyles,
-}) => {
+}: ModelModalProps) => {
   const theme = useTheme();
-  
-  // 合并配置
-  const mergedConfig: Required<ModelModalConfig> = {
-    theme: {
-      primaryColor: config.theme?.primaryColor || theme.palette.primary.main,
-      secondaryColor: config.theme?.secondaryColor || theme.palette.secondary.main,
-      borderRadius: config.theme?.borderRadius || '10px',
-      spacing: config.theme?.spacing || 2,
-    },
-    locale: {
-      language: config.locale?.language || 'zh-CN',
-      messages: config.locale?.messages || {},
-    },
-    validation: {
-      requiredFields: config.validation?.requiredFields || ['provider', 'model', 'base_url', 'api_key'],
-      customValidators: config.validation?.customValidators || {},
-    },
-    features: {
-      enableModelTesting: config.features?.enableModelTesting ?? true,
-      enableHeaderConfig: config.features?.enableHeaderConfig ?? true,
-      enableApiVersion: config.features?.enableApiVersion ?? true,
-      enableProviderSelection: config.features?.enableProviderSelection ?? true,
-    },
-    styles: {
-      modalWidth: config.styles?.modalWidth || 800,
-      sidebarWidth: config.styles?.sidebarWidth || 200,
-      customCSS: config.styles?.customCSS || '',
-    },
-  };
 
-  // 使用自定义提供商或默认提供商
-  const providers = customProviders || DEFAULT_MODEL_PROVIDERS;
-  const filteredProviders = getProvidersByType(type, providers);
+  const providers: Record<string, any> = DEFAULT_MODEL_PROVIDERS;
 
   const {
     formState: { errors },
@@ -109,21 +52,32 @@ export const ModelModal: React.FC<ModelModalProps> = ({
     defaultValues: {
       type,
       provider: 'BaiZhiCloud',
-      base_url: filteredProviders.BaiZhiCloud?.defaultBaseUrl || '',
+      base_url: providers['BaiZhiCloud'].defaultBaseUrl,
       model: '',
       api_version: '',
       api_key: '',
       api_header_key: '',
       api_header_value: '',
+      show_name: '',
+      // 高级设置默认值
+      context_window_size: 64000,
+      max_output_tokens: 8192,
+      enable_r1_params: false,
+      support_image: false,
+      support_compute: false,
+      support_prompt_caching: false,
     },
   });
 
   const providerBrand = watch('provider');
+
   const [modelUserList, setModelUserList] = useState<{ model: string }[]>([]);
+
   const [loading, setLoading] = useState(false);
   const [modelLoading, setModelLoading] = useState(false);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
+  const [expandAdvanced, setExpandAdvanced] = useState(false);
 
   const handleReset = () => {
     onClose();
@@ -136,12 +90,21 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       api_version: '',
       api_header_key: '',
       api_header_value: '',
+      // 重置高级设置
+      context_window_size: 64000,
+      max_output_tokens: 8192,
+      enable_r1_params: false,
+      support_image: false,
+      support_compute: false,
+      support_prompt_caching: false,
     });
     setModelUserList([]);
     setSuccess(false);
     setLoading(false);
     setModelLoading(false);
     setError('');
+    // 重置高级设置的展开状态
+    setExpandAdvanced(false);
     refresh();
   };
 
@@ -150,22 +113,25 @@ export const ModelModal: React.FC<ModelModalProps> = ({
     if (value.api_header_key && value.api_header_value) {
       header = value.api_header_key + '=' + value.api_header_value;
     }
-    
     setModelLoading(true);
-    modelService
-      .getModelNameList({
-        type,
-        api_key: value.api_key,
-        base_url: value.base_url,
-        provider: value.provider,
-        api_header: header,
-      })
-      .then((res: { models: { model: string }[] }) => {
+    modelService.listModel({
+      type,
+      api_key: value.api_key,
+      base_url: value.base_url,
+      provider: value.provider as Exclude<typeof value.provider, 'Other'>,
+      api_header: header,
+    })
+      .then((res) => {
         setModelUserList(
-          (res.models || []).sort((a, b) => a.model.localeCompare(b.model))
+          (res.models || [])
+            .filter((item): item is { model: string } => !!item.model)
+            .sort((a, b) => a.model!.localeCompare(b.model!))
         );
-        if (data && (res.models || []).find((it) => it.model === data.model)) {
-          setValue('model', data.model);
+        if (
+          data &&
+        (res.models || []).find((it) => it.model === data.model_name)
+      ) {
+          setValue('model', data.model_name!);
         } else {
           setValue('model', res.models?.[0]?.model || '');
         }
@@ -176,318 +142,384 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       });
   };
 
-  const onSubmit = async (value: AddModelForm) => {
-    // 执行前置验证
-    if (onBeforeSubmit) {
-      const shouldContinue = await onBeforeSubmit(value);
-      if (!shouldContinue) return;
-    }
-
+  const onSubmit = (value: AddModelForm) => {
     let header = '';
     if (value.api_header_key && value.api_header_value) {
       header = value.api_header_key + '=' + value.api_header_value;
     }
-    
     setError('');
     setLoading(true);
-    
-    try {
-      if (mergedConfig.features.enableModelTesting) {
-        const testResult = await modelService.testModel({
-          type,
-          api_key: value.api_key,
-          base_url: value.base_url,
-          api_version: value.api_version,
-          provider: value.provider,
-          model: value.model,
-          api_header: header,
-        });
-        
-        if (testResult.error) {
-          setError(testResult.error);
-          setLoading(false);
-          onError?.(testResult.error);
-          return;
+    modelService.checkModel({
+      // @ts-ignore
+      type,
+      api_key: value.api_key,
+      base_url: value.base_url,
+      api_version: value.api_version,
+      // @ts-ignore
+      provider: value.provider,
+      model: value.model,
+      api_header: header,
+    })
+      .then((res) => {
+        if (data) {
+          modelService.updateModel({
+            api_key: value.api_key,
+            base_url: value.base_url,
+            model: value.model,
+            api_header: header,
+            api_version: value.api_version,
+            id: (data as any).id || '',
+            provider: value.provider as Exclude<typeof value.provider, 'Other'>,
+            show_name: value.show_name,
+            type: type,
+            // 添加高级设置字段到 param 对象中
+            param: {
+              context_window: value.context_window_size,
+              max_tokens: value.max_output_tokens,
+              r1_enabled: value.enable_r1_params,
+              support_images: value.support_image,
+              support_computer_use: value.support_compute,
+              support_prompt_cache: value.support_prompt_caching,
+            },
+            ModelName: value.model,
+          })
+            .then(() => {
+              message.success('修改成功');
+              handleReset();
+            })
+            .finally(() => {
+              setLoading(false);
+            });
+        } else {
+          modelService.createModel({
+            type: type,
+            api_key: value.api_key,
+            base_url: value.base_url,
+            model: value.model,
+            api_header: header,
+            provider: value.provider as Exclude<typeof value.provider, 'Other'>,
+            show_name: value.show_name,
+            // 添加高级设置字段到 param 对象中
+            param: {
+              context_window: value.context_window_size,
+              max_tokens: value.max_output_tokens,
+              r1_enabled: value.enable_r1_params,
+              support_images: value.support_image,
+              support_computer_use: value.support_compute,
+              support_prompt_cache: value.support_prompt_caching,
+            },
+          })
+            .then(() => {
+              message.success('添加成功');
+              handleReset();
+            })
+            .finally(() => {
+              setLoading(false);
+            });
         }
-      }
-
-      if (data) {
-        await modelService.updateModel({
-          type,
-          api_key: value.api_key,
-          base_url: value.base_url,
-          model: value.model,
-          api_header: header,
-          api_version: value.api_version,
-          ModelName: data.id,
-          provider: value.provider,
-        });
-        onAfterSubmit?.(value, { ModelName: data.id });
-      } else {
-        const result = await modelService.createModel({
-          type,
-          api_key: value.api_key,
-          base_url: value.base_url,
-          model: value.model,
-          api_header: header,
-          provider: value.provider,
-        });
-        onAfterSubmit?.(value, result);
-      }
-      
-      handleReset();
-    } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : '操作失败';
-      setError(errorMessage);
-      onError?.(errorMessage);
-    } finally {
-      setLoading(false);
-    }
+      })
+      .catch(() => {
+        setLoading(false);
+      });
   };
 
-  const resetCurData = (value: ModelListItem) => {
+  const resetCurData = (value: DomainModel) => {
+    // @ts-ignore
     if (value.provider && value.provider !== 'Other') {
       getModel({
         api_key: value.api_key || '',
-        base_url: value.base_url || '',
-        model: value.model || '',
-        provider: value.provider || '',
+        base_url: value.api_base || '',
+        model: value.model_name || '',
+        provider: value.provider,
         api_version: value.api_version || '',
         api_header_key: value.api_header?.split('=')[0] || '',
         api_header_value: value.api_header?.split('=')[1] || '',
         type,
+        show_name: value.show_name || '',
+        context_window_size: 64000,
+        max_output_tokens: 8192,
+        enable_r1_params: false,
+        support_image: false,
+        support_compute: false,
+        support_prompt_caching: false
       });
     }
     reset({
       type,
       provider: value.provider || 'Other',
-      model: value.model || '',
-      base_url: value.base_url || '',
+      model: value.model_name || '',
+      base_url: value.api_base || '',
       api_key: value.api_key || '',
       api_version: value.api_version || '',
       api_header_key: value.api_header?.split('=')[0] || '',
       api_header_value: value.api_header?.split('=')[1] || '',
+      show_name: value.show_name || '',
+      context_window_size: value.param?.context_window || 64000,
+      max_output_tokens: value.param?.max_tokens || 8192,
+      enable_r1_params: value.param?.r1_enabled || false,
+      support_image: value.param?.support_images || false,
+      support_compute: value.param?.support_computer_use || false,
+      support_prompt_caching: value.param?.support_prompt_cache || false
     });
   };
 
   useEffect(() => {
     if (open) {
       if (data) {
+        console.log(data);
         resetCurData(data);
       } else {
         reset({
           type,
           provider: 'BaiZhiCloud',
           model: '',
-          base_url: filteredProviders.BaiZhiCloud?.defaultBaseUrl || '',
+          base_url: providers['BaiZhiCloud'].defaultBaseUrl,
           api_key: '',
           api_version: '',
           api_header_key: '',
           api_header_value: '',
+          show_name: '',
+          // 高级设置默认值
+          context_window_size: 64000,
+          max_output_tokens: 8192,
+          enable_r1_params: false,
+          support_image: false,
+          support_compute: false,
+          support_prompt_caching: false,
         });
       }
+      // 确保每次打开时高级设置都是折叠的
+      setExpandAdvanced(false);
     }
-  }, [data, open, type, filteredProviders.BaiZhiCloud?.defaultBaseUrl]);
-
-  if (!open) return null;
-
-  const titleMap = getTitleMap(mergedConfig.locale.language);
-  const isEdit = !!data;
-  const title = isEdit
-    ? `${getLocaleMessage('edit', mergedConfig.locale.language)} ${titleMap[type]}`
-    : `${getLocaleMessage('add', mergedConfig.locale.language)} ${titleMap[type]}`;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [data, open]);
 
   return (
-    <Box
-      sx={{
-        position: 'fixed',
-        top: 0,
-        left: 0,
-        right: 0,
-        bottom: 0,
-        backgroundColor: 'rgba(0, 0, 0, 0.5)',
-        display: 'flex',
-        alignItems: 'center',
-        justifyContent: 'center',
-        zIndex: 1300,
+    <Modal
+      title={data ? `修改${titleMap[type]}` : `添加${titleMap[type]}`}
+      open={open}
+      width={800}
+      onCancel={handleReset}
+      okText='保存'
+      onOk={handleSubmit(onSubmit)}
+      okButtonProps={{
+        loading,
+        disabled: !success && providerBrand !== 'Other',
       }}
-      onClick={handleReset}
     >
-      <Box
-        sx={{
-          width: mergedConfig.styles.modalWidth,
-          maxHeight: '90vh',
-          backgroundColor: 'background.paper',
-          borderRadius: mergedConfig.styles.borderRadius,
-          boxShadow: 24,
-          overflow: 'hidden',
-        }}
-        onClick={(e) => e.stopPropagation()}
-      >
-        {/* Header */}
-        <Box
+      <Stack direction={'row'} alignItems={'stretch'} gap={3}>
+        <Stack
+          gap={1}
           sx={{
-            p: 3,
-            borderBottom: '1px solid',
-            borderColor: 'divider',
-            display: 'flex',
-            justifyContent: 'space-between',
-            alignItems: 'center',
+            width: 200,
+            flexShrink: 0,
+            bgcolor: 'background.paper2',
+            borderRadius: '10px',
+            p: 1,
           }}
         >
-          <Box sx={{ fontSize: 18, fontWeight: 'bold' }}>{title}</Box>
-          <Button onClick={handleReset} variant="text">
-            {getLocaleMessage('cancel', mergedConfig.locale.language)}
-          </Button>
-        </Box>
-
-        {/* Content */}
-        <Box sx={{ p: 3, maxHeight: 'calc(90vh - 120px)', overflow: 'auto' }}>
-          <Stack direction="row" alignItems="stretch" gap={3}>
-            {/* Sidebar */}
-            {mergedConfig.features.enableProviderSelection && (
-              <Stack
-                gap={1}
-                sx={{
-                  width: mergedConfig.styles.sidebarWidth,
-                  flexShrink: 0,
-                  bgcolor: 'background.paper2',
-                  borderRadius: mergedConfig.styles.borderRadius,
-                  p: 1,
+          <Box
+            sx={{ fontSize: 14, lineHeight: '24px', fontWeight: 'bold', p: 1 }}
+          >
+            模型供应商
+          </Box>
+          {Object.values(providers).map((it) => (
+            <Stack
+              direction={'row'}
+              alignItems={'center'}
+              gap={1.5}
+              key={it.label}
+              sx={{
+                cursor: 'pointer',
+                fontSize: 14,
+                lineHeight: '24px',
+                p: 1,
+                borderRadius: '10px',
+                fontWeight: 'bold',
+                fontFamily: 'Gbold',
+                ...(providerBrand === it.label && {
+                  bgcolor: addOpacityToColor(theme.palette.primary.main, 0.1),
+                  color: 'primary.main',
+                }),
+                '&:hover': {
+                  color: 'primary.main',
+                },
+              }}
+              onClick={() => {
+                if (data && data.provider === it.label) {
+                  resetCurData(data);
+                } else {
+                  setModelUserList([]);
+                  setError('');
+                  setModelLoading(false);
+                  setSuccess(false);
+                  reset({
+                    provider: it.label as keyof typeof ModelProvider,
+                    base_url:
+                      it.label === 'AzureOpenAI' ? '' : it.defaultBaseUrl,
+                    model: '',
+                    api_version: '',
+                    api_key: '',
+                    api_header_key: '',
+                    api_header_value: '',
+                    show_name: '',
+                    // 重置高级设置
+                    context_window_size: 64000,
+                    max_output_tokens: 8192,
+                    enable_r1_params: false,
+                    support_image: false,
+                    support_compute: false,
+                    support_prompt_caching: false,
+                  });
+                }
+              }}
+            >
+              <Icon type={it.icon} sx={{ fontSize: 18 }} />
+              {it.cn || it.label || '其他'}
+            </Stack>
+          ))}
+        </Stack>
+        <Box sx={{ flex: 1 }}>
+          <Box sx={{ fontSize: 14, lineHeight: '32px' }}>
+            API 地址{' '}
+            <Box component={'span'} sx={{ color: 'red' }}>
+              *
+            </Box>
+          </Box>
+          <Controller
+            control={control}
+            name='base_url'
+            rules={{
+              required: {
+                value: true,
+                message: 'URL 不能为空',
+              },
+            }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                disabled={!providers[providerBrand].urlWrite}
+                size='small'
+                placeholder={providers[providerBrand].defaultBaseUrl}
+                error={!!errors.base_url}
+                helperText={errors.base_url?.message}
+                onChange={(e) => {
+                  field.onChange(e.target.value);
+                  setModelUserList([]);
+                  setValue('model', '');
+                  setSuccess(false);
                 }}
-              >
-                <Box sx={{ fontSize: 14, lineHeight: '24px', fontWeight: 'bold', p: 1 }}>
-                  {getLocaleMessage('modelProvider', mergedConfig.locale.language)}
-                </Box>
-                {Object.values(filteredProviders).map((it) => (
-                  <Stack
-                    direction="row"
-                    alignItems="center"
-                    gap={1.5}
-                    key={it.label}
-                    sx={{
-                      cursor: 'pointer',
-                      fontSize: 14,
-                      lineHeight: '24px',
-                      p: 1,
-                      borderRadius: mergedConfig.styles.borderRadius,
-                      fontWeight: 'bold',
-                      ...(providerBrand === it.label && {
-                        bgcolor: addOpacityToColor(mergedConfig.theme.primaryColor || '#1976d2', 0.1),
-                        color: 'primary.main',
-                      }),
-                      '&:hover': {
-                        color: 'primary.main',
-                      },
-                    }}
-                    onClick={() => {
-                      if (data && data.provider === it.label) {
-                        resetCurData(data);
-                      } else {
-                        setModelUserList([]);
-                        setError('');
-                        setModelLoading(false);
-                        setSuccess(false);
-                        reset({
-                          provider: it.label,
-                          base_url: it.label === 'AzureOpenAI' ? '' : it.defaultBaseUrl,
-                          model: '',
-                          api_version: '',
-                          api_key: '',
-                          api_header_key: '',
-                          api_header_value: '',
-                        });
-                      }
-                    }}
-                  >
-                    <InfoIcon sx={{ fontSize: 18 }} />
-                    {it.cn || it.label || getLocaleMessage('other', mergedConfig.locale.language)}
-                  </Stack>
-                ))}
-              </Stack>
+              />
             )}
-
-            {/* Main Form */}
-            <Box sx={{ flex: 1 }}>
-              {/* API Address */}
-              <Box sx={{ fontSize: 14, lineHeight: '32px' }}>
-                {getLocaleMessage('apiAddress', mergedConfig.locale.language)}{' '}
-                <Box component="span" sx={{ color: 'red' }}>
+          />
+          <Stack
+            direction={'row'}
+            alignItems={'center'}
+            justifyContent={'space-between'}
+            sx={{ fontSize: 14, lineHeight: '32px', mt: 2 }}
+          >
+            <Box>
+              API Secret
+              {providers[providerBrand].secretRequired && (
+                <Box component={'span'} sx={{ color: 'red' }}>
+                  {' '}
+                  *
+                </Box>
+              )}
+            </Box>
+            {providers[providerBrand].modelDocumentUrl && (
+              <Box
+                component={'span'}
+                sx={{
+                  color: 'info.main',
+                  cursor: 'pointer',
+                  ml: 1,
+                  textAlign: 'right',
+                }}
+                onClick={() =>
+                  window.open(
+                    providers[providerBrand].modelDocumentUrl,
+                    '_blank'
+                  )
+                }
+              >
+                查看文档
+              </Box>
+            )}
+          </Stack>
+          <Controller
+            control={control}
+            name='api_key'
+            rules={{
+              required: {
+                value: providers[providerBrand].secretRequired,
+                message: 'API Secret 不能为空',
+              },
+            }}
+            render={({ field }) => (
+              <TextField
+                {...field}
+                fullWidth
+                size='small'
+                placeholder=''
+                error={!!errors.api_key}
+                helperText={errors.api_key?.message}
+                onChange={(e) => {
+                  field.onChange(e.target.value);
+                  setModelUserList([]);
+                  setValue('model', '');
+                  setSuccess(false);
+                }}
+              />
+            )}
+          />
+          {(modelUserList.length !== 0 || providerBrand === 'Other') && (
+            <>
+              <Box sx={{ fontSize: 14, lineHeight: '32px', mt: 2 }}>
+                模型备注
+                <Box component={'span'} sx={{ color: 'red' }}>
                   *
                 </Box>
               </Box>
               <Controller
                 control={control}
-                name="base_url"
+                name='show_name'
                 rules={{
                   required: {
                     value: true,
-                    message: getLocaleMessage('urlRequired', mergedConfig.locale.language),
+                    message: '模型备注不能为空',
                   },
                 }}
                 render={({ field }) => (
                   <TextField
                     {...field}
                     fullWidth
-                    disabled={!filteredProviders[providerBrand]?.urlWrite}
-                    size="small"
-                    placeholder={filteredProviders[providerBrand]?.defaultBaseUrl}
-                    error={!!errors.base_url}
-                    helperText={errors.base_url?.message}
-                    onChange={(e) => {
-                      field.onChange(e.target.value);
-                      setModelUserList([]);
-                      setValue('model', '');
-                      setSuccess(false);
-                    }}
+                    size='small'
+                    placeholder=''
+                    error={!!errors.show_name}
+                    helperText={errors.show_name?.message}
                   />
                 )}
               />
-
-              {/* API Secret */}
-              <Stack
-                direction="row"
-                alignItems="center"
-                justifyContent="space-between"
-                sx={{ fontSize: 14, lineHeight: '32px', mt: 2 }}
-              >
-                <Box>
-                  {getLocaleMessage('apiSecret', mergedConfig.locale.language)}
-                  {filteredProviders[providerBrand]?.secretRequired && (
-                    <Box component="span" sx={{ color: 'red' }}>
-                      *
-                    </Box>
-                  )}
-                </Box>
-                {filteredProviders[providerBrand]?.modelDocumentUrl && (
-                  <Box
-                    component="span"
-                    sx={{ color: 'primary.main', cursor: 'pointer', ml: 1, textAlign: 'right' }}
-                    onClick={() =>
-                      window.open(filteredProviders[providerBrand]?.modelDocumentUrl, '_blank')
-                    }
-                  >
-                    {getLocaleMessage('viewDocumentation', mergedConfig.locale.language)}
-                  </Box>
-                )}
-              </Stack>
+            </>
+          )}
+          {providerBrand === 'AzureOpenAI' && (
+            <>
+              <Box sx={{ fontSize: 14, lineHeight: '32px', mt: 2 }}>
+                API Version
+              </Box>
               <Controller
                 control={control}
-                name="api_key"
-                rules={{
-                  required: {
-                    value: filteredProviders[providerBrand]?.secretRequired || false,
-                    message: getLocaleMessage('secretRequired', mergedConfig.locale.language),
-                  },
-                }}
+                name='api_version'
                 render={({ field }) => (
                   <TextField
                     {...field}
                     fullWidth
-                    size="small"
-                    placeholder=""
-                    error={!!errors.api_key}
-                    helperText={errors.api_key?.message}
+                    size='small'
+                    placeholder='2024-10-21'
+                    error={!!errors.api_version}
+                    helperText={errors.api_version?.message}
                     onChange={(e) => {
                       field.onChange(e.target.value);
                       setModelUserList([]);
@@ -497,195 +529,273 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                   />
                 )}
               />
-
-              {/* API Version */}
-              {providerBrand === 'AzureOpenAI' && mergedConfig.features.enableApiVersion && (
+            </>
+          )}
+          {providerBrand === 'Other' ? (
+            <>
+              <Box sx={{ fontSize: 14, lineHeight: '32px', mt: 2 }}>
+                模型名称{' '}
+                <Box component={'span'} sx={{ color: 'red' }}>
+                  *
+                </Box>
+              </Box>
+              <Controller
+                control={control}
+                name='model'
+                rules={{
+                  required: '模型名称不能为空',
+                }}
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    fullWidth
+                    size='small'
+                    placeholder=''
+                    error={!!errors.model}
+                    helperText={errors.model?.message}
+                  />
+                )}
+              />
+              <Box sx={{ fontSize: 12, color: 'error.main', mt: 1 }}>
+                需要与模型供应商提供的名称完全一致，不要随便填写
+              </Box>
+            </>
+          ) : modelUserList.length === 0 ? (
+            <Button
+              fullWidth
+              variant='outlined'
+              loading={modelLoading}
+              sx={{ mt: 4 }}
+              onClick={handleSubmit(getModel)}
+            >
+              获取模型列表
+            </Button>
+          ) : (
+            <>
+              <Box sx={{ fontSize: 14, lineHeight: '32px', mt: 2 }}>
+                模型名称{' '}
+                <Box component={'span'} sx={{ color: 'red' }}>
+                  *
+                </Box>
+              </Box>
+              <Controller
+                control={control}
+                name='model'
+                render={({ field }) => (
+                  <TextField
+                    {...field}
+                    fullWidth
+                    select
+                    size='small'
+                    placeholder=''
+                    error={!!errors.model}
+                    helperText={errors.model?.message}
+                  >
+                    {modelUserList.map((it) => (
+                      <MenuItem key={it.model} value={it.model}>
+                        {it.model}
+                      </MenuItem>
+                    ))}
+                  </TextField>
+                )}
+              />
+              {providers[providerBrand].customHeader && (
                 <>
                   <Box sx={{ fontSize: 14, lineHeight: '32px', mt: 2 }}>
-                    {getLocaleMessage('apiVersion', mergedConfig.locale.language)}
+                    Header
                   </Box>
-                  <Controller
-                    control={control}
-                    name="api_version"
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        fullWidth
-                        size="small"
-                        placeholder="2024-10-21"
-                        error={!!errors.api_version}
-                        helperText={errors.api_version?.message}
-                        onChange={(e) => {
-                          field.onChange(e.target.value);
-                          setModelUserList([]);
-                          setValue('model', '');
-                          setSuccess(false);
-                        }}
-                      />
-                    )}
-                  />
+                  <Stack direction={'row'} gap={1}>
+                    <Controller
+                      control={control}
+                      name='api_header_key'
+                      render={({ field }) => (
+                        <TextField
+                          {...field}
+                          fullWidth
+                          size='small'
+                          placeholder='key'
+                          error={!!errors.api_header_key}
+                          helperText={errors.api_header_key?.message}
+                        />
+                      )}
+                    />
+                    <Box sx={{ fontSize: 14, lineHeight: '36px' }}>=</Box>
+                    <Controller
+                      control={control}
+                      name='api_header_value'
+                      render={({ field }) => (
+                        <TextField
+                          {...field}
+                          fullWidth
+                          size='small'
+                          placeholder='value'
+                          error={!!errors.api_header_value}
+                          helperText={errors.api_header_value?.message}
+                        />
+                      )}
+                    />
+                  </Stack>
                 </>
               )}
-
-              {/* Model Selection */}
-              {providerBrand === 'Other' ? (
-                <>
-                  <Box sx={{ fontSize: 14, lineHeight: '32px', mt: 2 }}>
-                    {getLocaleMessage('modelName', mergedConfig.locale.language)}{' '}
-                    <Box component="span" sx={{ color: 'red' }}>
-                      *
-                    </Box>
-                  </Box>
-                  <Controller
-                    control={control}
-                    name="model"
-                    rules={{
-                      required: getLocaleMessage('modelNameRequired', mergedConfig.locale.language),
-                    }}
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        fullWidth
-                        size="small"
-                        placeholder=""
-                        error={!!errors.model}
-                        helperText={errors.model?.message}
-                      />
-                    )}
-                  />
-                  <Box sx={{ fontSize: 12, color: 'error.main', mt: 1 }}>
-                    {getLocaleMessage('modelNameHint', mergedConfig.locale.language)}
-                  </Box>
-                </>
-              ) : modelUserList.length === 0 ? (
-                <Button
-                  fullWidth
-                  variant="outlined"
-                  disabled={modelLoading}
-                  sx={{ mt: 4 }}
-                  onClick={handleSubmit(getModel)}
-                >
-                  {modelLoading
-                    ? '加载中...'
-                    : getLocaleMessage('getModelList', mergedConfig.locale.language)}
-                </Button>
-              ) : (
-                <>
-                  <Box sx={{ fontSize: 14, lineHeight: '32px', mt: 2 }}>
-                    {getLocaleMessage('modelName', mergedConfig.locale.language)}{' '}
-                    <Box component="span" sx={{ color: 'red' }}>
-                      *
-                    </Box>
-                  </Box>
-                  <Controller
-                    control={control}
-                    name="model"
-                    render={({ field }) => (
-                      <TextField
-                        {...field}
-                        fullWidth
-                        select
-                        size="small"
-                        placeholder=""
-                        error={!!errors.model}
-                        helperText={errors.model?.message}
-                      >
-                        {modelUserList.map((it) => (
-                          <MenuItem key={it.model} value={it.model}>
-                            {it.model}
-                          </MenuItem>
-                        ))}
-                      </TextField>
-                    )}
-                  />
-
-                  {/* Custom Header */}
-                  {filteredProviders[providerBrand]?.customHeader &&
-                    mergedConfig.features.enableHeaderConfig && (
-                      <>
-                        <Box sx={{ fontSize: 14, lineHeight: '32px', mt: 2 }}>
-                          {getLocaleMessage('header', mergedConfig.locale.language)}
-                        </Box>
-                        <Stack direction="row" gap={1}>
-                          <Controller
-                            control={control}
-                            name="api_header_key"
-                            render={({ field }) => (
-                              <TextField
-                                {...field}
-                                fullWidth
-                                size="small"
-                                placeholder="key"
-                                error={!!errors.api_header_key}
-                                helperText={errors.api_header_key?.message}
-                              />
-                            )}
-                          />
-                          <Box sx={{ fontSize: 14, lineHeight: '36px' }}>=</Box>
-                          <Controller
-                            control={control}
-                            name="api_header_value"
-                            render={({ field }) => (
-                              <TextField
-                                {...field}
-                                fullWidth
-                                size="small"
-                                placeholder="value"
-                                error={!!errors.api_header_value}
-                                helperText={errors.api_header_value?.message}
-                              />
-                            )}
-                          />
-                        </Stack>
-                      </>
-                    )}
-                </>
-              )}
-
-              {/* Error Display */}
-              {error && (
-                <SimpleCard
-                  sx={{
-                    color: 'error.main',
-                    mt: 2,
-                    fontSize: 12,
-                    p: 2,
-                    bgcolor: 'background.paper2',
-                    border: '1px solid',
-                    borderColor: 'error.main',
+              
+              {/* 高级设置部分 */}
+              <Box sx={{ mt: 2 }}>
+                <Accordion 
+                  sx={{ 
+                    boxShadow: 'none',
+                    bgcolor: 'transparent',
+                    '&:before': {
+                      display: 'none',
+                    },
+                    '& .MuiAccordionSummary-root': {
+                      padding: 0,
+                      minHeight: 'auto',
+                      '& .MuiAccordionSummary-content': {
+                        margin: 0,
+                      },
+                    },
+                    '& .MuiAccordionDetails-root': {
+                      padding: 0,
+                      paddingTop: 1.5,
+                    },
                   }}
+                  expanded={expandAdvanced}
+                  onChange={() => setExpandAdvanced(!expandAdvanced)}
                 >
-                  {error}
-                </SimpleCard>
-              )}
-            </Box>
-          </Stack>
+                  <AccordionSummary
+                    sx={{ 
+                      fontSize: 14, 
+                      fontWeight: 500,
+                      lineHeight: '32px',
+                      color: 'blue',
+                      display: 'flex',
+                      alignItems: 'center',
+                      cursor: 'pointer',
+                      '&:hover': {
+                        opacity: 0.8,
+                      },
+                    }}
+                  >
+                    高级设置
+                  </AccordionSummary>
+                  <AccordionDetails>
+                    <Stack spacing={2}>
+                      <Box>
+                        <Box sx={{ fontSize: 14, lineHeight: '32px' }}>
+                          上下文窗口大小
+                        </Box>
+                        <Controller
+                          control={control}
+                          name='context_window_size'
+                          render={({ field }) => (
+                            <>
+                              <TextField
+                                {...field}
+                                fullWidth
+                                size='small'
+                                placeholder='例如：16000'
+                                type='number'
+                                onChange={(e) => field.onChange(Number(e.target.value))}
+                              />
+                              <Box sx={{ mt: 1, display: 'flex', gap: 1, alignItems: 'center' }}>
+                                {[
+                                  { label: '128k', value: 128000 },
+                                  { label: '256k', value: 256000 },
+                                  { label: '512k', value: 512000 },
+                                  { label: '1m', value: 1_000_000 }
+                                ].map((option) => (
+                                  <Box 
+                                    key={option.label}
+                                    sx={{ 
+                                      fontSize: 12, 
+                                      color: 'blue',
+                                      cursor: 'pointer',
+                                      padding: '2px 4px',
+                                      '&:hover': {
+                                        textDecoration: 'underline'
+                                      }
+                                    }}
+                                    onClick={() => field.onChange(option.value)}
+                                  >
+                                    {option.label}
+                                  </Box>
+                                ))}
+                              </Box>
+                            </>
+                          )}
+                        />
+                      </Box>
+                      
+                      <Box>
+                        <Box sx={{ fontSize: 14, lineHeight: '32px' }}>
+                          最大输出 Token
+                        </Box>
+                        <Controller
+                          control={control}
+                          name='max_output_tokens'
+                          render={({ field }) => (
+                            <TextField
+                              {...field}
+                              fullWidth
+                              size='small'
+                              placeholder='例如：4000'
+                              type='number'
+                              onChange={(e) => field.onChange(Number(e.target.value))}
+                            />
+                          )}
+                        />
+                      </Box>
+                      
+                      {/* 复选框组 - 使用更紧凑的布局 */}
+                      <Stack spacing={0}>
+                        <Controller
+                          control={control}
+                          name='enable_r1_params'
+                          render={({ field }) => (
+                            <FormControlLabel
+                              control={
+                                <Checkbox
+                                  checked={field.value}
+                                  onChange={(e) => field.onChange(e.target.checked)}
+                                  size='small'
+                                />
+                              }
+                              label={
+                                <Box sx={{ fontSize: 12 }}>
+                                  启用 R1 模型参数
+                                  <Box component="span" sx={{ ml: 1, color: 'text.secondary', fontSize: 11 }}>
+                                    (使用 QWQ 等 R1 系列模型时必须启用，避免出现 400 错误)
+                                  </Box>
+                                </Box>
+                              }
+                              sx={{ margin: 0 }}
+                            />
+                          )}
+                        />
+                      </Stack>
+                    </Stack>
+                  </AccordionDetails>
+                </Accordion>
+              </Box>
+            </>
+          )}
+          {error && (
+            <Card
+              sx={{
+                color: 'error.main',
+                mt: 2,
+                fontSize: 12,
+                p: 2,
+                bgcolor: 'background.paper2',
+                border: '1px solid',
+                borderColor: 'error.main',
+              }}
+            >
+              {error}
+            </Card>
+          )}
         </Box>
-
-        {/* Footer */}
-        <Box
-          sx={{
-            p: 3,
-            borderTop: '1px solid',
-            borderColor: 'divider',
-            display: 'flex',
-            justifyContent: 'flex-end',
-            gap: 2,
-          }}
-        >
-          <Button onClick={handleReset} variant="outlined">
-            {getLocaleMessage('cancel', mergedConfig.locale.language)}
-          </Button>
-          <Button
-            variant="contained"
-            loading={loading}
-            disabled={!success && providerBrand !== 'Other'}
-            onClick={handleSubmit(onSubmit)}
-          >
-            {getLocaleMessage('save', mergedConfig.locale.language)}
-          </Button>
-        </Box>
-      </Box>
-    </Box>
+      </Stack>
+    </Modal>
   );
-}; 
+};

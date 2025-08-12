@@ -1,6 +1,78 @@
 // 基础类型定义
 export type ModelType = 'chat' | 'embedding' | 'rerank';
 
+// 模型类型常量
+export enum ConstsModelType {
+  ModelTypeLLM = 'chat',
+  ModelTypeEmbedding = 'embedding',
+  ModelTypeRerank = 'rerank',
+}
+
+// 域模型接口
+export interface DomainModel {
+  /** 接口地址 如：https://api.qwen.com */
+  api_base?: string;
+  /** 接口头 如：Authorization: Bearer sk-xxxx */
+  api_header?: string;
+  /** 接口密钥 如：sk-xxxx */
+  api_key?: string;
+  /** 接口版本 如：2023-05-15 */
+  api_version?: string;
+  /** 创建时间 */
+  created_at?: number;
+  /** 模型ID */
+  id?: string;
+  /** 输入token数 */
+  input?: number;
+  /** 是否启用 */
+  is_active?: boolean;
+  /** 是否内部模型 */
+  is_internal?: boolean;
+  /** 模型名称 如: deepseek-v3 */
+  model_name?: string;
+  /** 模型类型 llm:对话模型 coder:代码模型 */
+  model_type?: ConstsModelType;
+  /** 输出token数 */
+  output?: number;
+  /** 高级参数 */
+  param?: DomainModelParam;
+  /** 提供商 */
+  provider?: ConstsModelProvider;
+  /** 模型显示名称 */
+  show_name?: string;
+  /** 状态 active:启用 inactive:禁用 */
+  status?: ConstsModelStatus;
+  /** 更新时间 */
+  updated_at?: number;
+}
+
+export interface DomainModelParam {
+  context_window?: number;
+  max_tokens?: number;
+  r1_enabled?: boolean;
+  support_computer_use?: boolean;
+  support_images?: boolean;
+  support_prompt_cache?: boolean;
+}
+
+export enum ConstsModelStatus {
+  ModelStatusActive = "active",
+  ModelStatusInactive = "inactive",
+}
+
+export enum ConstsModelProvider {
+  ModelProviderSiliconFlow = "SiliconFlow",
+  ModelProviderOpenAI = "OpenAI",
+  ModelProviderOllama = "Ollama",
+  ModelProviderDeepSeek = "DeepSeek",
+  ModelProviderMoonshot = "Moonshot",
+  ModelProviderAzureOpenAI = "AzureOpenAI",
+  ModelProviderBaiZhiCloud = "BaiZhiCloud",
+  ModelProviderHunyuan = "Hunyuan",
+  ModelProviderBaiLian = "BaiLian",
+  ModelProviderVolcengine = "Volcengine",
+}
+
 // 模型提供商配置
 export interface ModelProviderConfig {
   label: string;
@@ -16,21 +88,6 @@ export interface ModelProviderConfig {
 // 模型提供商映射
 export type ModelProviderMap = Record<string, ModelProviderConfig>;
 
-// 模型列表项
-export interface ModelListItem {
-  ModelName: string;
-  model: string;
-  type: ModelType;
-  provider: string;
-  base_url: string;
-  api_key: string;
-  api_version?: string;
-  api_header?: string;
-  completion_tokens?: number;
-  prompt_tokens?: number;
-  total_tokens?: number;
-}
-
 // 创建模型数据
 export interface CreateModelData {
   type: ModelType;
@@ -40,6 +97,15 @@ export interface CreateModelData {
   api_key: string;
   api_version?: string;
   api_header?: string;
+  show_name?: string;
+  param?: {
+    context_window?: number;
+    max_tokens?: number;
+    r1_enabled?: boolean;
+    support_images?: boolean;
+    support_computer_use?: boolean;
+    support_prompt_cache?: boolean;
+  };
 }
 
 // 获取模型列表数据
@@ -58,15 +124,20 @@ export interface CheckModelData extends CreateModelData {
 
 // 更新模型数据
 export interface UpdateModelData extends CheckModelData {
+  id: string;
   ModelName: string;
 }
 
 // 模型服务接口
 export interface ModelService {
-  createModel: (data: CreateModelData) => Promise<{ ModelName: string }>;
-  getModelNameList: (data: GetModelNameData) => Promise<{ models: { model: string }[] }>;
-  testModel: (data: CheckModelData) => Promise<{ error: string }>;
-  updateModel: (data: UpdateModelData) => Promise<void>;
+  createModel: (data: CreateModelData) => Promise<{ model: DomainModel }>;
+  listModel: (data: GetModelNameData) => Promise<{ models: ModelListItem[] }>;
+  checkModel: (data: CheckModelData) => Promise<{ model: DomainModel }>;
+  updateModel: (data: UpdateModelData) => Promise<{ model: DomainModel }>;
+}
+
+export interface ModelListItem {
+  model?: string;
 }
 
 // 表单数据
@@ -79,64 +150,21 @@ export interface AddModelForm {
   api_header_key: string;
   api_header_value: string;
   type: ModelType;
+  show_name: string;
+  // 高级设置字段
+  context_window_size: number;
+  max_output_tokens: number;
+  enable_r1_params: boolean;
+  support_image: boolean;
+  support_compute: boolean;
+  support_prompt_caching: boolean;
 }
 
-// 组件配置接口
-export interface ModelModalConfig {
-  // 主题配置
-  theme?: {
-    primaryColor?: string;
-    secondaryColor?: string;
-    borderRadius?: string;
-    spacing?: number;
-  };
-  
-  // 本地化配置
-  locale?: {
-    language?: 'zh-CN' | 'en-US';
-    messages?: Record<string, string>;
-  };
-  
-  // 验证配置
-  validation?: {
-    requiredFields?: (keyof AddModelForm)[];
-    customValidators?: Record<string, (value: any) => string | undefined>;
-  };
-  
-  // 功能开关
-  features?: {
-    enableModelTesting?: boolean;
-    enableHeaderConfig?: boolean;
-    enableApiVersion?: boolean;
-    enableProviderSelection?: boolean;
-  };
-  
-  // 自定义样式
-  styles?: {
-    modalWidth?: number | string;
-    sidebarWidth?: number | string;
-    customCSS?: string;
-    borderRadius?: string;
-  };
-}
-
-// 组件属性
 export interface ModelModalProps {
   open: boolean;
-  data?: ModelListItem | null;
-  type: ModelType;
+  data: DomainModel | null;
+  type: ConstsModelType;
   onClose: () => void;
   refresh: () => void;
   modelService: ModelService;
-  config?: ModelModalConfig;
-  
-  // 自定义回调
-  onBeforeSubmit?: (data: AddModelForm) => boolean | Promise<boolean>;
-  onAfterSubmit?: (data: AddModelForm, result: any) => void;
-  onError?: (error: string) => void;
-  
-  // 自定义渲染
-  customProviders?: ModelProviderMap;
-  customValidation?: Record<string, (value: any) => string | undefined>;
-  customStyles?: Record<string, any>;
-} 
+}
