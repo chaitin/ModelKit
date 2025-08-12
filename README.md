@@ -14,6 +14,7 @@ ModelKit 是一个强大的AI模型管理平台，支持多种AI服务提供商�
 - **统一API接口**: 提供标准化的RESTful API，简化AI模型集成
 - **现代化Web界面**: 基于React 19和Material-UI构建的响应式用户界面
 - **国际化支持**: 内置中英文多语言支持
+- **可复用组件**: 提供开箱即用的ModelModal组件，支持在其他项目中快速集成
 
 ## 🏗️ 技术架构
 
@@ -43,6 +44,11 @@ ModelKit/
 ├── usecase/          # 业务用例
 ├── ui/               # 前端应用
 │   ├── src/          # 源代码
+│   │   ├── components/     # 可复用组件
+│   │   │   └── Card/       # 卡片组件
+│   │   ├── constant/       # 常量定义
+│   │   ├── api/            # API接口
+│   │   └── services/       # 服务层
 │   ├── public/       # 静态资源
 │   └── package.json  # 前端依赖
 ├── utils/            # 工具函数
@@ -79,6 +85,180 @@ pnpm dev
 ```bash
 pnpm build
 ```
+
+## 🧩 组件使用指南
+
+### ModelModal 组件
+
+ModelModal 是一个功能完整的AI模型配置组件，支持添加、编辑和测试各种AI模型。该组件可以在其他React项目中复用。
+
+#### 安装依赖
+
+```bash
+# 必需依赖
+npm install @mui/material @emotion/react @emotion/styled
+npm install react-hook-form @mui/icons-material
+
+# 可选依赖（用于图标）
+npm install @mui/lab
+```
+
+#### 基本使用
+
+```tsx
+import { ModelModal } from './components/ModelModal'
+import { ModelService } from './services/ModelService'
+
+function App() {
+  const [open, setOpen] = useState(false)
+  const [modelData, setModelData] = useState(null)
+  
+  const modelService = new ModelService()
+  
+  const handleClose = () => {
+    setOpen(false)
+    setModelData(null)
+  }
+  
+  const handleRefresh = () => {
+    // 刷新模型列表
+    console.log('刷新模型列表')
+  }
+  
+  return (
+    <div>
+      <button onClick={() => setOpen(true)}>添加模型</button>
+      
+      <ModelModal
+        open={open}
+        data={modelData}
+        type="chat"
+        onClose={handleClose}
+        refresh={handleRefresh}
+        modelService={modelService}
+      />
+    </div>
+  )
+}
+```
+
+#### 组件属性
+
+| 属性 | 类型 | 必需 | 说明 |
+|------|------|------|------|
+| `open` | `boolean` | ✅ | 控制模态框显示/隐藏 |
+| `data` | `ModelListItem \| null` | ❌ | 编辑时的模型数据，null表示新增 |
+| `type` | `'chat' \| 'embedding' \| 'rerank'` | ✅ | 模型类型 |
+| `onClose` | `() => void` | ✅ | 关闭模态框的回调 |
+| `refresh` | `() => void` | ✅ | 刷新数据的回调 |
+| `modelService` | `ModelService` | ✅ | 模型服务接口实现 |
+
+#### 实现ModelService接口
+
+```tsx
+interface ModelService {
+  createModel: (data: CreateModelData) => Promise<{ ModelName: string }>
+  getModelNameList: (data: GetModelNameData) => Promise<{ models: { model: string }[] }>
+  testModel: (data: CheckModelData) => Promise<{ error: string }>
+  updateModel: (data: UpdateModelData) => Promise<void>
+}
+
+class CustomModelService implements ModelService {
+  async createModel(data: CreateModelData) {
+    // 实现创建模型的逻辑
+    const response = await fetch('/api/models', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    })
+    return response.json()
+  }
+  
+  async getModelNameList(data: GetModelNameData) {
+    // 实现获取模型列表的逻辑
+    const response = await fetch('/api/models/list', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    })
+    return response.json()
+  }
+  
+  async testModel(data: CheckModelData) {
+    // 实现测试模型的逻辑
+    const response = await fetch('/api/models/test', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    })
+    return response.json()
+  }
+  
+  async updateModel(data: UpdateModelData) {
+    // 实现更新模型的逻辑
+    await fetch(`/api/models/${data.id}`, {
+      method: 'PUT',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(data)
+    })
+  }
+}
+```
+
+#### 支持的数据类型
+
+```tsx
+// 模型提供商
+type ModelProvider = 'BaiZhiCloud' | 'DeepSeek' | 'Hunyuan' | 'BaiLian' | 
+                    'Volcengine' | 'OpenAI' | 'Ollama' | 'SiliconFlow' | 
+                    'Moonshot' | 'AzureOpenAI' | 'Gemini' | 'ZhiPu' | 'Other'
+
+// 模型类型
+type ModelType = 'chat' | 'embedding' | 'rerank'
+
+// 表单数据
+interface AddModelForm {
+  provider: keyof typeof ModelProvider
+  model: string
+  base_url: string
+  api_version: string
+  api_key: string
+  api_header_key: string
+  api_header_value: string
+  type: ModelType
+}
+```
+
+#### 自定义样式
+
+组件使用Material-UI主题系统，可以通过主题配置自定义样式：
+
+```tsx
+import { createTheme, ThemeProvider } from '@mui/material/styles'
+
+const theme = createTheme({
+  palette: {
+    primary: {
+      main: '#1976d2',
+    },
+    secondary: {
+      main: '#dc004e',
+    },
+  },
+})
+
+function App() {
+  return (
+    <ThemeProvider theme={theme}>
+      <ModelModal {...props} />
+    </ThemeProvider>
+  )
+}
+```
+
+#### 完整示例项目
+
+查看 [examples/model-modal-demo](examples/model-modal-demo) 目录获取完整的集成示例。
 
 ## 📚 API文档
 
@@ -167,7 +347,6 @@ POST /api/v1/modelkit/check
 - **vision**: 视觉模型
 - **coder**: 代码模型
 - **functioncall**: 函数调用模型
-
 
 ## 📝 许可证
 
