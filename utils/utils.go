@@ -17,6 +17,8 @@ import (
 	"github.com/JohannesKaufmann/html-to-markdown/v2/converter"
 	"github.com/JohannesKaufmann/html-to-markdown/v2/plugin/base"
 	"github.com/JohannesKaufmann/html-to-markdown/v2/plugin/commonmark"
+	"github.com/chaitin/ModelKit/domain"
+	"github.com/chaitin/ModelKit/consts"
 	"github.com/chaitin/ModelKit/pkg/request"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/ast"
@@ -288,4 +290,23 @@ func GetHttpClientWithAPIHeaderMap(header string) *http.Client {
 		return client
 	}
 	return nil
+}
+
+func GetQuery(req *domain.ModelListReq) request.Query {
+	q := make(request.Query, 0)
+	provider := consts.ModelProvider(req.Provider)
+	modelType := consts.ModelType(req.Type)
+	if provider != consts.ModelProviderBaiZhiCloud && provider != consts.ModelProviderSiliconFlow {
+		return q
+	}
+	q["type"] = "text"
+	q["sub_type"] = string(req.Type)
+	if modelType == consts.ModelTypeChat {
+		q["sub_type"] = "chat"
+	}
+	// 硅基流动不支持coder sub_type
+	if provider == consts.ModelProviderSiliconFlow && modelType == consts.ModelTypeCoder {
+		q["sub_type"] = "chat"
+	}
+	return q
 }
