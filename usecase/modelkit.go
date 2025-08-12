@@ -6,11 +6,11 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"maps"
 	"net/http"
 	"net/url"
 	"path"
-	"slices"
-	"strings"
+	"time"
 
 	"github.com/cloudwego/eino-ext/components/model/deepseek"
 	"github.com/cloudwego/eino-ext/components/model/gemini"
@@ -18,106 +18,68 @@ import (
 	"github.com/cloudwego/eino-ext/components/model/openai"
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/schema"
-	genai2 "github.com/google/generative-ai-go/genai"
 	"github.com/ollama/ollama/api"
-	"google.golang.org/api/option"
 	"google.golang.org/genai"
 
 	"github.com/chaitin/ModelKit/consts"
 	"github.com/chaitin/ModelKit/domain"
+	"github.com/chaitin/ModelKit/pkg/request"
 	"github.com/chaitin/ModelKit/utils"
 )
 
 func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelListResp, error) {
+	httpClient := &http.Client{
+		Timeout: time.Second * 30,
+		Transport: &http.Transport{
+			MaxIdleConns:        100,
+			MaxIdleConnsPerHost: 100,
+			MaxConnsPerHost:     100,
+			IdleConnTimeout:     time.Second * 30,
+		},
+	}
 	switch provider := consts.ModelProvider(req.Provider); provider {
-	case consts.ModelProviderMoonshot,
-		consts.ModelProviderDeepSeek,
-		consts.ModelProviderAzureOpenAI,
-		consts.ModelProviderVolcengine,
-		consts.ModelProviderZhiPu:
+	case consts.ModelProviderAzureOpenAI,
+		consts.ModelProviderVolcengine:
 		return &domain.ModelListResp{
 			Models: domain.From(domain.ModelProviders[provider]),
 		}, nil
-	case consts.ModelProviderGemini:
-		client, err := genai2.NewClient(ctx, option.WithAPIKey(req.APIKey))
-		if err != nil {
-			return nil, err
-		}
-		defer client.Close()
-
-		modelsList := make([]domain.ModelListItem, 0)
-		modelsIter := client.ListModels(ctx)
-		for {
-			model, err := modelsIter.Next()
-			if err != nil {
-				break
-			}
-
-			if !slices.Contains(model.SupportedGenerationMethods, "generateContent") {
-				continue
-			}
-
-			if !strings.Contains(model.Name, "gemini") {
-				continue
-			}
-
-			name, _ := strings.CutPrefix(model.Name, "models/")
-			modelsList = append(modelsList, domain.ModelListItem{
-				Model: name,
-			})
-		}
-
-		if len(modelsList) == 0 {
-			return nil, fmt.Errorf("failed to get gemini models")
-		}
-
-		return &domain.ModelListResp{
-			Models: modelsList,
-		}, nil
-
-	case consts.ModelProviderOpenAI, consts.ModelProviderHunyuan, consts.ModelProviderBaiLian:
+	case consts.ModelProviderOpenAI,
+		consts.ModelProviderHunyuan,
+		consts.ModelProviderMoonshot,
+		consts.ModelProviderDeepSeek,
+		consts.ModelProviderSiliconFlow,
+		consts.ModelProviderBaiZhiCloud,
+		consts.ModelProviderBaiLian:
 		u, err := url.Parse(req.BaseURL)
 		if err != nil {
 			return nil, err
 		}
 		u.Path = path.Join(u.Path, "/models")
-		request, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
+
+		client := request.NewClient(u.Scheme, u.Host, httpClient.Timeout, request.WithClient(httpClient))
+		query := utils.GetQuery(req)
+		resp, err := request.Get[domain.OpenAIResp](
+			client, u.Path,
+			request.WithHeader(
+				request.Header{
+					"Authorization": fmt.Sprintf("Bearer %s", req.APIKey),
+				},
+			),
+			request.WithQuery(query),
+		)
 		if err != nil {
 			return nil, err
 		}
-		request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", req.APIKey))
-		resp, err := http.DefaultClient.Do(request)
-		if err != nil {
-			return nil, err
+
+		var models []domain.ModelListItem
+		for _, item := range resp.Data {
+			models = append(models, domain.ModelListItem{Model: item.ID})
 		}
-		if resp.StatusCode != http.StatusOK {
-			return nil, fmt.Errorf("failed to get models: %s", resp.Status)
-		}
-		defer resp.Body.Close()
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		type OpenAIResp struct {
-			Object string `json:"object"`
-			Data   []struct {
-				ID string `json:"id"`
-			} `json:"data"`
-		}
-		var models OpenAIResp
-		err = json.Unmarshal(body, &models)
-		if err != nil {
-			return nil, err
-		}
-		modelsList := make([]domain.ModelListItem, 0)
-		for _, model := range models.Data {
-			modelsList = append(modelsList, domain.ModelListItem{
-				Model: model.ID,
-			})
-		}
+
 		return &domain.ModelListResp{
-			Models: modelsList,
+			Models: models,
 		}, nil
+
 	case consts.ModelProviderOllama:
 		// get from ollama http://10.10.16.24:11434/api/tags
 		u, err := url.Parse(req.BaseURL)
@@ -125,115 +87,32 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 			return nil, err
 		}
 		u.Path = "/api/tags"
-		request, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
-		if err != nil {
-			return nil, err
-		}
+		client := request.NewClient(u.Scheme, u.Host, httpClient.Timeout, request.WithClient(httpClient))
+
+		h := request.Header{}
 		if req.APIHeader != "" {
-			headers := utils.GetHeaderMap(req.APIHeader)
-			for k, v := range headers {
-				request.Header.Set(k, v)
-			}
+			headers := request.GetHeaderMap(req.APIHeader)
+			maps.Copy(h, headers)
 		}
-		resp, err := http.DefaultClient.Do(request)
-		if err != nil {
-			return nil, err
-		}
-		defer resp.Body.Close()
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		var models domain.ModelListResp
-		err = json.Unmarshal(body, &models)
-		if err != nil {
-			return nil, err
-		}
-		return &models, nil
-	case consts.ModelProviderSiliconFlow, consts.ModelProviderBaiZhiCloud:
-		modelType := consts.ModelType(req.Type)
-		if modelType == consts.ModelTypeEmbedding || modelType == consts.ModelTypeRerank {
-			if provider == consts.ModelProviderBaiZhiCloud {
-				if modelType == consts.ModelTypeEmbedding {
-					return &domain.ModelListResp{
-						Models: []domain.ModelListItem{
-							{
-								Model: "bge-m3",
-							},
-						},
-					}, nil
-				} else {
-					return &domain.ModelListResp{
-						Models: []domain.ModelListItem{
-							{
-								Model: "bge-reranker-v2-m3",
-							},
-						},
-					}, nil
-				}
-			}
-		}
-		u, err := url.Parse(req.BaseURL)
-		if err != nil {
-			return nil, err
-		}
-		u.Path = "/v1/models"
-		q := u.Query()
-		q.Set("type", "text")
-		q.Set("sub_type", "chat")
-		u.RawQuery = q.Encode()
-		request, err := http.NewRequestWithContext(ctx, http.MethodGet, u.String(), nil)
-		if err != nil {
-			return nil, err
-		}
-		request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", req.APIKey))
-		resp, err := http.DefaultClient.Do(request)
-		if err != nil {
-			return nil, err
-		}
-		defer resp.Body.Close()
-		body, err := io.ReadAll(resp.Body)
-		if err != nil {
-			return nil, err
-		}
-		if resp.StatusCode != http.StatusOK {
-			return nil, fmt.Errorf("failed to get models: %s", resp.Status)
-		}
-		type SiliconFlowModelResp struct {
-			Object string `json:"object"`
-			Data   []struct {
-				ID string `json:"id"`
-			} `json:"data"`
-		}
-		var models SiliconFlowModelResp
-		err = json.Unmarshal(body, &models)
-		if err != nil {
-			return nil, err
-		}
-		modelsList := make([]domain.ModelListItem, 0, len(models.Data))
-		for _, model := range models.Data {
-			modelsList = append(modelsList, domain.ModelListItem{
-				Model: model.ID,
-			})
-		}
-		return &domain.ModelListResp{
-			Models: modelsList,
-		}, nil
+
+		return request.Get[domain.ModelListResp](client, u.Path, request.WithHeader(h))
+
 	default:
-		return nil, fmt.Errorf("invalid provider: %s", provider)
+		return nil, fmt.Errorf("invalid provider: %s", req.Provider)
 	}
 }
 
 func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckModelResp, error) {
 	checkResp := &domain.CheckModelResp{}
 	modelType := consts.ModelType(req.Type)
-	if modelType == consts.ModelTypeEmbedding || modelType == consts.ModelTypeRerank {
+	modelProvider := consts.ModelProvider(req.Provider)
+	if modelType == consts.ModelTypeChat || modelType == consts.ModelTypeRerank {
 		url := req.BaseURL
 		reqBody := map[string]any{}
 		if modelType == consts.ModelTypeEmbedding {
 			reqBody = map[string]any{
 				"model":           req.Model,
-				"input":           "PandaWiki is a platform for creating and sharing knowledge bases.",
+				"input":           "ModelKit 一个轻量级工具库，提供 AI 模型发现与 API 密钥验证功能，助你快速集成各大模型供应商能力。",
 				"encoding_format": "float",
 			}
 			url = req.BaseURL + "/embeddings"
@@ -242,29 +121,29 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckMo
 			reqBody = map[string]any{
 				"model": req.Model,
 				"documents": []string{
-					"PandaWiki is a platform for creating and sharing knowledge bases.",
-					"PandaWiki is a platform for creating and sharing knowledge bases.",
-					"PandaWiki is a platform for creating and sharing knowledge bases.",
+					"ModelKit 是一个轻量级工具库，提供 AI 模型发现与 API 密钥验证功能，助你快速集成各大模型供应商能力。",
+					"ModelKit 是一个轻量级工具库，提供 AI 模型发现与 API 密钥验证功能，助你快速集成各大模型供应商能力。",
+					"ModelKit 是一个轻量级工具库，提供 AI 模型发现与 API 密钥验证功能，助你快速集成各大模型供应商能力。",
 				},
-				"query": "PandaWiki",
+				"query": "ModelKit",
 			}
 			url = req.BaseURL + "/rerank"
 		}
 		body, err := json.Marshal(reqBody)
 		if err != nil {
-			checkResp.Error = fmt.Sprintf("marshal request body failed: %s", err.Error())
+			checkResp.Error = err.Error()
 			return checkResp, nil
 		}
 		request, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewBuffer(body))
 		if err != nil {
-			checkResp.Error = fmt.Sprintf("new request failed: %s", err.Error())
+			checkResp.Error = err.Error()
 			return checkResp, nil
 		}
 		request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", req.APIKey))
 		request.Header.Set("Content-Type", "application/json")
 		resp, err := http.DefaultClient.Do(request)
 		if err != nil {
-			checkResp.Error = fmt.Sprintf("send request failed: %s", err.Error())
+			checkResp.Error = err.Error()
 			return checkResp, nil
 		}
 		defer resp.Body.Close()
@@ -274,34 +153,85 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckMo
 		}
 		return checkResp, nil
 	}
+	config := &openai.ChatModelConfig{
+		APIKey:  req.APIKey,
+		BaseURL: req.BaseURL,
+		Model:   req.Model,
+	}
+	// for azure openai
+	if modelProvider == consts.ModelProviderAzureOpenAI {
+		config.ByAzure = true
+		config.APIVersion = req.APIVersion
+		if config.APIVersion == "" {
+			config.APIVersion = "2024-10-21"
+		}
+	}
+	// 阿里云百炼模型支持流式和思考功能
+	if modelProvider == consts.ModelProviderBaiLian {
+		config.ExtraFields = map[string]any{
+			"stream":          true,
+			"enable_thinking": true,
+		}
+	}
+	if req.APIHeader != "" {
+		client := utils.GetHttpClientWithAPIHeaderMap(req.APIHeader)
+		if client != nil {
+			config.HTTPClient = client
+		}
+	}
+	chatModel, err := openai.NewChatModel(ctx, config)
+	if err != nil {
+		checkResp.Error = err.Error()
+		return checkResp, nil
+	}
+	// 阿里云百炼模型(不支持 翻译/OCR 模型的添加)
+	if modelProvider == consts.ModelProviderBaiLian {
+		msgs := []*schema.Message{
+			schema.SystemMessage("You are a helpful assistant."),
+			schema.UserMessage("hi"),
+		}
+		stream, err := chatModel.Stream(ctx, msgs)
+		if err != nil {
+			checkResp.Error = err.Error()
+			return checkResp, nil
+		}
+		var content string
+		for {
+			msg, err := stream.Recv()
+			if err != nil {
+				if err == io.EOF {
+					break
+				}
+				checkResp.Error = err.Error()
+				return checkResp, nil
+			}
+			if msg.Content != "" {
+				content += msg.Content
+			}
+		}
 
-	chatModel, err := GetChatModel(ctx, &domain.ModelMetadata{
-		Provider:   consts.ModelProvider(req.Provider),
-		ModelName:  req.Model,
-		APIKey:     req.APIKey,
-		APIHeader:  req.APIHeader,
-		BaseURL:    req.BaseURL,
-		APIVersion: req.APIVersion,
-		ModelType:  consts.ModelType(req.Type),
-	})
-	if err != nil {
-		checkResp.Error = err.Error()
-		return checkResp, nil
+		if content == "" {
+			checkResp.Error = "generate failed"
+			return checkResp, nil
+		}
+	} else {
+		resp, err := chatModel.Generate(ctx, []*schema.Message{
+			schema.SystemMessage("You are a helpful assistant."),
+			schema.UserMessage("hi"),
+		})
+		if err != nil {
+			checkResp.Error = err.Error()
+			return checkResp, nil
+		}
+
+		content := resp.Content
+		if content == "" {
+			checkResp.Error = "generate failed"
+			return checkResp, nil
+		}
+		checkResp.Content = content
 	}
-	resp, err := chatModel.Generate(ctx, []*schema.Message{
-		schema.SystemMessage("You are a helpful assistant."),
-		schema.UserMessage("hi"),
-	})
-	if err != nil {
-		checkResp.Error = err.Error()
-		return checkResp, nil
-	}
-	content := resp.Content
-	if content == "" {
-		checkResp.Error = "generate failed"
-		return checkResp, nil
-	}
-	checkResp.Content = content
+
 	return checkResp, nil
 }
 

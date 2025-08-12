@@ -240,11 +240,11 @@ func getVolcengineModels() []ModelMetadata {
 	return []ModelMetadata{
 		{ModelName: "doubao-seed-1.6-250615", Object: "model", Provider: consts.ModelProviderVolcengine, ModelType: consts.ModelTypeChat},
 		{ModelName: "doubao-seed-1.6-flash-250615", Object: "model", Provider: consts.ModelProviderVolcengine, ModelType: consts.ModelTypeChat},
-		{ModelName: "doubao-seed-1.6-flash-250715", Object: "model", Provider: consts.ModelProviderVolcengine, ModelType: consts.ModelTypeChat},
+		// {ModelName: "doubao-seed-1.6-flash-250715", Object: "model", Provider: consts.ModelProviderVolcengine, ModelType: consts.ModelTypeChat},
 		{ModelName: "doubao-seed-1.6-thinking-250615", Object: "model", Provider: consts.ModelProviderVolcengine, ModelType: consts.ModelTypeChat},
-		{ModelName: "doubao-seed-1.6-thinking-250715", Object: "model", Provider: consts.ModelProviderVolcengine, ModelType: consts.ModelTypeChat},
+		// {ModelName: "doubao-seed-1.6-thinking-250715", Object: "model", Provider: consts.ModelProviderVolcengine, ModelType: consts.ModelTypeChat},
 		{ModelName: "doubao-1.5-thinking-vision-pro-250428", Object: "model", Provider: consts.ModelProviderVolcengine, ModelType: consts.ModelTypeVision},
-		{ModelName: "Doubao-1.5-thinking-pro-250415", Object: "model", Provider: consts.ModelProviderVolcengine, ModelType: consts.ModelTypeChat},
+		// {ModelName: "Doubao-1.5-thinking-pro-250415", Object: "model", Provider: consts.ModelProviderVolcengine, ModelType: consts.ModelTypeChat},
 		{ModelName: "deepseek-r1-250528", Object: "model", Provider: consts.ModelProviderVolcengine, ModelType: consts.ModelTypeChat},
 	}
 }
