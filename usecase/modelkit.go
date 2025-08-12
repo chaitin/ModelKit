@@ -28,14 +28,14 @@ import (
 	"github.com/chaitin/ModelKit/utils"
 )
 
-func ModelList(ctx context.Context, req *domain.PandaGetProviderModelListReq) (*domain.GetProviderModelListResp, error) {
+func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelListResp, error) {
 	switch provider := consts.ModelProvider(req.Provider); provider {
 	case consts.ModelProviderMoonshot,
 		consts.ModelProviderDeepSeek,
 		consts.ModelProviderAzureOpenAI,
 		consts.ModelProviderVolcengine,
 		consts.ModelProviderZhiPu:
-		return &domain.GetProviderModelListResp{
+		return &domain.ModelListResp{
 			Models: domain.From(domain.ModelProviders[provider]),
 		}, nil
 	case consts.ModelProviderGemini:
@@ -45,7 +45,7 @@ func ModelList(ctx context.Context, req *domain.PandaGetProviderModelListReq) (*
 		}
 		defer client.Close()
 
-		modelsList := make([]domain.ProviderModelListItem, 0)
+		modelsList := make([]domain.ModelListItem, 0)
 		modelsIter := client.ListModels(ctx)
 		for {
 			model, err := modelsIter.Next()
@@ -62,7 +62,7 @@ func ModelList(ctx context.Context, req *domain.PandaGetProviderModelListReq) (*
 			}
 
 			name, _ := strings.CutPrefix(model.Name, "models/")
-			modelsList = append(modelsList, domain.ProviderModelListItem{
+			modelsList = append(modelsList, domain.ModelListItem{
 				Model: name,
 			})
 		}
@@ -71,7 +71,7 @@ func ModelList(ctx context.Context, req *domain.PandaGetProviderModelListReq) (*
 			return nil, fmt.Errorf("failed to get gemini models")
 		}
 
-		return &domain.GetProviderModelListResp{
+		return &domain.ModelListResp{
 			Models: modelsList,
 		}, nil
 
@@ -109,13 +109,13 @@ func ModelList(ctx context.Context, req *domain.PandaGetProviderModelListReq) (*
 		if err != nil {
 			return nil, err
 		}
-		modelsList := make([]domain.ProviderModelListItem, 0)
+		modelsList := make([]domain.ModelListItem, 0)
 		for _, model := range models.Data {
-			modelsList = append(modelsList, domain.ProviderModelListItem{
+			modelsList = append(modelsList, domain.ModelListItem{
 				Model: model.ID,
 			})
 		}
-		return &domain.GetProviderModelListResp{
+		return &domain.ModelListResp{
 			Models: modelsList,
 		}, nil
 	case consts.ModelProviderOllama:
@@ -144,7 +144,7 @@ func ModelList(ctx context.Context, req *domain.PandaGetProviderModelListReq) (*
 		if err != nil {
 			return nil, err
 		}
-		var models domain.GetProviderModelListResp
+		var models domain.ModelListResp
 		err = json.Unmarshal(body, &models)
 		if err != nil {
 			return nil, err
@@ -155,16 +155,16 @@ func ModelList(ctx context.Context, req *domain.PandaGetProviderModelListReq) (*
 		if modelType == consts.ModelTypeEmbedding || modelType == consts.ModelTypeRerank {
 			if provider == consts.ModelProviderBaiZhiCloud {
 				if modelType == consts.ModelTypeEmbedding {
-					return &domain.GetProviderModelListResp{
-						Models: []domain.ProviderModelListItem{
+					return &domain.ModelListResp{
+						Models: []domain.ModelListItem{
 							{
 								Model: "bge-m3",
 							},
 						},
 					}, nil
 				} else {
-					return &domain.GetProviderModelListResp{
-						Models: []domain.ProviderModelListItem{
+					return &domain.ModelListResp{
+						Models: []domain.ModelListItem{
 							{
 								Model: "bge-reranker-v2-m3",
 							},
@@ -210,13 +210,13 @@ func ModelList(ctx context.Context, req *domain.PandaGetProviderModelListReq) (*
 		if err != nil {
 			return nil, err
 		}
-		modelsList := make([]domain.ProviderModelListItem, 0, len(models.Data))
+		modelsList := make([]domain.ModelListItem, 0, len(models.Data))
 		for _, model := range models.Data {
-			modelsList = append(modelsList, domain.ProviderModelListItem{
+			modelsList = append(modelsList, domain.ModelListItem{
 				Model: model.ID,
 			})
 		}
-		return &domain.GetProviderModelListResp{
+		return &domain.ModelListResp{
 			Models: modelsList,
 		}, nil
 	default:
@@ -275,14 +275,14 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckMo
 		return checkResp, nil
 	}
 
-	chatModel, err := GetChatModel(ctx, &domain.PandaModel{
-		Provider:   req.Provider,
-		Model:      req.Model,
+	chatModel, err := GetChatModel(ctx, &domain.ModelMetadata{
+		Provider:   consts.ModelProvider(req.Provider),
+		ModelName:  req.Model,
 		APIKey:     req.APIKey,
 		APIHeader:  req.APIHeader,
 		BaseURL:    req.BaseURL,
 		APIVersion: req.APIVersion,
-		Type:       req.Type,
+		ModelType:  consts.ModelType(req.Type),
 	})
 	if err != nil {
 		checkResp.Error = err.Error()
@@ -305,14 +305,14 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckMo
 	return checkResp, nil
 }
 
-func GetChatModel(ctx context.Context, model *domain.PandaModel) (model.BaseChatModel, error) {
+func GetChatModel(ctx context.Context, model *domain.ModelMetadata) (model.BaseChatModel, error) {
 	// config chat model
 	modelProvider := consts.ModelProvider(model.Provider)
 	var temperature float32 = 0.0
 	config := &openai.ChatModelConfig{
 		APIKey:      model.APIKey,
 		BaseURL:     model.BaseURL,
-		Model:       string(model.Model),
+		Model:       string(model.ModelName),
 		Temperature: &temperature,
 	}
 	if modelProvider == consts.ModelProviderAzureOpenAI {
@@ -333,7 +333,7 @@ func GetChatModel(ctx context.Context, model *domain.PandaModel) (model.BaseChat
 		chatModel, err := deepseek.NewChatModel(ctx, &deepseek.ChatModelConfig{
 			BaseURL:     model.BaseURL,
 			APIKey:      model.APIKey,
-			Model:       model.Model,
+			Model:       model.ModelName,
 			Temperature: temperature,
 		})
 		if err != nil {
@@ -350,7 +350,7 @@ func GetChatModel(ctx context.Context, model *domain.PandaModel) (model.BaseChat
 
 		chatModel, err := gemini.NewChatModel(ctx, &gemini.Config{
 			Client: client,
-			Model:  model.Model,
+			Model:  model.ModelName,
 			ThinkingConfig: &genai.ThinkingConfig{
 				IncludeThoughts: true,
 				ThinkingBudget:  nil,

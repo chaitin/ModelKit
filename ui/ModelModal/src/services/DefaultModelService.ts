@@ -25,7 +25,7 @@ export class DefaultModelService implements ModelService {
   /**
    * 创建模型
    */
-  async createModel(data: CreateModelData): Promise<{ id: string }> {
+  async createModel(data: CreateModelData): Promise<{ ModelName: string }> {
     const response = await fetch(`${this.baseURL}/api/models`, {
       method: 'POST',
       headers: this.headers,

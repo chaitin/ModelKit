@@ -254,7 +254,7 @@ test('renders ModelModal', () => {
 ```tsx
 test('can submit form', async () => {
   const mockService = {
-    createModel: jest.fn().mockResolvedValue({ id: '1' }),
+    createModel: jest.fn().mockResolvedValue({ ModelName: '1' }),
     // ... 其他方法
   };
   

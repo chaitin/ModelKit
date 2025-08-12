@@ -18,7 +18,7 @@ export type ModelProviderMap = Record<string, ModelProviderConfig>;
 
 // 模型列表项
 export interface ModelListItem {
-  id: string;
+  ModelName: string;
   model: string;
   type: ModelType;
   provider: string;
@@ -58,12 +58,12 @@ export interface CheckModelData extends CreateModelData {
 
 // 更新模型数据
 export interface UpdateModelData extends CheckModelData {
-  id: string;
+  ModelName: string;
 }
 
 // 模型服务接口
 export interface ModelService {
-  createModel: (data: CreateModelData) => Promise<{ id: string }>;
+  createModel: (data: CreateModelData) => Promise<{ ModelName: string }>;
   getModelNameList: (data: GetModelNameData) => Promise<{ models: { model: string }[] }>;
   testModel: (data: CheckModelData) => Promise<{ error: string }>;
   updateModel: (data: UpdateModelData) => Promise<void>;

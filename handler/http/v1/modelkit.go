@@ -42,7 +42,7 @@ func NewModelKit(
 //	@Success		200			{object}	domain.Response{data=domain.GetProviderModelListResp}
 //	@Router			/api/v1/panda/models [get]
 func (p *ModelKit) GetModelList(c echo.Context) error {
-	var req domain.PandaGetProviderModelListReq
+	var req domain.ModelListReq
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, domain.Response{
 			Success: false,

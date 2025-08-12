@@ -7,25 +7,25 @@ import (
 
 type OpenAI struct{}
 
-func NewOpenAI() domain.IModelProvider[domain.Model] {
+func NewOpenAI() domain.IModelProvider[domain.ModelMetadata] {
 	return &OpenAI{}
 }
 
-func (o *OpenAI) ListModel(subType string, provider string) ([]domain.Model, error) {
+func (o *OpenAI) ListModel(subType string, provider string) ([]domain.ModelMetadata, error) {
 	// 将 subType 和 provider 转换为对应类型
 	modelSubType := consts.ModelType(subType)
 	modelProvider := consts.ModelProvider(provider)
 
 	// 如果没有请求参数或参数为空，返回全体模型
 	if modelProvider == "" && modelSubType == "" {
-		result := make([]domain.Model, len(domain.Models))
+		result := make([]domain.ModelMetadata, len(domain.Models))
 		for i := range domain.Models {
 			result[i] = domain.Models[i]
 		}
 		return result, nil
 	}
 
-	var models []domain.Model
+	var models []domain.ModelMetadata
 
 	// 只有 Owner 参数
 	if modelProvider != "" && modelSubType == "" {
@@ -46,12 +46,12 @@ func (o *OpenAI) ListModel(subType string, provider string) ([]domain.Model, err
 			// 构建一个map用于快速查找
 			typeModelMap := make(map[string]bool)
 			for _, model := range typeModels {
-				typeModelMap[model.ID] = true
+				typeModelMap[model.ModelName] = true
 			}
 
 			// 找出交集
 			for _, model := range ownerModels.Models {
-				if typeModelMap[model.ID] {
+				if typeModelMap[model.ModelName] {
 					models = append(models, model)
 				}
 			}

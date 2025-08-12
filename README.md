@@ -157,7 +157,7 @@ function App() {
 
 ```tsx
 interface ModelService {
-  createModel: (data: CreateModelData) => Promise<{ id: string }>
+  createModel: (data: CreateModelData) => Promise<{ ModelName: string }>
   getModelNameList: (data: GetModelNameData) => Promise<{ models: { model: string }[] }>
   testModel: (data: CheckModelData) => Promise<{ error: string }>
   updateModel: (data: UpdateModelData) => Promise<void>

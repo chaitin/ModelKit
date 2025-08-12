@@ -4,7 +4,7 @@ import { ModelModal, createDefaultModelService } from '../src';
 
 // 模拟的模型数据
 const mockModelData = {
-  id: '1',
+  ModelName: '1',
   model: 'gpt-4',
   type: 'chat' as const,
   provider: 'OpenAI',

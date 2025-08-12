@@ -219,10 +219,10 @@ export const ModelModal: React.FC<ModelModalProps> = ({
           model: value.model,
           api_header: header,
           api_version: value.api_version,
-          id: data.id,
+          ModelName: data.id,
           provider: value.provider,
         });
-        onAfterSubmit?.(value, { id: data.id });
+        onAfterSubmit?.(value, { ModelName: data.id });
       } else {
         const result = await modelService.createModel({
           type,
