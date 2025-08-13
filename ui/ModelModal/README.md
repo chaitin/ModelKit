@@ -4,28 +4,6 @@
 
 ## 安装
 
-### 从 GitHub Packages 安装
-
-由于此包发布在 GitHub Packages，需要先配置 npm 注册表。你可以通过以下几种方式进行配置：
-
-#### 方式一：全局配置（推荐）
-
-```bash
-npm config set @yokowu:registry https://npm.pkg.github.com
-```
-
-#### 方式二：使用 .npmrc 文件
-
-在项目根目录创建 `.npmrc` 文件：
-
-### 登录 GitHub Packages, 账号密码找于康
-
-```bash
-npm login --registry=https://npm.pkg.github.com --scope=@yokowu
-```
-
-然后安装包：
-
 ```bash
 npm install @yokowu/modelkit-ui
 # 或
@@ -90,12 +68,13 @@ export default App;
 ```json
 {
   "peerDependencies": {
-    "react": ">=19.0.0",
-    "react-dom": ">=19.0.0",
-    "@mui/material": ">=6.0.0",
-    "@mui/icons-material": ">=6.0.0",
+    "react": ">=18.0.0",
+    "react-dom": ">=18.0.0",
+    "@mui/material": ">=5.0.0",
+    "@mui/icons-material": ">=5.0.0",
     "@emotion/react": ">=11.0.0",
-    "@emotion/styled": ">=11.0.0"
+    "@emotion/styled": ">=11.0.0",
+    "react-hook-form": ">=7.0.0"
   }
 }
 ```
