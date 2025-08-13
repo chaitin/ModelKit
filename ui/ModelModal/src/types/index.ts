@@ -1,5 +1,81 @@
+import { ModelProvider } from "@/constants/providers";
+
 // 基础类型定义
-export type ModelType = 'chat' | 'embedding' | 'rerank';
+export type ModelType = 'llm' | 'embedding' | 'reranker' | 'coder' | 'audio';
+
+// 模型类型常量
+export enum ConstsModelType {
+  ModelTypeLLM = "llm",
+  ModelTypeCoder = "coder",
+  ModelTypeEmbedding = "embedding",
+  ModelTypeAudio = "audio",
+  ModelTypeReranker = "reranker",
+}
+
+// 域模型接口
+export interface Model {
+  /** 接口地址 如：https://api.qwen.com */
+  api_base?: string;
+  /** 接口头 如：Authorization: Bearer sk-xxxx */
+  api_header?: string;
+  /** 接口密钥 如：sk-xxxx */
+  api_key?: string;
+  /** 接口版本 如：2023-05-15 */
+  api_version?: string;
+  /** 创建时间 */
+  created_at?: number;
+  /** 模型ID */
+  id?: string;
+  /** 输入token数 */
+  input?: number;
+  /** 是否启用 */
+  is_active?: boolean;
+  /** 是否内部模型 */
+  is_internal?: boolean;
+  /** 模型名称 如: deepseek-v3 */
+  model_name?: string;
+  /** 模型类型 llm:对话模型 coder:代码模型 */
+  model_type?: ConstsModelType;
+  /** 输出token数 */
+  output?: number;
+  /** 高级参数 */
+  param?: ModelParam;
+  /** 提供商 */
+  provider?: ConstsModelProvider;
+  /** 模型显示名称 */
+  show_name?: string;
+  /** 状态 active:启用 inactive:禁用 */
+  status?: ConstsModelStatus;
+  /** 更新时间 */
+  updated_at?: number;
+}
+
+export interface ModelParam {
+  context_window?: number;
+  max_tokens?: number;
+  r1_enabled?: boolean;
+  support_computer_use?: boolean;
+  support_images?: boolean;
+  support_prompt_cache?: boolean;
+}
+
+export enum ConstsModelStatus {
+  ModelStatusActive = "active",
+  ModelStatusInactive = "inactive",
+}
+
+export enum ConstsModelProvider {
+  ModelProviderSiliconFlow = "SiliconFlow",
+  ModelProviderOpenAI = "OpenAI",
+  ModelProviderOllama = "Ollama",
+  ModelProviderDeepSeek = "DeepSeek",
+  ModelProviderMoonshot = "Moonshot",
+  ModelProviderAzureOpenAI = "AzureOpenAI",
+  ModelProviderBaiZhiCloud = "BaiZhiCloud",
+  ModelProviderHunyuan = "Hunyuan",
+  ModelProviderBaiLian = "BaiLian",
+  ModelProviderVolcengine = "Volcengine",
+}
 
 // 模型提供商配置
 export interface ModelProviderConfig {
@@ -16,62 +92,122 @@ export interface ModelProviderConfig {
 // 模型提供商映射
 export type ModelProviderMap = Record<string, ModelProviderConfig>;
 
-// 模型列表项
-export interface ModelListItem {
-  ModelName: string;
-  model: string;
-  type: ModelType;
-  provider: string;
-  base_url: string;
-  api_key: string;
-  api_version?: string;
-  api_header?: string;
-  completion_tokens?: number;
-  prompt_tokens?: number;
-  total_tokens?: number;
+export interface ModelParam {
+  context_window?: number;
+  max_tokens?: number;
+  r1_enabled?: boolean;
+  support_computer_use?: boolean;
+  support_images?: boolean;
+  support_prompt_cache?: boolean;
 }
 
 // 创建模型数据
-export interface CreateModelData {
-  type: ModelType;
-  provider: string;
-  model: string;
-  base_url: string;
-  api_key: string;
-  api_version?: string;
+export interface CreateModelReq {
+  api_base: string;
   api_header?: string;
+  api_key?: string;
+  api_version?: string;
+  model_name: string;
+  model_type?: ConstsModelType;
+  param?: ModelParam;
+  provider:
+    | "SiliconFlow"
+    | "OpenAI"
+    | "Ollama"
+    | "DeepSeek"
+    | "Moonshot"
+    | "AzureOpenAI"
+    | "BaiZhiCloud"
+    | "Hunyuan"
+    | "BaiLian"
+    | "Volcengine"
+    | "Other";
+  /** 模型显示名称 */
+  show_name?: string;
 }
 
 // 获取模型列表数据
-export interface GetModelNameData {
-  type: ModelType;
-  provider: string;
-  base_url: string;
-  api_key: string;
+export interface ListModelReq {
   api_header?: string;
+  api_key?: string;
+  base_url: string;
+  provider:
+    | "SiliconFlow"
+    | "OpenAI"
+    | "Ollama"
+    | "DeepSeek"
+    | "Moonshot"
+    | "AzureOpenAI"
+    | "BaiZhiCloud"
+    | "Hunyuan"
+    | "BaiLian"
+    | "Volcengine";
+  type: ConstsModelType;
 }
 
 // 检查模型数据
-export interface CheckModelData extends CreateModelData {
-  api_version: string;
+export interface CheckModelReq {
+  /** 接口地址 */
+  api_base: string;
+  api_header?: string;
+  /** 接口密钥 */
+  api_key: string;
+  api_version?: string;
+  /** 模型名称 */
+  model_name: string;
+  /** 提供商 */
+  provider: ConstsModelProvider;
+  type: "llm" | "coder" | "embedding" | "rerank";
 }
 
 // 更新模型数据
-export interface UpdateModelData extends CheckModelData {
-  ModelName: string;
+export interface UpdateModelReq {
+  /** 接口地址 如：https://api.qwen.com */
+  api_base?: string;
+  api_header?: string;
+  /** 接口密钥 如：sk-xxxx */
+  api_key?: string;
+  api_version?: string;
+  /** 模型ID */
+  id?: string;
+  /** 模型名称 */
+  model_name?: string;
+  /** 高级参数 */
+  param?: ModelParam;
+  /** 提供商 */
+  provider:
+    | "SiliconFlow"
+    | "OpenAI"
+    | "Ollama"
+    | "DeepSeek"
+    | "Moonshot"
+    | "AzureOpenAI"
+    | "BaiZhiCloud"
+    | "Hunyuan"
+    | "BaiLian"
+    | "Volcengine"
+    | "Other";
+  /** 模型显示名称 */
+  show_name?: string;
+  /** 状态 active:启用 inactive:禁用 */
+  status?: ConstsModelStatus;
 }
 
 // 模型服务接口
 export interface ModelService {
-  createModel: (data: CreateModelData) => Promise<{ ModelName: string }>;
-  getModelNameList: (data: GetModelNameData) => Promise<{ models: { model: string }[] }>;
-  testModel: (data: CheckModelData) => Promise<{ error: string }>;
-  updateModel: (data: UpdateModelData) => Promise<void>;
+  createModel: (data: CreateModelReq) => Promise<{ model: Model }>;
+  listModel: (data: ListModelReq) => Promise<{ models: ModelListItem[] }>;
+  checkModel: (data: CheckModelReq) => Promise<{ model: Model }>;
+  updateModel: (data: UpdateModelReq) => Promise<{ model: Model }>;
+}
+
+export interface ModelListItem {
+  model?: string;
 }
 
 // 表单数据
 export interface AddModelForm {
-  provider: string;
+  provider: keyof typeof ModelProvider;
   model: string;
   base_url: string;
   api_version: string;
@@ -79,64 +215,21 @@ export interface AddModelForm {
   api_header_key: string;
   api_header_value: string;
   type: ModelType;
+  show_name: string;
+  // 高级设置字段
+  context_window_size: number;
+  max_output_tokens: number;
+  enable_r1_params: boolean;
+  support_image: boolean;
+  support_compute: boolean;
+  support_prompt_caching: boolean;
 }
 
-// 组件配置接口
-export interface ModelModalConfig {
-  // 主题配置
-  theme?: {
-    primaryColor?: string;
-    secondaryColor?: string;
-    borderRadius?: string;
-    spacing?: number;
-  };
-  
-  // 本地化配置
-  locale?: {
-    language?: 'zh-CN' | 'en-US';
-    messages?: Record<string, string>;
-  };
-  
-  // 验证配置
-  validation?: {
-    requiredFields?: (keyof AddModelForm)[];
-    customValidators?: Record<string, (value: any) => string | undefined>;
-  };
-  
-  // 功能开关
-  features?: {
-    enableModelTesting?: boolean;
-    enableHeaderConfig?: boolean;
-    enableApiVersion?: boolean;
-    enableProviderSelection?: boolean;
-  };
-  
-  // 自定义样式
-  styles?: {
-    modalWidth?: number | string;
-    sidebarWidth?: number | string;
-    customCSS?: string;
-    borderRadius?: string;
-  };
-}
-
-// 组件属性
 export interface ModelModalProps {
   open: boolean;
-  data?: ModelListItem | null;
-  type: ModelType;
+  data: Model | null;
+  type: ConstsModelType;
   onClose: () => void;
   refresh: () => void;
   modelService: ModelService;
-  config?: ModelModalConfig;
-  
-  // 自定义回调
-  onBeforeSubmit?: (data: AddModelForm) => boolean | Promise<boolean>;
-  onAfterSubmit?: (data: AddModelForm, result: any) => void;
-  onError?: (error: string) => void;
-  
-  // 自定义渲染
-  customProviders?: ModelProviderMap;
-  customValidation?: Record<string, (value: any) => string | undefined>;
-  customStyles?: Record<string, any>;
-} 
+}

@@ -2,23 +2,10 @@
 export { ModelModal } from './ModelModal';
 
 // 类型定义
-export type {
-  ModelModalProps,
-  ModelModalConfig,
-  ModelService,
-  ModelListItem,
-  CreateModelData,
-  GetModelNameData,
-  CheckModelData,
-  UpdateModelData,
-  AddModelForm,
-  ModelType,
-  ModelProviderConfig,
-  ModelProviderMap,
-} from './types';
+export type { ModelType, Model, ModelParam, ConstsModelStatus, ConstsModelProvider, ModelProviderConfig, ModelProviderMap, CreateModelReq as CreateModelData, ListModelReq as GetModelNameData, CheckModelReq as CheckModelData, UpdateModelReq as UpdateModelData, ModelService, ModelListItem, AddModelForm, ModelModalProps } from './types';
 
-// 默认服务实现
-export { DefaultModelService, createDefaultModelService } from './services/DefaultModelService';
+// 导出 ConstsModelType 枚举值
+export { ConstsModelType } from './types';
 
 // 常量
 export { DEFAULT_MODEL_PROVIDERS, getProvidersByType } from './constants/providers';
@@ -47,7 +34,7 @@ export const DEFAULT_CONFIG = {
     spacing: 2,
   },
   locale: {
-    language: 'zh-CN' as const,
+    language: 'zh-CN',
     messages: {},
   },
   validation: {
@@ -66,16 +53,16 @@ export const DEFAULT_CONFIG = {
     customCSS: '',
     borderRadius: '10px',
   },
-} as const;
+};
 
 // 创建预配置的组件
 export const createModelModal = (defaultConfig: Partial<typeof DEFAULT_CONFIG> = {}) => {
   const mergedConfig = { ...DEFAULT_CONFIG, ...defaultConfig };
-  
+
   return (props: Omit<import('./types').ModelModalProps, 'config'>) => {
     return {
       ...props,
       config: mergedConfig,
     };
   };
-}; 
+};
