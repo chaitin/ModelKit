@@ -1,15 +1,19 @@
+import { ModelProvider } from "@/constants/providers";
+
 // 基础类型定义
-export type ModelType = 'chat' | 'embedding' | 'rerank';
+export type ModelType = 'chat' | 'embedding' | 'rerank' | 'coder' | 'audio';
 
 // 模型类型常量
 export enum ConstsModelType {
-  ModelTypeLLM = 'chat',
-  ModelTypeEmbedding = 'embedding',
-  ModelTypeRerank = 'rerank',
+  ModelTypeChat = "chat",
+  ModelTypeCoder = "coder",
+  ModelTypeEmbedding = "embedding",
+  ModelTypeAudio = "audio",
+  ModelTypeRerank = "rerank",
 }
 
 // 域模型接口
-export interface DomainModel {
+export interface Model {
   /** 接口地址 如：https://api.qwen.com */
   api_base?: string;
   /** 接口头 如：Authorization: Bearer sk-xxxx */
@@ -35,7 +39,7 @@ export interface DomainModel {
   /** 输出token数 */
   output?: number;
   /** 高级参数 */
-  param?: DomainModelParam;
+  param?: ModelParam;
   /** 提供商 */
   provider?: ConstsModelProvider;
   /** 模型显示名称 */
@@ -46,7 +50,7 @@ export interface DomainModel {
   updated_at?: number;
 }
 
-export interface DomainModelParam {
+export interface ModelParam {
   context_window?: number;
   max_tokens?: number;
   r1_enabled?: boolean;
@@ -89,7 +93,7 @@ export interface ModelProviderConfig {
 export type ModelProviderMap = Record<string, ModelProviderConfig>;
 
 // 创建模型数据
-export interface CreateModelData {
+export interface CreateModelReq {
   type: ModelType;
   provider: string;
   model: string;
@@ -109,31 +113,78 @@ export interface CreateModelData {
 }
 
 // 获取模型列表数据
-export interface GetModelNameData {
-  type: ModelType;
-  provider: string;
-  base_url: string;
-  api_key: string;
+export interface ListModelReq {
   api_header?: string;
+  api_key?: string;
+  base_url: string;
+  provider:
+  | "SiliconFlow"
+  | "OpenAI"
+  | "Ollama"
+  | "DeepSeek"
+  | "Moonshot"
+  | "AzureOpenAI"
+  | "BaiZhiCloud"
+  | "Hunyuan"
+  | "BaiLian"
+  | "Volcengine";
+  type: "chat" | "coder" | "embedding" | "audio" | "rerank";
 }
 
 // 检查模型数据
-export interface CheckModelData extends CreateModelData {
-  api_version: string;
+export interface CheckModelReq {
+  /** 接口地址 */
+  api_base: string;
+  api_header?: string;
+  /** 接口密钥 */
+  api_key: string;
+  api_version?: string;
+  /** 模型名称 */
+  model_name: string;
+  /** 提供商 */
+  provider: ConstsModelProvider;
+  type: "llm" | "coder" | "embedding" | "rerank";
 }
 
 // 更新模型数据
-export interface UpdateModelData extends CheckModelData {
-  id: string;
-  ModelName: string;
+export interface UpdateModelReq {
+  /** 接口地址 如：https://api.qwen.com */
+  api_base?: string;
+  api_header?: string;
+  /** 接口密钥 如：sk-xxxx */
+  api_key?: string;
+  api_version?: string;
+  /** 模型ID */
+  id?: string;
+  /** 模型名称 */
+  model_name?: string;
+  /** 高级参数 */
+  param?: ModelParam;
+  /** 提供商 */
+  provider:
+    | "SiliconFlow"
+    | "OpenAI"
+    | "Ollama"
+    | "DeepSeek"
+    | "Moonshot"
+    | "AzureOpenAI"
+    | "BaiZhiCloud"
+    | "Hunyuan"
+    | "BaiLian"
+    | "Volcengine"
+    | "Other";
+  /** 模型显示名称 */
+  show_name?: string;
+  /** 状态 active:启用 inactive:禁用 */
+  status?: ConstsModelStatus;
 }
 
 // 模型服务接口
 export interface ModelService {
-  createModel: (data: CreateModelData) => Promise<{ model: DomainModel }>;
-  listModel: (data: GetModelNameData) => Promise<{ models: ModelListItem[] }>;
-  checkModel: (data: CheckModelData) => Promise<{ model: DomainModel }>;
-  updateModel: (data: UpdateModelData) => Promise<{ model: DomainModel }>;
+  createModel: (data: CreateModelReq) => Promise<{ model: Model }>;
+  listModel: (data: ListModelReq) => Promise<{ models: ModelListItem[] }>;
+  checkModel: (data: CheckModelReq) => Promise<{ model: Model }>;
+  updateModel: (data: UpdateModelReq) => Promise<{ model: Model }>;
 }
 
 export interface ModelListItem {
@@ -142,7 +193,7 @@ export interface ModelListItem {
 
 // 表单数据
 export interface AddModelForm {
-  provider: string;
+  provider: keyof typeof ModelProvider;
   model: string;
   base_url: string;
   api_version: string;
@@ -162,7 +213,7 @@ export interface AddModelForm {
 
 export interface ModelModalProps {
   open: boolean;
-  data: DomainModel | null;
+  data: Model | null;
   type: ConstsModelType;
   onClose: () => void;
   refresh: () => void;

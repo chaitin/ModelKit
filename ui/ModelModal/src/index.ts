@@ -2,7 +2,7 @@
 export { ModelModal } from './ModelModal';
 
 // 类型定义
-export type { ModelType, DomainModel, DomainModelParam, ConstsModelStatus, ConstsModelProvider, ModelProviderConfig, ModelProviderMap, CreateModelData, GetModelNameData, CheckModelData, UpdateModelData, ModelService, ModelListItem, AddModelForm, ModelModalProps } from './types';
+export type { ModelType, Model, ModelParam, ConstsModelStatus, ConstsModelProvider, ModelProviderConfig, ModelProviderMap, CreateModelReq as CreateModelData, ListModelReq as GetModelNameData, CheckModelReq as CheckModelData, UpdateModelReq as UpdateModelData, ModelService, ModelListItem, AddModelForm, ModelModalProps } from './types';
 
 // 导出 ConstsModelType 枚举值
 export { ConstsModelType } from './types';
@@ -58,7 +58,7 @@ export const DEFAULT_CONFIG = {
 // 创建预配置的组件
 export const createModelModal = (defaultConfig: Partial<typeof DEFAULT_CONFIG> = {}) => {
   const mergedConfig = { ...DEFAULT_CONFIG, ...defaultConfig };
-  
+
   return (props: Omit<import('./types').ModelModalProps, 'config'>) => {
     return {
       ...props,

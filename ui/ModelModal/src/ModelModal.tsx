@@ -18,7 +18,7 @@ import React, { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import {
   AddModelForm,
-  DomainModel,
+  Model,
   ConstsModelType,
   ModelModalProps,
 } from './types';
@@ -34,7 +34,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
   onClose,
   refresh,
   data,
-  type = ConstsModelType.ModelTypeLLM,
+  type = ConstsModelType.ModelTypeChat,
   modelService,
 }: ModelModalProps) => {
   const theme = useTheme();
@@ -164,14 +164,13 @@ export const ModelModal: React.FC<ModelModalProps> = ({
         if (data) {
           modelService.updateModel({
             api_key: value.api_key,
-            base_url: value.base_url,
-            model: value.model,
+            api_base: value.base_url,
+            model_name: value.model,
             api_header: header,
             api_version: value.api_version,
             id: (data as any).id || '',
             provider: value.provider as Exclude<typeof value.provider, 'Other'>,
             show_name: value.show_name,
-            type: type,
             // 添加高级设置字段到 param 对象中
             param: {
               context_window: value.context_window_size,
@@ -181,7 +180,6 @@ export const ModelModal: React.FC<ModelModalProps> = ({
               support_computer_use: value.support_compute,
               support_prompt_cache: value.support_prompt_caching,
             },
-            ModelName: value.model,
           })
             .then(() => {
               message.success('修改成功');
@@ -223,7 +221,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       });
   };
 
-  const resetCurData = (value: DomainModel) => {
+  const resetCurData = (value: Model) => {
     // @ts-ignore
     if (value.provider && value.provider !== 'Other') {
       getModel({

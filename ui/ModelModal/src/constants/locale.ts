@@ -86,4 +86,6 @@ export const getTitleMap = (language: 'zh-CN' | 'en-US' = 'zh-CN') => ({
   chat: getLocaleMessage('addChatModel', language),
   embedding: getLocaleMessage('addEmbeddingModel', language),
   rerank: getLocaleMessage('addRerankModel', language),
+  coder: getLocaleMessage('addCoderModel', language),
+  audio: getLocaleMessage('addAudioModel', language),
 }); 
