@@ -106,7 +106,7 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckMo
 	checkResp := &domain.CheckModelResp{}
 	modelType := consts.ModelType(req.Type)
 	modelProvider := consts.ModelProvider(req.Provider)
-	if modelType == consts.ModelTypeChat || modelType == consts.ModelTypeRerank {
+	if modelType == consts.ModelTypeEmbedding || modelType == consts.ModelTypeRerank {
 		url := req.BaseURL
 		reqBody := map[string]any{}
 		if modelType == consts.ModelTypeEmbedding {
