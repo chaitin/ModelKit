@@ -27,14 +27,20 @@ import { getTitleMap } from './constants/locale';
 import { ModelProvider } from './constants/providers';
 import './assets/fonts/iconfont';
 
-const titleMap = getTitleMap();
+const titleMap = {
+  [ConstsModelType.ModelTypeLLM]: '对话模型',
+  [ConstsModelType.ModelTypeCoder]: '代码补全模型',
+  [ConstsModelType.ModelTypeEmbedding]: '向量模型',
+  [ConstsModelType.ModelTypeAudio]: '音频模型',
+  [ConstsModelType.ModelTypeReranker]: '重排序模型',
+};
 
 export const ModelModal: React.FC<ModelModalProps> = ({
   open,
   onClose,
   refresh,
   data,
-  type = ConstsModelType.ModelTypeChat,
+  type = ConstsModelType.ModelTypeLLM,
   modelService,
 }: ModelModalProps) => {
   const theme = useTheme();
@@ -153,11 +159,11 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       // @ts-ignore
       type,
       api_key: value.api_key,
-      base_url: value.base_url,
+      api_base: value.base_url,
       api_version: value.api_version,
       // @ts-ignore
       provider: value.provider,
-      model: value.model,
+      model_name: value.model,
       api_header: header,
     })
       .then((res) => {
@@ -190,10 +196,10 @@ export const ModelModal: React.FC<ModelModalProps> = ({
             });
         } else {
           modelService.createModel({
-            type: type,
+            model_type: type,
             api_key: value.api_key,
-            base_url: value.base_url,
-            model: value.model,
+            api_base: value.base_url,
+            model_name: value.model,
             api_header: header,
             provider: value.provider as Exclude<typeof value.provider, 'Other'>,
             show_name: value.show_name,

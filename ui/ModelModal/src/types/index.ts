@@ -1,15 +1,15 @@
 import { ModelProvider } from "@/constants/providers";
 
 // 基础类型定义
-export type ModelType = 'chat' | 'embedding' | 'rerank' | 'coder' | 'audio';
+export type ModelType = 'llm' | 'embedding' | 'reranker' | 'coder' | 'audio';
 
 // 模型类型常量
 export enum ConstsModelType {
-  ModelTypeChat = "chat",
+  ModelTypeLLM = "llm",
   ModelTypeCoder = "coder",
   ModelTypeEmbedding = "embedding",
   ModelTypeAudio = "audio",
-  ModelTypeRerank = "rerank",
+  ModelTypeReranker = "reranker",
 }
 
 // 域模型接口
@@ -92,24 +92,38 @@ export interface ModelProviderConfig {
 // 模型提供商映射
 export type ModelProviderMap = Record<string, ModelProviderConfig>;
 
+export interface ModelParam {
+  context_window?: number;
+  max_tokens?: number;
+  r1_enabled?: boolean;
+  support_computer_use?: boolean;
+  support_images?: boolean;
+  support_prompt_cache?: boolean;
+}
+
 // 创建模型数据
 export interface CreateModelReq {
-  type: ModelType;
-  provider: string;
-  model: string;
-  base_url: string;
-  api_key: string;
-  api_version?: string;
+  api_base: string;
   api_header?: string;
+  api_key?: string;
+  api_version?: string;
+  model_name: string;
+  model_type?: ConstsModelType;
+  param?: ModelParam;
+  provider:
+    | "SiliconFlow"
+    | "OpenAI"
+    | "Ollama"
+    | "DeepSeek"
+    | "Moonshot"
+    | "AzureOpenAI"
+    | "BaiZhiCloud"
+    | "Hunyuan"
+    | "BaiLian"
+    | "Volcengine"
+    | "Other";
+  /** 模型显示名称 */
   show_name?: string;
-  param?: {
-    context_window?: number;
-    max_tokens?: number;
-    r1_enabled?: boolean;
-    support_images?: boolean;
-    support_computer_use?: boolean;
-    support_prompt_cache?: boolean;
-  };
 }
 
 // 获取模型列表数据
@@ -118,17 +132,17 @@ export interface ListModelReq {
   api_key?: string;
   base_url: string;
   provider:
-  | "SiliconFlow"
-  | "OpenAI"
-  | "Ollama"
-  | "DeepSeek"
-  | "Moonshot"
-  | "AzureOpenAI"
-  | "BaiZhiCloud"
-  | "Hunyuan"
-  | "BaiLian"
-  | "Volcengine";
-  type: "chat" | "coder" | "embedding" | "audio" | "rerank";
+    | "SiliconFlow"
+    | "OpenAI"
+    | "Ollama"
+    | "DeepSeek"
+    | "Moonshot"
+    | "AzureOpenAI"
+    | "BaiZhiCloud"
+    | "Hunyuan"
+    | "BaiLian"
+    | "Volcengine";
+  type: ConstsModelType;
 }
 
 // 检查模型数据

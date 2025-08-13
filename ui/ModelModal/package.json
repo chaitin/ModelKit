@@ -65,7 +65,10 @@
     "react-syntax-highlighter": "^15.6.1"
   },
   "devDependencies": {
+    "@types/react": "^19.1.10",
+    "@types/react-dom": "^19.1.7",
     "@vitejs/plugin-react": "^4.4.1",
+    "axios": "^1.11.0",
     "vite": "^6.3.5",
     "vite-plugin-dts": "^4.5.4"
   }
