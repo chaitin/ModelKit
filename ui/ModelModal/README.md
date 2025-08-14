@@ -1,6 +1,6 @@
-# ModelKit UI
+# ModelModal
 
-一个基于 React 和 Material-UI 的模型管理组件库。
+一个用于管理AI模型配置的React组件，基于Material-UI构建。
 
 ## 安装
 
@@ -14,37 +14,90 @@ pnpm add @yokowu/modelkit-ui
 
 ## 使用方法
 
-### 基本使用
+### 基本用法
 
 ```tsx
-import React, { useState } from 'react';
-import { ModelAdd, ModelProvider } from '@yokowu/modelkit-ui';
+import React from 'react';
+import { ModelModal, ConstsModelType } from '@your-org/model-modal';
+import { ThemeProvider, createTheme } from '@mui/material/styles';
+
+// 创建主题时需要包含 paper2 背景色
+const theme = createTheme({
+  palette: {
+    background: {
+      default: '#fff',
+      paper: '#F1F2F8',
+      paper2: '#F8F9FA', // 重要：需要定义 paper2 背景色
+    },
+  },
+});
 
 function App() {
-  const [modalOpen, setModalOpen] = useState(false);
-
-  const handleModalClose = () => {
-    setModalOpen(false);
-  };
-
-  const handleRefresh = () => {
-    // 刷新逻辑
+  const [open, setOpen] = React.useState(false);
+  
+  const modelService = {
+    createModel: async (data) => {
+      // 实现创建模型的逻辑
+      return { model: {} };
+    },
+    listModel: async (data) => {
+      // 实现获取模型列表的逻辑
+      return { models: [] };
+    },
+    checkModel: async (data) => {
+      // 实现检查模型的逻辑
+      return { model: {} };
+    },
+    updateModel: async (data) => {
+      // 实现更新模型的逻辑
+      return { model: {} };
+    },
   };
 
   return (
-    <div>
-      <ModelAdd
-        open={modalOpen}
+    <ThemeProvider theme={theme}>
+      <ModelModal
+        open={open}
+        onClose={() => setOpen(false)}
+        refresh={() => console.log('refresh')}
         data={null}
-        type="chat"
-        onClose={handleModalClose}
-        refresh={handleRefresh}
+        type={ConstsModelType.ModelTypeLLM}
+        modelService={modelService}
       />
-    </div>
+    </ThemeProvider>
   );
 }
+```
 
-export default App;
+### 主题配置
+
+为了确保组件样式正确显示，你需要在主题中定义 `background.paper2` 属性：
+
+```tsx
+import { createTheme } from '@mui/material/styles';
+import { mergeThemeWithDefaults } from '@your-org/model-modal';
+
+// 方法1：直接在主题中定义
+const theme = createTheme({
+  palette: {
+    background: {
+      default: '#fff',
+      paper: '#F1F2F8',
+      paper2: '#F8F9FA', // 必需
+    },
+  },
+});
+
+// 方法2：使用提供的合并工具
+const baseTheme = createTheme({
+  palette: {
+    primary: {
+      main: '#1976d2',
+    },
+  },
+});
+
+const theme = mergeThemeWithDefaults(baseTheme);
 ```
 
 ## 组件

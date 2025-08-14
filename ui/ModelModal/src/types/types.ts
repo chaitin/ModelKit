@@ -232,4 +232,5 @@ export interface ModelModalProps {
   onClose: () => void;
   refresh: () => void;
   modelService: ModelService;
+  language?: 'zh-CN' | 'en-US';
 }

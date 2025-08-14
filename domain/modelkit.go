@@ -403,7 +403,7 @@ func getSiliconFlowModels() []ModelMetadata {
 		{ModelName: "Qwen/Qwen3-Coder-30B-A3B-Instruct", Object: "model", Provider: consts.ModelProviderSiliconFlow, ModelType: consts.ModelTypeCoder},
 	}
 }
-
+// 月之暗面模型
 func getMoonshotModels() []ModelMetadata {
 	return []ModelMetadata{
 		{ModelName: "moonshot-v1-auto", Object: "model", Provider: consts.ModelProviderMoonshot, ModelType: consts.ModelTypeChat},
@@ -414,6 +414,7 @@ func getMoonshotModels() []ModelMetadata {
 
 }
 
+// getAzureOpenAIModels 返回Azure OpenAI模型列表
 func getAzureOpenAIModels() []ModelMetadata {
 	return []ModelMetadata{
 		{ModelName: "gpt-4", Object: "model", Provider: consts.ModelProviderAzureOpenAI, ModelType: consts.ModelTypeChat},
@@ -452,22 +453,22 @@ func getGeminiModels() []ModelMetadata {
 func getZhiPuModels() []ModelMetadata {
 	return []ModelMetadata{
 		{ModelName: "glm-4.5", Object: "model", Provider: consts.ModelProviderZhiPu, ModelType: consts.ModelTypeChat},
-		{ModelName: "glm-4.5-x", Object: "model", Provider: consts.ModelProviderZhiPu, ModelType: consts.ModelTypeChat},
+		// {ModelName: "glm-4.5-x", Object: "model", Provider: consts.ModelProviderZhiPu, ModelType: consts.ModelTypeChat},
 		{ModelName: "glm-4.5-air", Object: "model", Provider: consts.ModelProviderZhiPu, ModelType: consts.ModelTypeChat},
-		{ModelName: "glm-4.5-airx", Object: "model", Provider: consts.ModelProviderZhiPu, ModelType: consts.ModelTypeChat},
+		// {ModelName: "glm-4.5-airx", Object: "model", Provider: consts.ModelProviderZhiPu, ModelType: consts.ModelTypeChat},
 		{ModelName: "glm-4.5-flash", Object: "model", Provider: consts.ModelProviderZhiPu, ModelType: consts.ModelTypeChat},
-		{ModelName: "glm-4-plus", Object: "model", Provider: consts.ModelProviderZhiPu, ModelType: consts.ModelTypeChat},
-		{ModelName: "glm-4-air-250414", Object: "model", Provider: consts.ModelProviderZhiPu, ModelType: consts.ModelTypeChat},
-		{ModelName: "glm-4-airx", Object: "model", Provider: consts.ModelProviderZhiPu, ModelType: consts.ModelTypeChat},
-		{ModelName: "glm-4-long", Object: "model", Provider: consts.ModelProviderZhiPu, ModelType: consts.ModelTypeChat},
-		{ModelName: "glm-4-flashx-250414", Object: "model", Provider: consts.ModelProviderZhiPu, ModelType: consts.ModelTypeChat},
-		{ModelName: "glm-4-flash-250414", Object: "model", Provider: consts.ModelProviderZhiPu, ModelType: consts.ModelTypeChat},
-		{ModelName: "glm-z1-air", Object: "model", Provider: consts.ModelProviderZhiPu, ModelType: consts.ModelTypeChat},
-		{ModelName: "glm-z1-airx", Object: "model", Provider: consts.ModelProviderZhiPu, ModelType: consts.ModelTypeChat},
-		{ModelName: "glm-z1-flashx", Object: "model", Provider: consts.ModelProviderZhiPu, ModelType: consts.ModelTypeChat},
-		{ModelName: "glm-z1-flash", Object: "model", Provider: consts.ModelProviderZhiPu, ModelType: consts.ModelTypeChat},
-		{ModelName: "glm-4v-plus-0111", Object: "model", Provider: consts.ModelProviderZhiPu, ModelType: consts.ModelTypeVision},
-		{ModelName: "glm-4v-flash", Object: "model", Provider: consts.ModelProviderZhiPu, ModelType: consts.ModelTypeVision},
+		// {ModelName: "glm-4-plus", Object: "model", Provider: consts.ModelProviderZhiPu, ModelType: consts.ModelTypeChat},
+		// {ModelName: "glm-4-air-250414", Object: "model", Provider: consts.ModelProviderZhiPu, ModelType: consts.ModelTypeChat},
+		// {ModelName: "glm-4-airx", Object: "model", Provider: consts.ModelProviderZhiPu, ModelType: consts.ModelTypeChat},
+		// {ModelName: "glm-4-long", Object: "model", Provider: consts.ModelProviderZhiPu, ModelType: consts.ModelTypeChat},
+		// {ModelName: "glm-4-flashx-250414", Object: "model", Provider: consts.ModelProviderZhiPu, ModelType: consts.ModelTypeChat},
+		// {ModelName: "glm-4-flash-250414", Object: "model", Provider: consts.ModelProviderZhiPu, ModelType: consts.ModelTypeChat},
+		// {ModelName: "glm-z1-air", Object: "model", Provider: consts.ModelProviderZhiPu, ModelType: consts.ModelTypeChat},
+		// {ModelName: "glm-z1-airx", Object: "model", Provider: consts.ModelProviderZhiPu, ModelType: consts.ModelTypeChat},
+		// {ModelName: "glm-z1-flashx", Object: "model", Provider: consts.ModelProviderZhiPu, ModelType: consts.ModelTypeChat},
+		// {ModelName: "glm-z1-flash", Object: "model", Provider: consts.ModelProviderZhiPu, ModelType: consts.ModelTypeChat},
+		// {ModelName: "glm-4v-plus-0111", Object: "model", Provider: consts.ModelProviderZhiPu, ModelType: consts.ModelTypeVision},
+		// {ModelName: "glm-4v-flash", Object: "model", Provider: consts.ModelProviderZhiPu, ModelType: consts.ModelTypeVision},
 	}
 }
 

@@ -2,14 +2,17 @@
 export { ModelModal } from './ModelModal';
 
 // 类型定义
-export type { ModelType, Model, ModelParam, ConstsModelStatus, ConstsModelProvider, ModelProviderConfig, ModelProviderMap, CreateModelReq as CreateModelData, ListModelReq as GetModelNameData, CheckModelReq as CheckModelData, UpdateModelReq as UpdateModelData, ModelService, ModelListItem, AddModelForm, ModelModalProps } from './types';
+export type { ModelType, Model, ModelParam, ConstsModelStatus, ConstsModelProvider, ModelProviderConfig, ModelProviderMap, CreateModelReq as CreateModelData, ListModelReq as GetModelNameData, CheckModelReq as CheckModelData, UpdateModelReq as UpdateModelData, ModelService, ModelListItem, AddModelForm, ModelModalProps } from './types/types';
 
 // 导出 ConstsModelType 枚举值
-export { ConstsModelType } from './types';
+export { ConstsModelType } from './types/types';
 
 // 常量
 export { DEFAULT_MODEL_PROVIDERS, getProvidersByType } from './constants/providers';
 export { LOCALE_MESSAGES, getLocaleMessage, getTitleMap } from './constants/locale';
+export * from './constants/theme';
+
+// 主题类型声明会通过TypeScript自动包含
 
 // 工具函数
 export {
@@ -59,7 +62,7 @@ export const DEFAULT_CONFIG = {
 export const createModelModal = (defaultConfig: Partial<typeof DEFAULT_CONFIG> = {}) => {
   const mergedConfig = { ...DEFAULT_CONFIG, ...defaultConfig };
 
-  return (props: Omit<import('./types').ModelModalProps, 'config'>) => {
+  return (props: Omit<import('./types/types').ModelModalProps, 'config'>) => {
     return {
       ...props,
       config: mergedConfig,

@@ -1,10 +1,11 @@
 import { styled } from '@mui/material';
+import type { Theme } from '@mui/material/styles';
+import type { ComponentType } from 'react';
 
-// @ts-ignore TS2742: Inferred type cannot be named without a reference
-const StyledCard = styled('div')(({ theme }) => ({
-  padding: theme!.spacing(2),
-  borderRadius: theme!.shape.borderRadius * 2.5,
-  backgroundColor: theme!.palette.background.default,
+const StyledCard: ComponentType<any> = styled('div')<{}>(({ theme }: { theme: Theme }) => ({
+  padding: theme.spacing(2),
+  borderRadius: theme.shape.borderRadius * 2.5,
+  backgroundColor: theme.palette.background.default,
 }));
 
 export default StyledCard;
