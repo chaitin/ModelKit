@@ -12,7 +12,7 @@ import {
   Checkbox,
   FormControlLabel,
 } from '@mui/material';
-import { Icon, message, Modal } from '@c-x/ui';
+import { Icon, message, Modal, ThemeProvider } from '@c-x/ui';
 import Card from './components/card';
 import React, { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
@@ -21,11 +21,13 @@ import {
   Model,
   ConstsModelType,
   ModelModalProps,
-} from './types';
+} from './types/types';
 import { DEFAULT_MODEL_PROVIDERS } from './constants/providers';
-import { getTitleMap } from './constants/locale';
 import { ModelProvider } from './constants/providers';
+import { mergeThemeWithDefaults } from './constants/theme';
+import { getLocaleMessage } from './constants/locale';
 import './assets/fonts/iconfont';
+import { lightTheme } from './theme';
 
 const titleMap = {
   [ConstsModelType.ModelTypeLLM]: '对话模型',
@@ -42,6 +44,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
   data,
   type = ConstsModelType.ModelTypeLLM,
   modelService,
+  language = 'zh-CN',
 }: ModelModalProps) => {
   const theme = useTheme();
 
@@ -299,12 +302,14 @@ export const ModelModal: React.FC<ModelModalProps> = ({
   }, [data, open]);
 
   return (
+    <ThemeProvider theme={lightTheme}>
     <Modal
       title={data ? `修改${titleMap[type]}` : `添加${titleMap[type]}`}
       open={open}
       width={800}
       onCancel={handleReset}
-      okText='保存'
+      cancelText={getLocaleMessage('cancel', language)}
+      okText={getLocaleMessage('save', language)}
       onOk={handleSubmit(onSubmit)}
       okButtonProps={{
         loading,
@@ -569,7 +574,14 @@ export const ModelModal: React.FC<ModelModalProps> = ({
               fullWidth
               variant='outlined'
               loading={modelLoading}
-              sx={{ mt: 4 }}
+              sx={{ 
+                mt: 4,
+                borderRadius: '10px',
+                boxShadow: 'none',
+                fontFamily: `var(--font-gilory), var(--font-HarmonyOS), 'PingFang SC', 'Roboto', 'Helvetica', 'Arial', sans-serif`,
+                color: 'black',
+                borderColor: 'black'
+              }}
               onClick={handleSubmit(getModel)}
             >
               获取模型列表
@@ -642,147 +654,149 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                 </>
               )}
               
-              {/* 高级设置部分 */}
-              <Box sx={{ mt: 2 }}>
-                <Accordion 
+            </>
+          )}
+          {/* 高级设置部分 - 在选择了模型或者是其它供应商时显示 */}
+          {(modelUserList.length !== 0 || providerBrand === 'Other') && (
+            <Box sx={{ mt: 2 }}>
+              <Accordion 
+                sx={{ 
+                  boxShadow: 'none',
+                  bgcolor: 'transparent',
+                  '&:before': {
+                    display: 'none',
+                  },
+                  '& .MuiAccordionSummary-root': {
+                    padding: 0,
+                    minHeight: 'auto',
+                    '& .MuiAccordionSummary-content': {
+                      margin: 0,
+                    },
+                  },
+                  '& .MuiAccordionDetails-root': {
+                    padding: 0,
+                    paddingTop: 1.5,
+                  },
+                }}
+                expanded={expandAdvanced}
+                onChange={() => setExpandAdvanced(!expandAdvanced)}
+              >
+                <AccordionSummary
                   sx={{ 
-                    boxShadow: 'none',
-                    bgcolor: 'transparent',
-                    '&:before': {
-                      display: 'none',
-                    },
-                    '& .MuiAccordionSummary-root': {
-                      padding: 0,
-                      minHeight: 'auto',
-                      '& .MuiAccordionSummary-content': {
-                        margin: 0,
-                      },
-                    },
-                    '& .MuiAccordionDetails-root': {
-                      padding: 0,
-                      paddingTop: 1.5,
+                    fontSize: 14, 
+                    fontWeight: 500,
+                    lineHeight: '32px',
+                    color: 'primary.main',
+                    display: 'flex',
+                    alignItems: 'center',
+                    cursor: 'pointer',
+                    '&:hover': {
+                      opacity: 0.8,
                     },
                   }}
-                  expanded={expandAdvanced}
-                  onChange={() => setExpandAdvanced(!expandAdvanced)}
                 >
-                  <AccordionSummary
-                    sx={{ 
-                      fontSize: 14, 
-                      fontWeight: 500,
-                      lineHeight: '32px',
-                      color: 'blue',
-                      display: 'flex',
-                      alignItems: 'center',
-                      cursor: 'pointer',
-                      '&:hover': {
-                        opacity: 0.8,
-                      },
-                    }}
-                  >
-                    高级设置
-                  </AccordionSummary>
-                  <AccordionDetails>
-                    <Stack spacing={2}>
-                      <Box>
-                        <Box sx={{ fontSize: 14, lineHeight: '32px' }}>
-                          上下文窗口大小
-                        </Box>
-                        <Controller
-                          control={control}
-                          name='context_window_size'
-                          render={({ field }) => (
-                            <>
-                              <TextField
-                                {...field}
-                                fullWidth
-                                size='small'
-                                placeholder='例如：16000'
-                                type='number'
-                                onChange={(e) => field.onChange(Number(e.target.value))}
-                              />
-                              <Box sx={{ mt: 1, display: 'flex', gap: 1, alignItems: 'center' }}>
-                                {[
-                                  { label: '128k', value: 128000 },
-                                  { label: '256k', value: 256000 },
-                                  { label: '512k', value: 512000 },
-                                  { label: '1m', value: 1_000_000 }
-                                ].map((option) => (
-                                  <Box 
-                                    key={option.label}
-                                    sx={{ 
-                                      fontSize: 12, 
-                                      color: 'blue',
-                                      cursor: 'pointer',
-                                      padding: '2px 4px',
-                                      '&:hover': {
-                                        textDecoration: 'underline'
-                                      }
-                                    }}
-                                    onClick={() => field.onChange(option.value)}
-                                  >
-                                    {option.label}
-                                  </Box>
-                                ))}
-                              </Box>
-                            </>
-                          )}
-                        />
+                  高级设置
+                </AccordionSummary>
+                <AccordionDetails>
+                  <Stack spacing={2}>
+                    <Box>
+                      <Box sx={{ fontSize: 14, lineHeight: '32px' }}>
+                        上下文窗口大小
                       </Box>
-                      
-                      <Box>
-                        <Box sx={{ fontSize: 14, lineHeight: '32px' }}>
-                          最大输出 Token
-                        </Box>
-                        <Controller
-                          control={control}
-                          name='max_output_tokens'
-                          render={({ field }) => (
+                      <Controller
+                        control={control}
+                        name='context_window_size'
+                        render={({ field }) => (
+                          <>
                             <TextField
                               {...field}
                               fullWidth
                               size='small'
-                              placeholder='例如：4000'
+                              placeholder='例如：16000'
                               type='number'
                               onChange={(e) => field.onChange(Number(e.target.value))}
                             />
-                          )}
-                        />
-                      </Box>
-                      
-                      {/* 复选框组 - 使用更紧凑的布局 */}
-                      <Stack spacing={0}>
-                        <Controller
-                          control={control}
-                          name='enable_r1_params'
-                          render={({ field }) => (
-                            <FormControlLabel
-                              control={
-                                <Checkbox
-                                  checked={field.value}
-                                  onChange={(e) => field.onChange(e.target.checked)}
-                                  size='small'
-                                />
-                              }
-                              label={
-                                <Box sx={{ fontSize: 12 }}>
-                                  启用 R1 模型参数
-                                  <Box component="span" sx={{ ml: 1, color: 'text.secondary', fontSize: 11 }}>
-                                    (使用 QWQ 等 R1 系列模型时必须启用，避免出现 400 错误)
-                                  </Box>
+                            <Box sx={{ mt: 1, display: 'flex', gap: 1, alignItems: 'center' }}>
+                              {[
+                                { label: '128k', value: 128000 },
+                                { label: '256k', value: 256000 },
+                                { label: '512k', value: 512000 },
+                                { label: '1m', value: 1_000_000 }
+                              ].map((option) => (
+                                <Box 
+                                  key={option.label}
+                                  sx={{ 
+                                    fontSize: 12, 
+                                    color: 'primary.main',
+                                    cursor: 'pointer',
+                                    padding: '2px 4px',
+                                    '&:hover': {
+                                      textDecoration: 'underline'
+                                    }
+                                  }}
+                                  onClick={() => field.onChange(option.value)}
+                                >
+                                  {option.label}
                                 </Box>
-                              }
-                              sx={{ margin: 0 }}
-                            />
-                          )}
-                        />
-                      </Stack>
+                              ))}
+                            </Box>
+                          </>
+                        )}
+                      />
+                    </Box>
+                    
+                    <Box>
+                      <Box sx={{ fontSize: 14, lineHeight: '32px' }}>
+                        最大输出 Token
+                      </Box>
+                      <Controller
+                        control={control}
+                        name='max_output_tokens'
+                        render={({ field }) => (
+                          <TextField
+                            {...field}
+                            fullWidth
+                            size='small'
+                            placeholder='例如：4000'
+                            type='number'
+                            onChange={(e) => field.onChange(Number(e.target.value))}
+                          />
+                        )}
+                      />
+                    </Box>
+                    
+                    {/* 复选框组 - 使用更紧凑的布局 */}
+                    <Stack spacing={0}>
+                      <Controller
+                        control={control}
+                        name='enable_r1_params'
+                        render={({ field }) => (
+                          <FormControlLabel
+                            control={
+                              <Checkbox
+                                checked={field.value}
+                                onChange={(e) => field.onChange(e.target.checked)}
+                                size='small'
+                              />
+                            }
+                            label={
+                              <Box sx={{ fontSize: 12 }}>
+                                启用 R1 模型参数
+                                <Box component="span" sx={{ ml: 1, color: 'text.secondary', fontSize: 11 }}>
+                                  (使用 QWQ 等 R1 系列模型时必须启用，避免出现 400 错误)
+                                </Box>
+                              </Box>
+                            }
+                            sx={{ margin: 0 }}
+                          />
+                        )}
+                      />
                     </Stack>
-                  </AccordionDetails>
-                </Accordion>
-              </Box>
-            </>
-          )}
+                  </Stack>
+                </AccordionDetails>
+              </Accordion>
+            </Box>
+           )}
           {error && (
             <Card
               sx={{
@@ -801,5 +815,6 @@ export const ModelModal: React.FC<ModelModalProps> = ({
         </Box>
       </Stack>
     </Modal>
+    </ThemeProvider>
   );
 };

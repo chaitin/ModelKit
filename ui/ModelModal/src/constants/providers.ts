@@ -1,4 +1,4 @@
-import { ModelProviderMap } from '../types';
+import { ModelProviderMap } from '../types/types';
 
 // 默认模型提供商配置
 export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
@@ -11,6 +11,16 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     customHeader: false,
     modelDocumentUrl: 'https://model-square.app.baizhi.cloud/token',
     defaultBaseUrl: 'https://model-square.app.baizhi.cloud/v1',
+  },
+  ZhiPu: {
+    label: 'ZhiPu',
+    cn: '智谱',
+    icon: 'icon-zhipuqingyan', // 需要添加对应的图标
+    urlWrite: false,
+    secretRequired: true,
+    customHeader: false,
+    modelDocumentUrl: 'https://open.bigmodel.cn/usercenter/apikeys',
+    defaultBaseUrl: 'https://open.bigmodel.cn/api/paas/v4',
   },
   DeepSeek: {
     label: 'DeepSeek',

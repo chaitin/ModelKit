@@ -39,6 +39,7 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 	}
 	switch provider := consts.ModelProvider(req.Provider); provider {
 	case consts.ModelProviderAzureOpenAI,
+		consts.ModelProviderZhiPu,
 		consts.ModelProviderVolcengine:
 		return &domain.ModelListResp{
 			Models: domain.From(domain.ModelProviders[provider]),

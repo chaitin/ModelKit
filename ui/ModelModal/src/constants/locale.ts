@@ -18,7 +18,7 @@ export const LOCALE_MESSAGES: Record<'zh-CN' | 'en-US', Record<string, string>> 
     'header': 'Header',
     'save': '保存',
     'cancel': '取消',
-    'getModelList': '获取模型列表',
+    'getModelList': '获取模型列表1',
     'viewDocumentation': '查看文档',
     
     // 验证消息
