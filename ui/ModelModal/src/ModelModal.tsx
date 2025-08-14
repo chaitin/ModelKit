@@ -24,7 +24,6 @@ import {
 } from './types/types';
 import { DEFAULT_MODEL_PROVIDERS } from './constants/providers';
 import { ModelProvider } from './constants/providers';
-import { mergeThemeWithDefaults } from './constants/theme';
 import { getLocaleMessage } from './constants/locale';
 import './assets/fonts/iconfont';
 import { lightTheme } from './theme';

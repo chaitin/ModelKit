@@ -18,6 +18,7 @@ import (
 	"github.com/cloudwego/eino-ext/components/model/openai"
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/schema"
+	"github.com/go-playground/validator/v10"
 	"github.com/ollama/ollama/api"
 	"google.golang.org/genai"
 
@@ -27,7 +28,19 @@ import (
 	"github.com/chaitin/ModelKit/utils"
 )
 
+// 全局验证器实例
+var validate *validator.Validate
+
+func init() {
+	validate = validator.New()
+}
+
 func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelListResp, error) {
+	// 验证请求参数
+	if err := validate.Struct(req); err != nil {
+		return nil, fmt.Errorf("参数验证失败: %w", err)
+	}
+	
 	httpClient := &http.Client{
 		Timeout: time.Second * 30,
 		Transport: &http.Transport{
@@ -104,6 +117,13 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 }
 
 func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckModelResp, error) {
+	// 验证请求参数
+	if err := validate.Struct(req); err != nil {
+		return &domain.CheckModelResp{
+			Error: fmt.Sprintf("参数验证失败: %v", err),
+		}, nil
+	}
+	
 	checkResp := &domain.CheckModelResp{}
 	modelType := consts.ModelType(req.Type)
 	modelProvider := consts.ModelProvider(req.Provider)

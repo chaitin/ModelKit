@@ -51,12 +51,12 @@ func (p *ModelKit) GetModelList(c echo.Context) error {
 	}
 
 	// 验证参数
-	// if err := c.Validate(&req); err != nil {
-	// 	return c.JSON(http.StatusBadRequest, domain.Response{
-	// 		Success: false,
-	// 		Message: "参数验证失败: " + err.Error(),
-	// 	})
-	// }
+	if err := c.Validate(&req); err != nil {
+		return c.JSON(http.StatusBadRequest, domain.Response{
+			Success: false,
+			Message: "参数验证失败: " + err.Error(),
+		})
+	}
 
 	resp, err := usecase.ModelList(c.Request().Context(), &req)
 	if err != nil {

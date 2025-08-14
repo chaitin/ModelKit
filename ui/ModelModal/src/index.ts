@@ -10,7 +10,6 @@ export { ConstsModelType } from './types/types';
 // 常量
 export { DEFAULT_MODEL_PROVIDERS, getProvidersByType } from './constants/providers';
 export { LOCALE_MESSAGES, getLocaleMessage, getTitleMap } from './constants/locale';
-export * from './constants/theme';
 
 // 主题类型声明会通过TypeScript自动包含
 
