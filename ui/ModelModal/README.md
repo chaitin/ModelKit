@@ -5,11 +5,7 @@
 ## 安装
 
 ```bash
-npm install @yokowu/modelkit-ui
-# 或
-yarn add @yokowu/modelkit-ui
-# 或
-pnpm add @yokowu/modelkit-ui
+npm install @your-org/model-modal
 ```
 
 ## 使用方法
@@ -100,51 +96,61 @@ const baseTheme = createTheme({
 const theme = mergeThemeWithDefaults(baseTheme);
 ```
 
-## 组件
+### TypeScript 支持
 
-### ModelAdd
+如果你使用 TypeScript，需要确保主题类型扩展被正确导入：
 
-模型添加/编辑弹窗组件。
-
-#### Props
-
-- `open: boolean` - 是否显示弹窗
-- `data: ModelListItem | null` - 编辑时的模型数据
-- `type: 'chat' | 'embedding' | 'rerank'` - 模型类型
-- `onClose: () => void` - 关闭弹窗回调
-- `refresh: () => void` - 刷新数据回调
-
-## 依赖要求
-
-确保你的项目已安装以下依赖：
-
-```json
-{
-  "peerDependencies": {
-    "react": ">=18.0.0",
-    "react-dom": ">=18.0.0",
-    "@mui/material": ">=5.0.0",
-    "@mui/icons-material": ">=5.0.0",
-    "@emotion/react": ">=11.0.0",
-    "@emotion/styled": ">=11.0.0",
-    "react-hook-form": ">=7.0.0"
-  }
-}
+```tsx
+// 在你的类型声明文件中（如 vite-env.d.ts 或 global.d.ts）
+import '@your-org/model-modal/dist/types/theme';
 ```
 
-## 开发
+或者在使用组件的文件中导入：
 
-本项目使用 pnpm 作为包管理器：
+```tsx
+import '@your-org/model-modal/dist/types/theme';
+import { ModelModal } from '@your-org/model-modal';
+```
 
-```bash
-# 安装依赖
-pnpm install
+## 常见问题
 
-# 开发模式
-pnpm dev
+### 样式显示不正确
 
-# 构建
-pnpm build
+如果组件的样式显示不正确，通常是因为主题中缺少 `background.paper2` 的定义。请确保：
+
+1. 在主题配置中添加 `background.paper2` 属性
+2. 使用 `ThemeProvider` 包装你的应用
+3. 导入了正确的主题类型声明
+
+### TypeScript 类型错误
+
+如果遇到 TypeScript 类型错误，如 "Property 'paper2' does not exist"，请确保：
+
+1. 导入了主题类型扩展：`import '@your-org/model-modal/dist/types/theme'`
+2. 重启 TypeScript 服务
+
+## API
+
+### ModelModalProps
+
+| 属性 | 类型 | 必需 | 描述 |
+|------|------|------|------|
+| open | boolean | ✓ | 控制模态框的显示/隐藏 |
+| onClose | () => void | ✓ | 关闭模态框的回调函数 |
+| refresh | () => void | ✓ | 刷新数据的回调函数 |
+| data | Model \| null | ✓ | 编辑时的模型数据，新建时为 null |
+| type | ConstsModelType | ✓ | 模型类型 |
+| modelService | ModelService | ✓ | 模型服务接口 |
+
+### ModelService
+
+```tsx
+interface ModelService {
+  createModel: (data: CreateModelReq) => Promise<{ model: Model }>;
+  listModel: (data: ListModelReq) => Promise<{ models: ModelListItem[] }>;
+  checkModel: (data: CheckModelReq) => Promise<{ model: Model }>;
+  updateModel: (data: UpdateModelReq) => Promise<{ model: Model }>;
+}
 ```
 
 ## 许可证
