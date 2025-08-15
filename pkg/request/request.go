@@ -97,7 +97,9 @@ func sendRequest[T any](c *Client, method, path string, opts ...Opt) (*T, error)
 					return nil, err
 				}
 			}
-			writer.Close()
+			if err := writer.Close(); err != nil {
+				return nil, err
+			}
 			body = buf
 		case "application/x-www-form-urlencoded":
 			m := make(map[string]string)
@@ -115,8 +117,11 @@ func sendRequest[T any](c *Client, method, path string, opts ...Opt) (*T, error)
 
 		if c.debug {
 			buf := &bytes.Buffer{}
-			json.Indent(buf, bs, "", "  ")
-			log.Printf("[REQ:%s] body: %s", rid, buf.String())
+			if err := json.Indent(buf, bs, "", "  "); err != nil {
+				log.Printf("[REQ:%s] body: %s", rid, string(bs))
+			} else {
+				log.Printf("[REQ:%s] body: %s", rid, buf.String())
+			}
 		}
 	}
 	req, err := http.NewRequest(method, u.String(), body)
@@ -142,7 +147,11 @@ func sendRequest[T any](c *Client, method, path string, opts ...Opt) (*T, error)
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if closeErr := resp.Body.Close(); closeErr != nil {
+			log.Printf("Failed to close response body: %v", closeErr)
+		}
+	}()
 
 	b, err := io.ReadAll(resp.Body)
 	if err != nil {

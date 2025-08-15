@@ -19,9 +19,7 @@ func (o *OpenAI) ListModel(subType string, provider string) ([]domain.ModelMetad
 	// 如果没有请求参数或参数为空，返回全体模型
 	if modelProvider == "" && modelSubType == "" {
 		result := make([]domain.ModelMetadata, len(domain.Models))
-		for i := range domain.Models {
-			result[i] = domain.Models[i]
-		}
+		copy(result, domain.Models)
 		return result, nil
 	}
 

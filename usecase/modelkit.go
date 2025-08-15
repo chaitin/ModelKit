@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"maps"
 	"net/http"
 	"net/url"
@@ -110,7 +111,11 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 		if err != nil {
 			return nil, err
 		}
-		defer client.Close()
+		defer func() {
+			if closeErr := client.Close(); closeErr != nil {
+				log.Printf("Failed to close gemini client: %v", closeErr)
+			}
+		}()
 
 		modelsList := make([]domain.ModelListItem, 0)
 		modelsIter := client.ListModels(ctx)
@@ -198,7 +203,11 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckMo
 			checkResp.Error = err.Error()
 			return checkResp, nil
 		}
-		defer resp.Body.Close()
+		defer func() {
+			if closeErr := resp.Body.Close(); closeErr != nil {
+				log.Printf("Failed to close resp body: %v", closeErr)
+			}
+		}()
 		if resp.StatusCode != http.StatusOK {
 			checkResp.Error = fmt.Sprintf("request failed: %s", resp.Status)
 			return checkResp, nil

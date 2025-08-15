@@ -6,6 +6,7 @@ import (
 	"crypto/tls"
 	"fmt"
 	"io"
+	"log"
 	"net/http"
 	"net/url"
 	"path"
@@ -17,8 +18,8 @@ import (
 	"github.com/JohannesKaufmann/html-to-markdown/v2/converter"
 	"github.com/JohannesKaufmann/html-to-markdown/v2/plugin/base"
 	"github.com/JohannesKaufmann/html-to-markdown/v2/plugin/commonmark"
-	"github.com/chaitin/ModelKit/domain"
 	"github.com/chaitin/ModelKit/consts"
+	"github.com/chaitin/ModelKit/domain"
 	"github.com/chaitin/ModelKit/pkg/request"
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/ast"
@@ -41,7 +42,11 @@ func HTTPGet(url string) ([]byte, error) {
 	if err != nil {
 		return nil, fmt.Errorf("failed to get %s: %v", url, err)
 	}
-	defer resp.Body.Close()
+	defer func() {
+		if closeErr := resp.Body.Close(); closeErr != nil {
+			log.Printf("Failed to close resp body: %v", closeErr)
+		}
+	}()
 
 	if resp.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("unexpected status code: %d", resp.StatusCode)
