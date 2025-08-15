@@ -6,3 +6,5 @@ ui/ModelModal/dist
 .DS_Store
 main
 main.go
+handler
+templates
