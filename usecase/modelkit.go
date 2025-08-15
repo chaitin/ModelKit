@@ -18,7 +18,6 @@ import (
 	"github.com/cloudwego/eino-ext/components/model/openai"
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/schema"
-	"github.com/go-playground/validator/v10"
 	"github.com/ollama/ollama/api"
 	"google.golang.org/genai"
 
@@ -28,19 +27,7 @@ import (
 	"github.com/chaitin/ModelKit/utils"
 )
 
-// 全局验证器实例
-var validate *validator.Validate
-
-func init() {
-	validate = validator.New()
-}
-
 func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelListResp, error) {
-	// 验证请求参数
-	if err := validate.Struct(req); err != nil {
-		return nil, fmt.Errorf("参数验证失败: %w", err)
-	}
-	
 	httpClient := &http.Client{
 		Timeout: time.Second * 30,
 		Transport: &http.Transport{
@@ -50,7 +37,11 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 			IdleConnTimeout:     time.Second * 30,
 		},
 	}
-	switch provider := consts.ModelProvider(req.Provider); provider {
+	provider, err := consts.ParseModelProvider(req.Provider)
+	if err != nil {
+		return nil, err
+	}
+	switch provider {
 	case consts.ModelProviderAzureOpenAI,
 		consts.ModelProviderZhiPu,
 		consts.ModelProviderVolcengine:
@@ -117,16 +108,17 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 }
 
 func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckModelResp, error) {
-	// 验证请求参数
-	if err := validate.Struct(req); err != nil {
-		return &domain.CheckModelResp{
-			Error: fmt.Sprintf("参数验证失败: %v", err),
-		}, nil
-	}
-	
 	checkResp := &domain.CheckModelResp{}
-	modelType := consts.ModelType(req.Type)
-	modelProvider := consts.ModelProvider(req.Provider)
+	modelType, err := consts.ParseModelType(req.Type)
+	if err != nil {
+		checkResp.Error = err.Error()
+		return checkResp, nil
+	}
+	modelProvider, err := consts.ParseModelProvider(req.Provider)
+	if err != nil {
+		checkResp.Error = err.Error()
+		return checkResp, nil
+	}
 	if modelType == consts.ModelTypeEmbedding || modelType == consts.ModelTypeRerank {
 		url := req.BaseURL
 		reqBody := map[string]any{}
@@ -258,7 +250,7 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckMo
 
 func GetChatModel(ctx context.Context, model *domain.ModelMetadata) (model.BaseChatModel, error) {
 	// config chat model
-	modelProvider := consts.ModelProvider(model.Provider)
+	modelProvider := model.Provider
 	var temperature float32 = 0.0
 	config := &openai.ChatModelConfig{
 		APIKey:      model.APIKey,
