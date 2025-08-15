@@ -6,10 +6,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log"
 	"maps"
 	"net/http"
 	"net/url"
 	"path"
+	"slices"
+	"strings"
 	"time"
 
 	"github.com/cloudwego/eino-ext/components/model/deepseek"
@@ -18,7 +21,9 @@ import (
 	"github.com/cloudwego/eino-ext/components/model/openai"
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/schema"
+	generativeGenai "github.com/google/generative-ai-go/genai"
 	"github.com/ollama/ollama/api"
+	"google.golang.org/api/option"
 	"google.golang.org/genai"
 
 	"github.com/chaitin/ModelKit/consts"
@@ -101,7 +106,46 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 		}
 
 		return request.Get[domain.ModelListResp](client, u.Path, request.WithHeader(h))
+	case consts.ModelProviderGemini:
+		client, err := generativeGenai.NewClient(ctx, option.WithAPIKey(req.APIKey))
+		if err != nil {
+			return nil, err
+		}
+		defer func() {
+			if closeErr := client.Close(); closeErr != nil {
+				log.Printf("Failed to close gemini client: %v", closeErr)
+			}
+		}()
 
+		modelsList := make([]domain.ModelListItem, 0)
+		modelsIter := client.ListModels(ctx)
+		for {
+			model, err := modelsIter.Next()
+			if err != nil {
+				break
+			}
+
+			if !slices.Contains(model.SupportedGenerationMethods, "generateContent") {
+				continue
+			}
+
+			if !strings.Contains(model.Name, "gemini") {
+				continue
+			}
+
+			name, _ := strings.CutPrefix(model.Name, "models/")
+			modelsList = append(modelsList, domain.ModelListItem{
+				Model: name,
+			})
+		}
+
+		if len(modelsList) == 0 {
+			return nil, fmt.Errorf("failed to get gemini models")
+		}
+
+		return &domain.ModelListResp{
+			Models: modelsList,
+		}, nil
 	default:
 		return nil, fmt.Errorf("invalid provider: %s", req.Provider)
 	}
@@ -159,7 +203,11 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckMo
 			checkResp.Error = err.Error()
 			return checkResp, nil
 		}
-		defer resp.Body.Close()
+		defer func() {
+			if closeErr := resp.Body.Close(); closeErr != nil {
+				log.Printf("Failed to close resp body: %v", closeErr)
+			}
+		}()
 		if resp.StatusCode != http.StatusOK {
 			checkResp.Error = fmt.Sprintf("request failed: %s", resp.Status)
 			return checkResp, nil
