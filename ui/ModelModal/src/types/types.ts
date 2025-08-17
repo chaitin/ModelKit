@@ -1,17 +1,3 @@
-import { ModelProvider } from "@/constants/providers";
-
-// 基础类型定义
-export type ModelType = 'llm' | 'embedding' | 'reranker' | 'coder' | 'audio';
-
-// 模型类型常量
-export enum ConstsModelType {
-  ModelTypeLLM = "llm",
-  ModelTypeCoder = "coder",
-  ModelTypeEmbedding = "embedding",
-  ModelTypeAudio = "audio",
-  ModelTypeReranker = "reranker",
-}
-
 // 域模型接口
 export interface Model {
   /** 接口地址 如：https://api.qwen.com */
@@ -35,17 +21,17 @@ export interface Model {
   /** 模型名称 如: deepseek-v3 */
   model_name?: string;
   /** 模型类型 llm:对话模型 coder:代码模型 */
-  model_type?: ConstsModelType;
+  model_type?: string;
   /** 输出token数 */
   output?: number;
   /** 高级参数 */
   param?: ModelParam;
   /** 提供商 */
-  provider?: ConstsModelProvider;
+  provider?: string;
   /** 模型显示名称 */
   show_name?: string;
   /** 状态 active:启用 inactive:禁用 */
-  status?: ConstsModelStatus;
+  status?: string;
   /** 更新时间 */
   updated_at?: number;
 }
@@ -57,24 +43,6 @@ export interface ModelParam {
   support_computer_use?: boolean;
   support_images?: boolean;
   support_prompt_cache?: boolean;
-}
-
-export enum ConstsModelStatus {
-  ModelStatusActive = "active",
-  ModelStatusInactive = "inactive",
-}
-
-export enum ConstsModelProvider {
-  ModelProviderSiliconFlow = "SiliconFlow",
-  ModelProviderOpenAI = "OpenAI",
-  ModelProviderOllama = "Ollama",
-  ModelProviderDeepSeek = "DeepSeek",
-  ModelProviderMoonshot = "Moonshot",
-  ModelProviderAzureOpenAI = "AzureOpenAI",
-  ModelProviderBaiZhiCloud = "BaiZhiCloud",
-  ModelProviderHunyuan = "Hunyuan",
-  ModelProviderBaiLian = "BaiLian",
-  ModelProviderVolcengine = "Volcengine",
 }
 
 // 模型提供商配置
@@ -103,26 +71,14 @@ export interface ModelParam {
 
 // 创建模型数据
 export interface CreateModelReq {
-  api_base: string;
+  api_base?: string;
   api_header?: string;
   api_key?: string;
   api_version?: string;
-  model_name: string;
-  model_type?: ConstsModelType;
+  model_name?: string;
+  model_type?: string;
   param?: ModelParam;
-  provider:
-    | "SiliconFlow"
-    | "OpenAI"
-    | "Ollama"
-    | "DeepSeek"
-    | "Moonshot"
-    | "AzureOpenAI"
-    | "BaiZhiCloud"
-    | "Hunyuan"
-    | "BaiLian"
-    | "Volcengine"
-    | "Other";
-  /** 模型显示名称 */
+  provider?: string;
   show_name?: string;
 }
 
@@ -130,34 +86,20 @@ export interface CreateModelReq {
 export interface ListModelReq {
   api_header?: string;
   api_key?: string;
-  base_url: string;
-  provider:
-    | "SiliconFlow"
-    | "OpenAI"
-    | "Ollama"
-    | "DeepSeek"
-    | "Moonshot"
-    | "AzureOpenAI"
-    | "BaiZhiCloud"
-    | "Hunyuan"
-    | "BaiLian"
-    | "Volcengine";
-  type: ConstsModelType;
+  base_url?: string;
+  provider?: string;
+  type?: string;
 }
 
 // 检查模型数据
 export interface CheckModelReq {
-  /** 接口地址 */
-  api_base: string;
+  api_base?: string;
   api_header?: string;
-  /** 接口密钥 */
-  api_key: string;
+  api_key?: string;
   api_version?: string;
-  /** 模型名称 */
-  model_name: string;
-  /** 提供商 */
-  provider: ConstsModelProvider;
-  type: "llm" | "coder" | "embedding" | "rerank";
+  model_name?: string;
+  provider?: string;
+  type?: string;
 }
 
 // 更新模型数据
@@ -175,22 +117,11 @@ export interface UpdateModelReq {
   /** 高级参数 */
   param?: ModelParam;
   /** 提供商 */
-  provider:
-    | "SiliconFlow"
-    | "OpenAI"
-    | "Ollama"
-    | "DeepSeek"
-    | "Moonshot"
-    | "AzureOpenAI"
-    | "BaiZhiCloud"
-    | "Hunyuan"
-    | "BaiLian"
-    | "Volcengine"
-    | "Other";
+  provider?: string;
   /** 模型显示名称 */
   show_name?: string;
   /** 状态 active:启用 inactive:禁用 */
-  status?: ConstsModelStatus;
+  status?: string;
 }
 
 // 模型服务接口
@@ -207,14 +138,14 @@ export interface ModelListItem {
 
 // 表单数据
 export interface AddModelForm {
-  provider: keyof typeof ModelProvider;
+  provider: string;
   model: string;
   base_url: string;
   api_version: string;
   api_key: string;
   api_header_key: string;
   api_header_value: string;
-  type: ModelType;
+  type: string;
   show_name: string;
   // 高级设置字段
   context_window_size: number;
@@ -228,7 +159,7 @@ export interface AddModelForm {
 export interface ModelModalProps {
   open: boolean;
   data: Model | null;
-  type: ConstsModelType;
+  type: string;
   onClose: () => void;
   refresh: () => void;
   modelService: ModelService;
