@@ -2,7 +2,7 @@
 export { ModelModal } from './ModelModal';
 
 // 类型定义
-export type { Model, ModelParam, ModelProviderConfig, ModelProviderMap, CreateModelReq as CreateModelData, ListModelReq as GetModelNameData, CheckModelReq as CheckModelData, UpdateModelReq as UpdateModelData, ModelService, ModelListItem, AddModelForm, ModelModalProps } from './types/types';
+export type { Model, ModelParam, ModelProviderConfig, ModelProviderMap, CreateModelReq, ListModelReq , CheckModelReq , UpdateModelReq , ModelService, ModelListItem, AddModelForm, ModelModalProps, MessageComponent } from './types/types';
 
 // 常量
 export { DEFAULT_MODEL_PROVIDERS} from './constants/providers';

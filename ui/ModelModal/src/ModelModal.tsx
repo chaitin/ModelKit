@@ -41,11 +41,15 @@ export const ModelModal: React.FC<ModelModalProps> = ({
   onClose,
   refresh,
   data,
-  type = "llm",
+  model_type = "llm",
   modelService,
   language = 'zh-CN',
+  messageComponent,
 }: ModelModalProps) => {
   const theme = useTheme();
+
+  // 消息处理器，优先使用传入的messageComponent，否则使用@c-x/ui的message
+  const messageHandler = messageComponent || message;
 
   const providers: Record<string, any> = DEFAULT_MODEL_PROVIDERS;
 
@@ -58,10 +62,10 @@ export const ModelModal: React.FC<ModelModalProps> = ({
     watch,
   } = useForm<AddModelForm>({
     defaultValues: {
-      type,
+      model_type,
       provider: 'BaiZhiCloud',
       base_url: providers['BaiZhiCloud'].defaultBaseUrl,
-      model: '',
+      model_name: '',
       api_version: '',
       api_key: '',
       api_header_key: '',
@@ -90,9 +94,9 @@ export const ModelModal: React.FC<ModelModalProps> = ({
   const handleReset = () => {
     onClose();
     reset({
-      type,
+      model_type,
       provider: 'BaiZhiCloud',
-      model: '',
+      model_name: '',
       base_url: '',
       api_key: '',
       api_version: '',
@@ -123,11 +127,11 @@ export const ModelModal: React.FC<ModelModalProps> = ({
     }
     setModelLoading(true);
     modelService.listModel({
-      type,
+      model_type,
       api_key: value.api_key,
       base_url: value.base_url,
       provider: value.provider as Exclude<typeof value.provider, 'Other'>,
-      api_header: header,
+      api_header:  value.api_header || header,
     })
       .then((res) => {
         setModelUserList(
@@ -139,18 +143,22 @@ export const ModelModal: React.FC<ModelModalProps> = ({
           data &&
         (res.models || []).find((it) => it.model === data.model_name)
       ) {
-          setValue('model', data.model_name!);
+          setValue('model_name', data.model_name!);
         } else {
-          setValue('model', res.models?.[0]?.model || '');
+          setValue('model_name', res.models?.[0]?.model || '');
         }
         setSuccess(true);
       })
       .finally(() => {
         setModelLoading(false);
+      }).
+      catch((res) => {
+        messageHandler.error("获取模型失败");
+        setModelLoading(false);
       });
-  };
+    };
 
-  const onSubmit = (value: AddModelForm) => {
+    const onSubmit = (value: AddModelForm) => {
     let header = '';
     if (value.api_header_key && value.api_header_value) {
       header = value.api_header_key + '=' + value.api_header_value;
@@ -158,23 +166,26 @@ export const ModelModal: React.FC<ModelModalProps> = ({
     setError('');
     setLoading(true);
     modelService.checkModel({
-      // @ts-ignore
-      type,
-      api_key: value.api_key,
-      api_base: value.base_url,
-      api_version: value.api_version,
-      // @ts-ignore
-      provider: value.provider,
-      model_name: value.model,
-      api_header: header,
-    })
+        model_type,
+        model_name: value.model_name,
+        api_key: value.api_key,
+        base_url: value.base_url,
+        api_version: value.api_version,
+        provider: value.provider,
+        api_header: value.api_header || header,
+      }
+    )
       .then((res) => {
-        if (data) {
+        console.log("res is: ",res);
+        if (res.error) {
+          messageHandler.error("模型检查失败");
+          setLoading(false);
+        } else if (data) {
           modelService.updateModel({
             api_key: value.api_key,
-            api_base: value.base_url,
-            model_name: value.model,
-            api_header: header,
+            base_url: value.base_url,
+            model_name: value.model_name,
+            api_header: value.api_header || header,
             api_version: value.api_version,
             id: (data as any).id || '',
             provider: value.provider as Exclude<typeof value.provider, 'Other'>,
@@ -190,19 +201,23 @@ export const ModelModal: React.FC<ModelModalProps> = ({
             },
           })
             .then(() => {
-              message.success('修改成功');
+              messageHandler.success('修改成功');
               handleReset();
             })
             .finally(() => {
               setLoading(false);
+            })
+            .catch((res) => {
+              messageHandler.error("修改模型失败");
+              setLoading(false);
             });
         } else {
           modelService.createModel({
-            model_type: type,
+            model_type,
             api_key: value.api_key,
-            api_base: value.base_url,
-            model_name: value.model,
-            api_header: header,
+            base_url: value.base_url,
+            model_name: value.model_name,
+            api_header: value.api_header || header,
             provider: value.provider as Exclude<typeof value.provider, 'Other'>,
             show_name: value.show_name,
             // 添加高级设置字段到 param 对象中
@@ -216,15 +231,20 @@ export const ModelModal: React.FC<ModelModalProps> = ({
             },
           })
             .then(() => {
-              message.success('添加成功');
+              messageHandler.success('添加成功');
               handleReset();
             })
             .finally(() => {
               setLoading(false);
+            })
+            .catch((res) => {
+              messageHandler.error("添加模型失败");
+              setLoading(false);
             });
         }
       })
-      .catch(() => {
+      .catch((res) => {
+        messageHandler.error("添加模型失败");
         setLoading(false);
       });
   };
@@ -234,13 +254,14 @@ export const ModelModal: React.FC<ModelModalProps> = ({
     if (value.provider && value.provider !== 'Other') {
       getModel({
         api_key: value.api_key || '',
-        base_url: value.api_base || '',
-        model: value.model_name || '',
+        base_url: value.base_url || '',
+        model_name: value.model_name || '',
         provider: value.provider,
         api_version: value.api_version || '',
         api_header_key: value.api_header?.split('=')[0] || '',
+        api_header: value.api_header || '',
         api_header_value: value.api_header?.split('=')[1] || '',
-        type,
+        model_type,
         show_name: value.show_name || '',
         context_window_size: 64000,
         max_output_tokens: 8192,
@@ -251,10 +272,10 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       });
     }
     reset({
-      type,
+       model_type,
       provider: value.provider || 'Other',
-      model: value.model_name || '',
-      base_url: value.api_base || '',
+      model_name: value.model_name || '',
+      base_url: value.base_url || '',
       api_key: value.api_key || '',
       api_version: value.api_version || '',
       api_header_key: value.api_header?.split('=')[0] || '',
@@ -276,9 +297,9 @@ export const ModelModal: React.FC<ModelModalProps> = ({
         resetCurData(data);
       } else {
         reset({
-          type,
+          model_type,
           provider: 'BaiZhiCloud',
-          model: '',
+          model_name: '',
           base_url: providers['BaiZhiCloud'].defaultBaseUrl,
           api_key: '',
           api_version: '',
@@ -303,7 +324,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
   return (
     <ThemeProvider theme={lightTheme}>
     <Modal
-      title={data ? `修改${titleMap[type]}` : `添加${titleMap[type]}`}
+      title={data ? `修改${titleMap[model_type]}` : `添加${titleMap[model_type]}`}
       open={open}
       width={800}
       onCancel={handleReset}
@@ -331,7 +352,16 @@ export const ModelModal: React.FC<ModelModalProps> = ({
           >
             模型供应商
           </Box>
-          {Object.values(providers).map((it) => (
+          {Object.values(providers)
+            .filter((it) => {
+              // 当model_type为chat或llm时显示所有供应商
+              if (model_type === 'chat' || model_type === 'llm') {
+                return true;
+              }
+              // 其他情况只显示百智云和其它
+              return it.label === 'BaiZhiCloud' || it.label === 'Other';
+            })
+            .map((it) => (
             <Stack
               direction={'row'}
               alignItems={'center'}
@@ -365,7 +395,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                     provider: it.label as keyof typeof DEFAULT_MODEL_PROVIDERS,
                     base_url:
                       it.label === 'AzureOpenAI' ? '' : it.defaultBaseUrl,
-                    model: '',
+                    model_name: '',
                     api_version: '',
                     api_key: '',
                     api_header_key: '',
@@ -415,7 +445,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                 onChange={(e) => {
                   field.onChange(e.target.value);
                   setModelUserList([]);
-                  setValue('model', '');
+                  setValue('model_name', '');
                   setSuccess(false);
                 }}
               />
@@ -476,7 +506,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                 onChange={(e) => {
                   field.onChange(e.target.value);
                   setModelUserList([]);
-                  setValue('model', '');
+                  setValue('model_name', '');
                   setSuccess(false);
                 }}
               />
@@ -531,7 +561,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                     onChange={(e) => {
                       field.onChange(e.target.value);
                       setModelUserList([]);
-                      setValue('model', '');
+                      setValue('model_name', '');
                       setSuccess(false);
                     }}
                   />
@@ -549,7 +579,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
               </Box>
               <Controller
                 control={control}
-                name='model'
+                name='model_name'
                 rules={{
                   required: '模型名称不能为空',
                 }}
@@ -559,8 +589,8 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                     fullWidth
                     size='small'
                     placeholder=''
-                    error={!!errors.model}
-                    helperText={errors.model?.message}
+                    error={!!errors.model_name}
+                    helperText={errors.model_name?.message}
                   />
                 )}
               />
@@ -595,7 +625,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
               </Box>
               <Controller
                 control={control}
-                name='model'
+                name='model_name'
                 render={({ field }) => (
                   <TextField
                     {...field}
@@ -603,8 +633,8 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                     select
                     size='small'
                     placeholder=''
-                    error={!!errors.model}
-                    helperText={errors.model?.message}
+                    error={!!errors.model_name}
+                    helperText={errors.model_name?.message}
                   >
                     {modelUserList.map((it) => (
                       <MenuItem key={it.model} value={it.model}>

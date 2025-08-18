@@ -1,7 +1,7 @@
 // 域模型接口
 export interface Model {
   /** 接口地址 如：https://api.qwen.com */
-  api_base?: string;
+  base_url?: string;
   /** 接口头 如：Authorization: Bearer sk-xxxx */
   api_header?: string;
   /** 接口密钥 如：sk-xxxx */
@@ -71,7 +71,7 @@ export interface ModelParam {
 
 // 创建模型数据
 export interface CreateModelReq {
-  api_base?: string;
+  base_url?: string;
   api_header?: string;
   api_key?: string;
   api_version?: string;
@@ -88,24 +88,24 @@ export interface ListModelReq {
   api_key?: string;
   base_url?: string;
   provider?: string;
-  type?: string;
+  model_type?: string;
 }
 
 // 检查模型数据
 export interface CheckModelReq {
-  api_base?: string;
+  base_url?: string;
   api_header?: string;
   api_key?: string;
   api_version?: string;
   model_name?: string;
   provider?: string;
-  type?: string;
+  model_type?: string;
 }
 
 // 更新模型数据
 export interface UpdateModelReq {
   /** 接口地址 如：https://api.qwen.com */
-  api_base?: string;
+  base_url?: string;
   api_header?: string;
   /** 接口密钥 如：sk-xxxx */
   api_key?: string;
@@ -122,13 +122,14 @@ export interface UpdateModelReq {
   show_name?: string;
   /** 状态 active:启用 inactive:禁用 */
   status?: string;
+  model_type?: string;
 }
 
 // 模型服务接口
 export interface ModelService {
   createModel: (data: CreateModelReq) => Promise<{ model: Model }>;
   listModel: (data: ListModelReq) => Promise<{ models: ModelListItem[] }>;
-  checkModel: (data: CheckModelReq) => Promise<{ model: Model }>;
+  checkModel: (data: CheckModelReq) => Promise<{ model: Model; error?: string }>;
   updateModel: (data: UpdateModelReq) => Promise<{ model: Model }>;
 }
 
@@ -139,14 +140,15 @@ export interface ModelListItem {
 // 表单数据
 export interface AddModelForm {
   provider: string;
-  model: string;
+  model_name: string;
   base_url: string;
   api_version: string;
   api_key: string;
   api_header_key: string;
   api_header_value: string;
-  type: string;
+  model_type: string;
   show_name: string;
+  api_header: string;
   // 高级设置字段
   context_window_size: number;
   max_output_tokens: number;
@@ -156,12 +158,21 @@ export interface AddModelForm {
   support_prompt_caching: boolean;
 }
 
+// 消息组件接口
+export interface MessageComponent {
+  error: (content: string) => void;
+  success: (content: string) => void;
+  info?: (content: string) => void;
+  warning?: (content: string) => void;
+}
+
 export interface ModelModalProps {
   open: boolean;
   data: Model | null;
-  type: string;
+  model_type: string;
   onClose: () => void;
   refresh: () => void;
   modelService: ModelService;
   language?: 'zh-CN' | 'en-US';
+  messageComponent?: MessageComponent;
 }
