@@ -5,7 +5,6 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"maps"
 	"net/http"
@@ -158,7 +157,7 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckMo
 		checkResp.Error = err.Error()
 		return checkResp, nil
 	}
-	modelProvider, _ := consts.ParseModelProvider(req.Provider)
+
 	if modelType == consts.ModelTypeEmbedding || modelType == consts.ModelTypeRerank {
 		url := req.BaseURL
 		reqBody := map[string]any{}
@@ -184,19 +183,19 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckMo
 		}
 		body, err := json.Marshal(reqBody)
 		if err != nil {
-			checkResp.Error = err.Error()
+			checkResp.Error = fmt.Sprintf("marshal request body failed: %s", err.Error())
 			return checkResp, nil
 		}
 		request, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewBuffer(body))
 		if err != nil {
-			checkResp.Error = err.Error()
+			checkResp.Error = fmt.Sprintf("new request failed: %s", err.Error())
 			return checkResp, nil
 		}
 		request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", req.APIKey))
 		request.Header.Set("Content-Type", "application/json")
 		resp, err := http.DefaultClient.Do(request)
 		if err != nil {
-			checkResp.Error = err.Error()
+			checkResp.Error = fmt.Sprintf("send request failed: %s", err.Error())
 			return checkResp, nil
 		}
 		defer func() {
@@ -210,85 +209,34 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckMo
 		}
 		return checkResp, nil
 	}
-	config := &openai.ChatModelConfig{
-		APIKey:  req.APIKey,
-		BaseURL: req.BaseURL,
-		Model:   req.Model,
-	}
-	// for azure openai
-	if modelProvider == consts.ModelProviderAzureOpenAI {
-		config.ByAzure = true
-		config.APIVersion = req.APIVersion
-		if config.APIVersion == "" {
-			config.APIVersion = "2024-10-21"
-		}
-	}
-	// 阿里云百炼模型支持流式和思考功能
-	if modelProvider == consts.ModelProviderBaiLian {
-		config.ExtraFields = map[string]any{
-			"stream":          true,
-			"enable_thinking": true,
-		}
-	}
-	if req.APIHeader != "" {
-		client := utils.GetHttpClientWithAPIHeaderMap(req.APIHeader)
-		if client != nil {
-			config.HTTPClient = client
-		}
-	}
-	chatModel, err := openai.NewChatModel(ctx, config)
+	provider, _ := consts.ParseModelProvider(req.Provider)
+	chatModel, err := GetChatModel(ctx, &domain.ModelMetadata{
+		Provider:   provider,
+		ModelName:  req.Model,
+		APIKey:     req.APIKey,
+		APIHeader:  req.APIHeader,
+		BaseURL:    req.BaseURL,
+		APIVersion: req.APIVersion,
+		ModelType:  modelType,
+	})
 	if err != nil {
 		checkResp.Error = err.Error()
 		return checkResp, nil
 	}
-	// 阿里云百炼模型(不支持 翻译/OCR 模型的添加)
-	if modelProvider == consts.ModelProviderBaiLian {
-		msgs := []*schema.Message{
-			schema.SystemMessage("You are a helpful assistant."),
-			schema.UserMessage("hi"),
-		}
-		stream, err := chatModel.Stream(ctx, msgs)
-		if err != nil {
-			checkResp.Error = err.Error()
-			return checkResp, nil
-		}
-		var content string
-		for {
-			msg, err := stream.Recv()
-			if err != nil {
-				if err == io.EOF {
-					break
-				}
-				checkResp.Error = err.Error()
-				return checkResp, nil
-			}
-			if msg.Content != "" {
-				content += msg.Content
-			}
-		}
-
-		if content == "" {
-			checkResp.Error = "generate failed"
-			return checkResp, nil
-		}
-	} else {
-		resp, err := chatModel.Generate(ctx, []*schema.Message{
-			schema.SystemMessage("You are a helpful assistant."),
-			schema.UserMessage("hi"),
-		})
-		if err != nil {
-			checkResp.Error = err.Error()
-			return checkResp, nil
-		}
-
-		content := resp.Content
-		if content == "" {
-			checkResp.Error = "generate failed"
-			return checkResp, nil
-		}
-		checkResp.Content = content
+	resp, err := chatModel.Generate(ctx, []*schema.Message{
+		schema.SystemMessage("You are a helpful assistant."),
+		schema.UserMessage("hi"),
+	})
+	if err != nil {
+		checkResp.Error = err.Error()
+		return checkResp, nil
 	}
-
+	content := resp.Content
+	if content == "" {
+		checkResp.Error = "generate failed"
+		return checkResp, nil
+	}
+	checkResp.Content = content
 	return checkResp, nil
 }
 
