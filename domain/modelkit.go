@@ -9,11 +9,11 @@ type ModelKit interface {
 }
 
 type ModelListReq struct {
-	Provider  string `json:"provider" query:"provider" validate:"required,oneof=SiliconFlow OpenAI Ollama DeepSeek Moonshot AzureOpenAI BaiZhiCloud Hunyuan BaiLian Volcengine Gemini ZhiPu"`
+	Provider  string `json:"provider" query:"provider" validate:"required"`
 	BaseURL   string `json:"base_url" query:"base_url" validate:"required"`
 	APIKey    string `json:"api_key" query:"api_key"`
 	APIHeader string `json:"api_header" query:"api_header"`
-	Type      string `json:"type" query:"type" validate:"required,oneof=chat embedding rerank"`
+	ModelType string `json:"model_type" query:"model_type" validate:"required"`
 }
 
 type Response struct {
@@ -31,18 +31,18 @@ type ModelListItem struct {
 }
 
 type CheckModelReq struct {
-	Provider   string `json:"provider" validate:"required,oneof=OpenAI Ollama DeepSeek SiliconFlow Moonshot Other AzureOpenAI BaiZhiCloud Hunyuan BaiLian Volcengine Gemini ZhiPu"`
-	Model      string `json:"model" validate:"required"`
-	BaseURL    string `json:"base_url" validate:"required"`
-	APIKey     string `json:"api_key"`
-	APIHeader  string `json:"api_header"`
-	APIVersion string `json:"api_version"` // for azure openai
-	Type       string `json:"type" validate:"required,oneof=chat embedding rerank"`
+	Provider   string `json:"provider" query:"provider" validate:"required"`
+	ModelName  string `json:"model_name" query:"model_name" validate:"required"`
+	BaseURL    string `json:"base_url" query:"base_url" validate:"required"`
+	APIKey     string `json:"api_key" query:"api_key"`
+	APIHeader  string `json:"api_header" query:"api_header"`
+	APIVersion string `json:"api_version" query:"api_version"` // for azure openai
+	ModelType  string `json:"model_type" query:"model_type" validate:"required"`
 }
 
 type ModelProvider struct {
 	OwnerName  consts.ModelProvider `json:"owner_name"`  // 提供商
-	APIBase    string               `json:"api_base"`    // 接口地址 如：https://api.qwen.com
+	APIBase    string               `json:"base_url"`    // 接口地址 如：https://api.qwen.com
 	APIKey     string               `json:"api_key"`     // 接口密钥 如：sk-xxxx
 	APIVersion string               `json:"api_version"` // 接口版本 如：2023-05-15
 	APIHeader  string               `json:"api_header"`  // 接口头 如：Authorization: Bearer sk-xxxx
@@ -403,6 +403,7 @@ func getSiliconFlowModels() []ModelMetadata {
 		{ModelName: "Qwen/Qwen3-Coder-30B-A3B-Instruct", Object: "model", Provider: consts.ModelProviderSiliconFlow, ModelType: consts.ModelTypeCoder},
 	}
 }
+
 // 月之暗面模型
 func getMoonshotModels() []ModelMetadata {
 	return []ModelMetadata{

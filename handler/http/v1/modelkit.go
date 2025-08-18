@@ -2,6 +2,7 @@ package v1
 
 import (
 	"net/http"
+	"fmt"
 
 	"github.com/chaitin/ModelKit/domain"
 	"github.com/chaitin/ModelKit/pkg/log"
@@ -34,6 +35,7 @@ func (p *ModelKit) GetModelList(c echo.Context) error {
 			Message: "参数绑定失败: " + err.Error(),
 		})
 	}
+	fmt.Println("req:", req)
 
 	resp, err := usecase.ModelList(c.Request().Context(), &req)
 	if err != nil {
@@ -51,6 +53,10 @@ func (p *ModelKit) GetModelList(c echo.Context) error {
 }
 
 func (p *ModelKit) CheckModel(c echo.Context) error {
+// 打印原始请求信息
+fmt.Printf("Request URL: %s\n", c.Request().URL)
+fmt.Printf("Request Body: %v\n", c.Request().Body)
+
 	var req domain.CheckModelReq
 	if err := c.Bind(&req); err != nil {
 		return c.JSON(http.StatusBadRequest, domain.Response{
@@ -58,9 +64,11 @@ func (p *ModelKit) CheckModel(c echo.Context) error {
 			Message: "参数绑定失败: " + err.Error(),
 		})
 	}
+	fmt.Println("req:", req)
 
 	resp, err := usecase.CheckModel(c.Request().Context(), &req)
 	if err != nil {
+		fmt.Println("err:", err)
 		return c.JSON(http.StatusInternalServerError, domain.Response{
 			Success: false,
 			Message: err.Error(),
@@ -69,6 +77,7 @@ func (p *ModelKit) CheckModel(c echo.Context) error {
 
 	// 如果检查过程中有错误，返回错误响应
 	if resp.Error != "" {
+		fmt.Println("resp.Error:", resp.Error)
 		return c.JSON(http.StatusBadRequest, domain.Response{
 			Success: false,
 			Message: "模型检查失败",

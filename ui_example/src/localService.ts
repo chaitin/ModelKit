@@ -6,8 +6,8 @@ import {
   CheckModelReq,
   UpdateModelReq,
   ModelListItem,
-  ConstsModelProvider,
-} from '../../ui/ModelModal/src/types/types';
+} from '@yokowu/modelkit-ui';
+
 
 // 本地Go服务的基础URL
 const BASE_URL = 'http://localhost:8080/api/v1/modelkit';
@@ -60,7 +60,7 @@ export class LocalModelService implements ModelService {
       show_name: data.show_name,
       provider: data.provider,
       model_type: data.model_type,
-      api_base: data.api_base,
+      base_url: data.base_url,
       api_key: data.api_key,
       api_version: data.api_version,
       api_header: data.api_header,
@@ -79,7 +79,7 @@ export class LocalModelService implements ModelService {
     try {
       const queryParams = new URLSearchParams();
       if (data.provider) queryParams.append('provider', data.provider);
-      if (data.type) queryParams.append('type', data.type);
+      if (data.model_type) queryParams.append('model_type', data.model_type);
       if (data.base_url) queryParams.append('base_url', data.base_url);
       if (data.api_key) queryParams.append('api_key', data.api_key);
       if (data.api_header) queryParams.append('api_header', data.api_header);
@@ -95,17 +95,16 @@ export class LocalModelService implements ModelService {
     }
   }
 
-  async checkModel(data: CheckModelReq): Promise<{ model: Model }> {
+  async checkModel(data: CheckModelReq): Promise<{ model: Model; error?: string }> {
     try {
       const queryParams = new URLSearchParams();
+      console.log('checkModel data:', data);
       if (data.provider) queryParams.append('provider', data.provider);
-      if (data.model_name) queryParams.append('model', data.model_name);
-      if (data.api_base) queryParams.append('base_url', data.api_base);
+      if (data.model_name) queryParams.append('model_name', data.model_name);
+      if (data.base_url) queryParams.append('base_url', data.base_url);
       if (data.api_key) queryParams.append('api_key', data.api_key);
       if (data.api_header) queryParams.append('api_header', data.api_header);
-      if (data.api_version) queryParams.append('api_version', data.api_version);
-      if (data.type) queryParams.append('type', data.type);
-      
+      if (data.model_type) queryParams.append('model_type', data.model_type);
       const url = `/checkmodel${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
       const response = await this.request<CheckModelResponse>(url, {
         method: 'GET',
@@ -117,7 +116,7 @@ export class LocalModelService implements ModelService {
       
       return { model: response.model };
     } catch (error) {
-      console.error('Failed to check model:', error);
+      console.error('Failed to list models:', error);
       throw error;
     }
   }
@@ -128,7 +127,7 @@ export class LocalModelService implements ModelService {
       model_name: data.model_name,
       show_name: data.show_name,
       provider: data.provider,
-      api_base: data.api_base,
+      base_url: data.base_url,
       api_key: data.api_key,
       api_version: data.api_version,
       api_header: data.api_header,

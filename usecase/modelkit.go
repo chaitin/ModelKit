@@ -153,7 +153,7 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 
 func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckModelResp, error) {
 	checkResp := &domain.CheckModelResp{}
-	modelType, err := consts.ParseModelType(req.Type)
+	modelType, err := consts.ParseModelType(req.ModelType)
 	if err != nil {
 		checkResp.Error = err.Error()
 		return checkResp, nil
@@ -168,7 +168,7 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckMo
 		reqBody := map[string]any{}
 		if modelType == consts.ModelTypeEmbedding {
 			reqBody = map[string]any{
-				"model":           req.Model,
+				"model":           req.ModelName,
 				"input":           "ModelKit 一个轻量级工具库，提供 AI 模型发现与 API 密钥验证功能，助你快速集成各大模型供应商能力。",
 				"encoding_format": "float",
 			}
@@ -176,7 +176,7 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckMo
 		}
 		if modelType == consts.ModelTypeRerank {
 			reqBody = map[string]any{
-				"model": req.Model,
+				"model": req.ModelName,
 				"documents": []string{
 					"ModelKit 是一个轻量级工具库，提供 AI 模型发现与 API 密钥验证功能，助你快速集成各大模型供应商能力。",
 					"ModelKit 是一个轻量级工具库，提供 AI 模型发现与 API 密钥验证功能，助你快速集成各大模型供应商能力。",
@@ -217,7 +217,7 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckMo
 	config := &openai.ChatModelConfig{
 		APIKey:  req.APIKey,
 		BaseURL: req.BaseURL,
-		Model:   req.Model,
+		Model:   req.ModelName,
 	}
 	// for azure openai
 	if modelProvider == consts.ModelProviderAzureOpenAI {

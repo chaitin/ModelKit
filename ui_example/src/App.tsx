@@ -14,9 +14,10 @@ import {
 } from '@mui/material';
 import { ThemeProvider, createTheme } from '@mui/material/styles';
 import CssBaseline from '@mui/material/CssBaseline';
-import { ConstsModelType, Model } from '../../ui/ModelModal/src/types/types';
+import { Model} from '@yokowu/modelkit-ui';
 import { localModelService } from './localService';
-import { ModelModal } from '../../ui/ModelModal/src';
+import { ModelModal } from '@yokowu/modelkit-ui';
+import toast, { Toaster } from 'react-hot-toast';
 
 // 创建Material-UI主题
 const theme = createTheme({
@@ -33,12 +34,18 @@ const theme = createTheme({
 
 function App() {
   const [modalOpen, setModalOpen] = useState(false);
-  const [selectedType, setSelectedType] = useState<ConstsModelType>(ConstsModelType.ModelTypeLLM);
+  const [selectedType, setSelectedType] = useState<string>('llm');
   const [editingModel, setEditingModel] = useState<Model | null>(null);
 
-  const handleOpenModal = () => {
-    setEditingModel(null);
-    setModalOpen(true);
+  // 使用react-hot-toast的消息组件
+  const messageComponent = {
+    error: (content: string | Error) => {
+      const message = content instanceof Error ? content.message : String(content);
+      return toast.error(message);
+    },
+    success: (content: string) => toast.success(String(content)),
+    info: (content: string) => toast(String(content)),
+    warning: (content: string) => toast(String(content), { icon: '⚠️' }),
   };
 
   const handleOpenEditModal = () => {
@@ -48,8 +55,8 @@ function App() {
       model_name: 'gpt-4',
       show_name: 'GPT-4 示例',
       provider: 'OpenAI' as any,
-      model_type: ConstsModelType.ModelTypeLLM,
-      api_base: 'https://api.openai.com/v1',
+      model_type: 'llm',
+      base_url: 'https://api.openai.com/v1',
       api_key: 'sk-example-key',
       api_version: '2023-05-15',
       status: 'active' as any,
@@ -71,13 +78,17 @@ function App() {
   };
 
   const handleTypeChange = (event: SelectChangeEvent) => {
-    setSelectedType(event.target.value as ConstsModelType);
+    setSelectedType(event.target.value);
   };
 
+
+
   return (
-    <ThemeProvider theme={theme}>
-      <CssBaseline />
-      <Container maxWidth="md" sx={{ py: 4 }}>
+    <>
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Toaster position="top-right" />
+        <Container maxWidth="md" sx={{ py: 4 }}>
         <Paper elevation={3} sx={{ p: 4 }}>
           <Typography variant="h4" component="h1" gutterBottom align="center">
             ModelModal 示例程序
@@ -95,11 +106,11 @@ function App() {
                 label="模型类型"
                 onChange={handleTypeChange}
               >
-                <MenuItem value={ConstsModelType.ModelTypeLLM}>对话模型 (LLM)</MenuItem>
-                <MenuItem value={ConstsModelType.ModelTypeCoder}>代码补全模型</MenuItem>
-                <MenuItem value={ConstsModelType.ModelTypeEmbedding}>向量模型</MenuItem>
-                <MenuItem value={ConstsModelType.ModelTypeAudio}>音频模型</MenuItem>
-                <MenuItem value={ConstsModelType.ModelTypeReranker}>重排序模型</MenuItem>
+                <MenuItem value={'llm'}>对话模型 (LLM)</MenuItem>
+                <MenuItem value={'coder'}>代码补全模型</MenuItem>
+                <MenuItem value={'embedding'}>向量模型</MenuItem>
+                <MenuItem value={'audio'}>音频模型</MenuItem>
+                <MenuItem value={'reranker'}>重排序模型</MenuItem>
               </Select>
             </FormControl>
           </Box>
@@ -108,7 +119,10 @@ function App() {
             <Button 
               variant="contained" 
               size="large"
-              onClick={handleOpenModal}
+              onClick={() => {
+                setEditingModel(null);
+                setModalOpen(true);
+              }}
             >
               添加新模型
             </Button>
@@ -119,6 +133,19 @@ function App() {
               onClick={handleOpenEditModal}
             >
               编辑示例模型
+            </Button>
+            
+            <Button 
+              variant="text" 
+              size="large"
+              onClick={() => {
+                messageComponent.success('测试成功消息');
+                setTimeout(() => messageComponent.error('测试错误消息'), 1000);
+                setTimeout(() => messageComponent.info('测试信息消息'), 2000);
+                setTimeout(() => messageComponent.warning('测试警告消息'), 3000);
+              }}
+            >
+              测试消息提醒
             </Button>
           </Stack>
 
@@ -142,12 +169,16 @@ function App() {
           onClose={handleCloseModal}
           refresh={handleRefresh}
           data={editingModel}
-          type={selectedType}
+          model_type={selectedType}
           modelService={localModelService}
           language="zh-CN"
+          messageComponent={messageComponent}
         />
-      </Container>
-    </ThemeProvider>
+        
+
+        </Container>
+      </ThemeProvider>
+    </>
   );
 }
 

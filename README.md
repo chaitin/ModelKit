@@ -83,7 +83,7 @@ yarn add @yokowu/modelkit-ui
 - **请求参数** (`CreateModelReq`):
   ```go
   type CreateModelReq struct {
-      APIBase    string        `json:"api_base" validate:"required"`
+      APIBase    string        `json:"base_url" validate:"required"`
       APIHeader  string        `json:"api_header"`
       APIKey     string        `json:"api_key"`
       APIVersion string        `json:"api_version"`
@@ -115,7 +115,7 @@ yarn add @yokowu/modelkit-ui
   ```go
   type UpdateModelReq struct {
       ID         string        `json:"id" validate:"required"`
-      APIBase    string        `json:"api_base"`
+      APIBase    string        `json:"base_url"`
       APIHeader  string        `json:"api_header"`
       APIKey     string        `json:"api_key"`
       APIVersion string        `json:"api_version"`
@@ -137,7 +137,7 @@ yarn add @yokowu/modelkit-ui
 ```go
 type Model struct {
     ID          string        `json:"id"`
-    APIBase     string        `json:"api_base"`
+    APIBase     string        `json:"base_url"`
     APIHeader   string        `json:"api_header"`
     APIKey      string        `json:"api_key"`
     APIVersion  string        `json:"api_version"`
