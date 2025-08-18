@@ -2,13 +2,10 @@
 export { ModelModal } from './ModelModal';
 
 // 类型定义
-export type { ModelType, Model, ModelParam, ConstsModelStatus, ConstsModelProvider, ModelProviderConfig, ModelProviderMap, CreateModelReq as CreateModelData, ListModelReq as GetModelNameData, CheckModelReq as CheckModelData, UpdateModelReq as UpdateModelData, ModelService, ModelListItem, AddModelForm, ModelModalProps } from './types/types';
-
-// 导出 ConstsModelType 枚举值
-export { ConstsModelType } from './types/types';
+export type { Model, ModelParam, ModelProviderConfig, ModelProviderMap, CreateModelReq as CreateModelData, ListModelReq as GetModelNameData, CheckModelReq as CheckModelData, UpdateModelReq as UpdateModelData, ModelService, ModelListItem, AddModelForm, ModelModalProps } from './types/types';
 
 // 常量
-export { DEFAULT_MODEL_PROVIDERS, getProvidersByType } from './constants/providers';
+export { DEFAULT_MODEL_PROVIDERS} from './constants/providers';
 export { LOCALE_MESSAGES, getLocaleMessage, getTitleMap } from './constants/locale';
 
 // 主题类型声明会通过TypeScript自动包含

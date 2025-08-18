@@ -158,11 +158,7 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckMo
 		checkResp.Error = err.Error()
 		return checkResp, nil
 	}
-	modelProvider, err := consts.ParseModelProvider(req.Provider)
-	if err != nil {
-		checkResp.Error = err.Error()
-		return checkResp, nil
-	}
+	modelProvider, _ := consts.ParseModelProvider(req.Provider)
 	if modelType == consts.ModelTypeEmbedding || modelType == consts.ModelTypeRerank {
 		url := req.BaseURL
 		reqBody := map[string]any{}

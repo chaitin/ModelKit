@@ -19,21 +19,21 @@ import { useForm, Controller } from 'react-hook-form';
 import {
   AddModelForm,
   Model,
-  ConstsModelType,
   ModelModalProps,
 } from './types/types';
 import { DEFAULT_MODEL_PROVIDERS } from './constants/providers';
-import { ModelProvider } from './constants/providers';
 import { getLocaleMessage } from './constants/locale';
 import './assets/fonts/iconfont';
 import { lightTheme } from './theme';
 
-const titleMap = {
-  [ConstsModelType.ModelTypeLLM]: '对话模型',
-  [ConstsModelType.ModelTypeCoder]: '代码补全模型',
-  [ConstsModelType.ModelTypeEmbedding]: '向量模型',
-  [ConstsModelType.ModelTypeAudio]: '音频模型',
-  [ConstsModelType.ModelTypeReranker]: '重排序模型',
+const titleMap: Record<string, string>  = {
+  ["llm"]: '对话模型',
+  ["chat"]: '对话模型',
+  ["coder"]: '代码补全模型',
+  ["code"]: '代码补全模型',
+  ["embedding"]: '向量模型',
+  ["rerank"]: '重排序模型',
+  ["reranker"]: '重排序模型',
 };
 
 export const ModelModal: React.FC<ModelModalProps> = ({
@@ -41,7 +41,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
   onClose,
   refresh,
   data,
-  type = ConstsModelType.ModelTypeLLM,
+  type = "llm",
   modelService,
   language = 'zh-CN',
 }: ModelModalProps) => {
@@ -362,7 +362,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                   setModelLoading(false);
                   setSuccess(false);
                   reset({
-                    provider: it.label as keyof typeof ModelProvider,
+                    provider: it.label as keyof typeof DEFAULT_MODEL_PROVIDERS,
                     base_url:
                       it.label === 'AzureOpenAI' ? '' : it.defaultBaseUrl,
                     model: '',
