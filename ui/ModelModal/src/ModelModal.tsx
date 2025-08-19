@@ -355,7 +355,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
           {Object.values(providers)
             .filter((it) => {
               // 当model_type为chat或llm时显示所有供应商
-              if (model_type === 'chat' || model_type === 'llm') {
+              if (model_type === 'chat' || model_type === 'llm' || model_type === 'code' || model_type === 'coder') {
                 return true;
               }
               // 其他情况只显示百智云和其它
