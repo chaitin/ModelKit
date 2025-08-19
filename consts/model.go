@@ -57,36 +57,37 @@ const (
 	ModelProviderVolcengine  ModelProvider = "Volcengine"
 	ModelProviderGemini      ModelProvider = "Gemini"
 	ModelProviderZhiPu       ModelProvider = "ZhiPu"
+	ModelProviderOther       ModelProvider = "Other"
 )
 
-func ParseModelProvider(s string) (ModelProvider, error) {
+func ParseModelProvider(s string) ModelProvider {
 	// 转换为小写进行不区分大小写的比较
 	switch strings.ToLower(s) {
 	case "siliconflow":
-		return ModelProviderSiliconFlow, nil
+		return ModelProviderSiliconFlow
 	case "openai":
-		return ModelProviderOpenAI, nil
+		return ModelProviderOpenAI
 	case "ollama":
-		return ModelProviderOllama, nil
+		return ModelProviderOllama
 	case "deepseek":
-		return ModelProviderDeepSeek, nil
+		return ModelProviderDeepSeek
 	case "moonshot":
-		return ModelProviderMoonshot, nil
+		return ModelProviderMoonshot
 	case "azureopenai":
-		return ModelProviderAzureOpenAI, nil
+		return ModelProviderAzureOpenAI
 	case "baizhicloud", "baizhiyun":
-		return ModelProviderBaiZhiCloud, nil
+		return ModelProviderBaiZhiCloud
 	case "hunyuan":
-		return ModelProviderHunyuan, nil
+		return ModelProviderHunyuan
 	case "bailian":
-		return ModelProviderBaiLian, nil
+		return ModelProviderBaiLian
 	case "volcengine":
-		return ModelProviderVolcengine, nil
+		return ModelProviderVolcengine
 	case "gemini":
-		return ModelProviderGemini, nil
+		return ModelProviderGemini
 	case "zhipu":
-		return ModelProviderZhiPu, nil
+		return ModelProviderZhiPu
 	default:
-		return "", errors.New("invalid model provider")
+		return ModelProviderOther
 	}
 }
