@@ -176,13 +176,13 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       }
     )
       .then((res) => {
-        console.log("res is: ",res);
         if (res.error) {
-          messageHandler.error("模型检查失败");
+          messageHandler.error("模型检查失败 " + res.error);
           setLoading(false);
         } else if (data) {
           modelService.updateModel({
             api_key: value.api_key,
+            model_type,
             base_url: value.base_url,
             model_name: value.model_name,
             api_header: value.api_header || header,
@@ -293,7 +293,6 @@ export const ModelModal: React.FC<ModelModalProps> = ({
   useEffect(() => {
     if (open) {
       if (data) {
-        console.log(data);
         resetCurData(data);
       } else {
         reset({
