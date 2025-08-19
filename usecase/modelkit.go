@@ -41,10 +41,8 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 			IdleConnTimeout:     time.Second * 30,
 		},
 	}
-	provider, err := consts.ParseModelProvider(req.Provider)
-	if err != nil {
-		return nil, err
-	}
+	provider := consts.ParseModelProvider(req.Provider)
+
 	switch provider {
 	case consts.ModelProviderAzureOpenAI,
 		consts.ModelProviderZhiPu,
@@ -209,7 +207,7 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckMo
 		}
 		return checkResp, nil
 	}
-	provider, _ := consts.ParseModelProvider(req.Provider)
+	provider := consts.ParseModelProvider(req.Provider)
 	chatModel, err := GetChatModel(ctx, &domain.ModelMetadata{
 		Provider:   provider,
 		ModelName:  req.Model,
