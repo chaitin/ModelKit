@@ -31,6 +31,37 @@ import (
 	"github.com/chaitin/ModelKit/utils"
 )
 
+// getOpenAICompatibleModels 获取OpenAI兼容API的模型列表
+func getOpenAICompatibleModels(req *domain.ModelListReq, httpClient *http.Client) ([]domain.ModelListItem, error) {
+	u, err := url.Parse(req.BaseURL)
+	if err != nil {
+		return nil, err
+	}
+	u.Path = path.Join(u.Path, "/models")
+
+	client := request.NewClient(u.Scheme, u.Host, httpClient.Timeout, request.WithClient(httpClient))
+	query := utils.GetQuery(req)
+	resp, err := request.Get[domain.OpenAIResp](
+		client, u.Path,
+		request.WithHeader(
+			request.Header{
+				"Authorization": fmt.Sprintf("Bearer %s", req.APIKey),
+			},
+		),
+		request.WithQuery(query),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	var models []domain.ModelListItem
+	for _, item := range resp.Data {
+		models = append(models, domain.ModelListItem{Model: item.ID})
+	}
+
+	return models, nil
+}
+
 func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelListResp, error) {
 	httpClient := &http.Client{
 		Timeout: time.Second * 30,
@@ -44,49 +75,14 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 	provider := consts.ParseModelProvider(req.Provider)
 
 	switch provider {
+	// 人工返回模型列表
 	case consts.ModelProviderAzureOpenAI,
 		consts.ModelProviderZhiPu,
 		consts.ModelProviderVolcengine:
 		return &domain.ModelListResp{
 			Models: domain.From(domain.ModelProviders[provider]),
 		}, nil
-	case consts.ModelProviderOpenAI,
-		consts.ModelProviderHunyuan,
-		consts.ModelProviderMoonshot,
-		consts.ModelProviderDeepSeek,
-		consts.ModelProviderSiliconFlow,
-		consts.ModelProviderBaiZhiCloud,
-		consts.ModelProviderBaiLian:
-		u, err := url.Parse(req.BaseURL)
-		if err != nil {
-			return nil, err
-		}
-		u.Path = path.Join(u.Path, "/models")
-
-		client := request.NewClient(u.Scheme, u.Host, httpClient.Timeout, request.WithClient(httpClient))
-		query := utils.GetQuery(req)
-		resp, err := request.Get[domain.OpenAIResp](
-			client, u.Path,
-			request.WithHeader(
-				request.Header{
-					"Authorization": fmt.Sprintf("Bearer %s", req.APIKey),
-				},
-			),
-			request.WithQuery(query),
-		)
-		if err != nil {
-			return nil, err
-		}
-
-		var models []domain.ModelListItem
-		for _, item := range resp.Data {
-			models = append(models, domain.ModelListItem{Model: item.ID})
-		}
-
-		return &domain.ModelListResp{
-			Models: models,
-		}, nil
-
+	// 以下模型供应商需要特殊处理
 	case consts.ModelProviderOllama:
 		// get from ollama http://10.10.16.24:11434/api/tags
 		u, err := url.Parse(req.BaseURL)
@@ -143,8 +139,15 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 		return &domain.ModelListResp{
 			Models: modelsList,
 		}, nil
+	// openai 兼容模型
 	default:
-		return nil, fmt.Errorf("invalid provider: %s", req.Provider)
+		models, err := getOpenAICompatibleModels(req, httpClient)
+		if err != nil {
+			return nil, err
+		}
+		return &domain.ModelListResp{
+			Models: models,
+		}, nil
 	}
 }
 
@@ -311,6 +314,7 @@ func GetChatModel(ctx context.Context, model *domain.ModelMetadata) (model.BaseC
 			return nil, fmt.Errorf("create chat model failed: %w", err)
 		}
 		return chatModel, nil
+	// 兼容 openai api
 	default:
 		chatModel, err := openai.NewChatModel(ctx, config)
 		if err != nil {
