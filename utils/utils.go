@@ -297,12 +297,15 @@ func GetHttpClientWithAPIHeaderMap(header string) *http.Client {
 	return nil
 }
 
-func GetQuery(req *domain.ModelListReq) request.Query {
+func GetQuery(req *domain.ModelListReq) (request.Query, error) {
 	q := make(request.Query, 0)
-	provider := consts.ModelProvider(req.Provider)
-	modelType := consts.ModelType(req.Type)
+	provider := consts.ParseModelProvider(req.Provider)
+	modelType, err := consts.ParseModelType(req.Type)
+	if err != nil {
+		return q, err
+	}
 	if provider != consts.ModelProviderBaiZhiCloud && provider != consts.ModelProviderSiliconFlow {
-		return q
+		return q, nil
 	}
 	q["type"] = "text"
 	q["sub_type"] = string(req.Type)
@@ -313,5 +316,5 @@ func GetQuery(req *domain.ModelListReq) request.Query {
 	if provider == consts.ModelProviderSiliconFlow && modelType == consts.ModelTypeCoder {
 		q["sub_type"] = "chat"
 	}
-	return q
+	return q, nil
 }

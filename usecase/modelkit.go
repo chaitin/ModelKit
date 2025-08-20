@@ -40,7 +40,10 @@ func getOpenAICompatibleModels(req *domain.ModelListReq, httpClient *http.Client
 	u.Path = path.Join(u.Path, "/models")
 
 	client := request.NewClient(u.Scheme, u.Host, httpClient.Timeout, request.WithClient(httpClient))
-	query := utils.GetQuery(req)
+	query, err := utils.GetQuery(req)
+	if err != nil {
+		return nil, err
+	}
 	resp, err := request.Get[domain.OpenAIResp](
 		client, u.Path,
 		request.WithHeader(
