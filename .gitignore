@@ -1,10 +1,6 @@
-ui_example
 node_modules
 ui/node_modules
 ui/ModelModal/node_modules
 ui/ModelModal/dist
 .DS_Store
-main
-main.go
-handler
-templates
+test/ui_example/dist

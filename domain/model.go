@@ -1,58 +1,6 @@
 package domain
 
-import (
-	"github.com/chaitin/ModelKit/consts"
-)
-
-type ModelKit interface {
-	// CheckModel(ctx context.Context, req *CheckModelReq) (*Model, error)
-}
-
-type ModelListReq struct {
-	Provider  string `json:"provider" query:"provider" validate:"required,oneof=SiliconFlow OpenAI Ollama DeepSeek Moonshot AzureOpenAI BaiZhiCloud Hunyuan BaiLian Volcengine Gemini ZhiPu"`
-	BaseURL   string `json:"base_url" query:"base_url" validate:"required"`
-	APIKey    string `json:"api_key" query:"api_key"`
-	APIHeader string `json:"api_header" query:"api_header"`
-	Type      string `json:"type" query:"type" validate:"required,oneof=chat embedding rerank"`
-}
-
-type Response struct {
-	Message string `json:"message"`
-	Success bool   `json:"success"`
-	Data    any    `json:"data,omitempty"`
-}
-
-type ModelListResp struct {
-	Models []ModelListItem `json:"models"`
-}
-
-type ModelListItem struct {
-	Model string `json:"model"`
-}
-
-type CheckModelReq struct {
-	Provider   string `json:"provider" validate:"required,oneof=OpenAI Ollama DeepSeek SiliconFlow Moonshot Other AzureOpenAI BaiZhiCloud Hunyuan BaiLian Volcengine Gemini ZhiPu"`
-	Model      string `json:"model" validate:"required"`
-	BaseURL    string `json:"base_url" validate:"required"`
-	APIKey     string `json:"api_key"`
-	APIHeader  string `json:"api_header"`
-	APIVersion string `json:"api_version"` // for azure openai
-	Type       string `json:"type" validate:"required,oneof=chat embedding rerank"`
-}
-
-type ModelProvider struct {
-	OwnerName  consts.ModelProvider `json:"owner_name"`  // 提供商
-	APIBase    string               `json:"api_base"`    // 接口地址 如：https://api.qwen.com
-	APIKey     string               `json:"api_key"`     // 接口密钥 如：sk-xxxx
-	APIVersion string               `json:"api_version"` // 接口版本 如：2023-05-15
-	APIHeader  string               `json:"api_header"`  // 接口头 如：Authorization: Bearer sk-xxxx
-	Models     []ModelMetadata      `json:"models"`      // 模型列表
-}
-
-type CheckModelResp struct {
-	Error   string `json:"error"`
-	Content string `json:"content"`
-}
+import "github.com/chaitin/ModelKit/consts"
 
 type ModelMetadata struct {
 	ModelName string               `json:"id"`         // 模型的名字
@@ -68,23 +16,6 @@ type ModelMetadata struct {
 }
 
 var Models []ModelMetadata
-var ModelProviders map[consts.ModelProvider]ModelProvider
-var TypeModelMap map[consts.ModelType][]ModelMetadata
-
-func getModelsByOwner(owner consts.ModelProvider) []ModelMetadata {
-	var ms []ModelMetadata
-	for i := range Models {
-		if Models[i].Provider == owner {
-			ms = append(ms, Models[i])
-		}
-	}
-	return ms
-}
-
-func init() {
-	initModels()
-	initModelProviders()
-}
 
 // getBaiZhiCloudModels 返回百智云模型列表
 func getBaiZhiCloudModels() []ModelMetadata {
@@ -486,92 +417,4 @@ func initModels() {
 	Models = append(Models, getAzureOpenAIModels()...)
 	Models = append(Models, getZhiPuModels()...)
 	Models = append(Models, getGeminiModels()...)
-}
-
-func initModelProviders() {
-	// 初始化模型提供商及其模型
-	ModelProviders = map[consts.ModelProvider]ModelProvider{
-		consts.ModelProviderBaiZhiCloud: {
-			OwnerName: consts.ModelProviderBaiZhiCloud,
-			Models:    getModelsByOwner(consts.ModelProviderBaiZhiCloud),
-			APIBase:   "https://model-square.app.baizhi.cloud/v1",
-		},
-		consts.ModelProviderDeepSeek: {
-			OwnerName: consts.ModelProviderDeepSeek,
-			Models:    getModelsByOwner(consts.ModelProviderDeepSeek),
-			APIBase:   "https://api.deepseek.com/v1",
-		},
-		consts.ModelProviderSiliconFlow: {
-			OwnerName: consts.ModelProviderSiliconFlow,
-			Models:    getModelsByOwner(consts.ModelProviderSiliconFlow),
-			APIBase:   "https://api.siliconflow.cn/v1",
-		},
-		consts.ModelProviderOpenAI: {
-			OwnerName: consts.ModelProviderOpenAI,
-			Models:    getModelsByOwner(consts.ModelProviderOpenAI),
-			APIBase:   "https://api.openai.com/v1",
-		},
-		consts.ModelProviderOllama: {
-			OwnerName: consts.ModelProviderOllama,
-			Models:    getModelsByOwner(consts.ModelProviderOllama),
-			APIBase:   "http://localhost:11434",
-		},
-		consts.ModelProviderMoonshot: {
-			OwnerName: consts.ModelProviderMoonshot,
-			Models:    getModelsByOwner(consts.ModelProviderMoonshot),
-			APIBase:   "https://api.moonshot.cn/v1",
-		},
-		consts.ModelProviderAzureOpenAI: {
-			OwnerName: consts.ModelProviderAzureOpenAI,
-			Models:    getModelsByOwner(consts.ModelProviderAzureOpenAI),
-		},
-		consts.ModelProviderHunyuan: {
-			OwnerName: consts.ModelProviderHunyuan,
-			Models:    getModelsByOwner(consts.ModelProviderHunyuan),
-			APIBase:   "https://api.hunyuan.cloud.tencent.com/v1",
-		},
-		consts.ModelProviderBaiLian: {
-			OwnerName: consts.ModelProviderBaiLian,
-			Models:    getModelsByOwner(consts.ModelProviderBaiLian),
-			APIBase:   "https://dashscope.aliyuncs.com/compatible-mode/v1",
-		},
-		consts.ModelProviderVolcengine: {
-			OwnerName: consts.ModelProviderVolcengine,
-			Models:    getModelsByOwner(consts.ModelProviderVolcengine),
-			APIBase:   "https://ark.cn-beijing.volces.com/api/v3",
-		},
-		consts.ModelProviderGemini: {
-			OwnerName: consts.ModelProviderGemini,
-			Models:    getModelsByOwner(consts.ModelProviderGemini),
-			APIBase:   "https://generativelanguage.googleapis.com/v1beta",
-		},
-		consts.ModelProviderZhiPu: {
-			OwnerName: consts.ModelProviderZhiPu,
-			Models:    getModelsByOwner(consts.ModelProviderZhiPu),
-			APIBase:   "https://open.bigmodel.cn/api/paas/v4",
-		},
-	}
-
-	// 初始化按类型分组的模型映射
-	TypeModelMap = make(map[consts.ModelType][]ModelMetadata)
-	for i := range Models {
-		model := Models[i]
-		TypeModelMap[model.ModelType] = append(TypeModelMap[model.ModelType], model)
-	}
-}
-
-type Resp struct {
-	Code    int    `json:"code"`
-	Message string `json:"message"`
-	Data    any    `json:"data,omitempty"`
-}
-
-func From(ModelProvider ModelProvider) []ModelListItem {
-	var result []ModelListItem
-	for _, model := range ModelProvider.Models {
-		result = append(result, ModelListItem{
-			Model: model.ModelName,
-		})
-	}
-	return result
 }

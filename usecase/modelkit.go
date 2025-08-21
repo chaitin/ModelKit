@@ -31,6 +31,36 @@ import (
 	"github.com/chaitin/ModelKit/utils"
 )
 
+// reqModelListApi 获取OpenAI兼容API的模型列表
+// 使用泛型和接口抽象来支持不同供应商的响应格式
+func reqModelListApi[T domain.ModelResponseParser](req *domain.ModelListReq, httpClient *http.Client, responseType T) ([]domain.ModelListItem, error) {
+	u, err := url.Parse(req.BaseURL)
+	if err != nil {
+		return nil, err
+	}
+	u.Path = path.Join(u.Path, "/models")
+
+	client := request.NewClient(u.Scheme, u.Host, httpClient.Timeout, request.WithClient(httpClient))
+	query, err := utils.GetQuery(req)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := request.Get[T](
+		client, u.Path,
+		request.WithHeader(
+			request.Header{
+				"Authorization": fmt.Sprintf("Bearer %s", req.APIKey),
+			},
+		),
+		request.WithQuery(query),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return (*resp).ParseModels(), nil
+}
+
 func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelListResp, error) {
 	httpClient := &http.Client{
 		Timeout: time.Second * 30,
@@ -44,49 +74,14 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 	provider := consts.ParseModelProvider(req.Provider)
 
 	switch provider {
+	// 人工返回模型列表
 	case consts.ModelProviderAzureOpenAI,
 		consts.ModelProviderZhiPu,
 		consts.ModelProviderVolcengine:
 		return &domain.ModelListResp{
 			Models: domain.From(domain.ModelProviders[provider]),
 		}, nil
-	case consts.ModelProviderOpenAI,
-		consts.ModelProviderHunyuan,
-		consts.ModelProviderMoonshot,
-		consts.ModelProviderDeepSeek,
-		consts.ModelProviderSiliconFlow,
-		consts.ModelProviderBaiZhiCloud,
-		consts.ModelProviderBaiLian:
-		u, err := url.Parse(req.BaseURL)
-		if err != nil {
-			return nil, err
-		}
-		u.Path = path.Join(u.Path, "/models")
-
-		client := request.NewClient(u.Scheme, u.Host, httpClient.Timeout, request.WithClient(httpClient))
-		query := utils.GetQuery(req)
-		resp, err := request.Get[domain.OpenAIResp](
-			client, u.Path,
-			request.WithHeader(
-				request.Header{
-					"Authorization": fmt.Sprintf("Bearer %s", req.APIKey),
-				},
-			),
-			request.WithQuery(query),
-		)
-		if err != nil {
-			return nil, err
-		}
-
-		var models []domain.ModelListItem
-		for _, item := range resp.Data {
-			models = append(models, domain.ModelListItem{Model: item.ID})
-		}
-
-		return &domain.ModelListResp{
-			Models: models,
-		}, nil
-
+	// 以下模型供应商需要特殊处理
 	case consts.ModelProviderOllama:
 		// get from ollama http://10.10.16.24:11434/api/tags
 		u, err := url.Parse(req.BaseURL)
@@ -143,18 +138,30 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 		return &domain.ModelListResp{
 			Models: modelsList,
 		}, nil
+	case consts.ModelProviderGithub:
+		models, err := reqModelListApi(req, httpClient, &domain.GithubResp{})
+		if err != nil {
+			return nil, err
+		}
+		return &domain.ModelListResp{
+			Models: models,
+		}, nil
+		// openai 兼容模型
 	default:
-		return nil, fmt.Errorf("invalid provider: %s", req.Provider)
+		models, err := reqModelListApi(req, httpClient, &domain.OpenAIResp{})
+
+		if err != nil {
+			return nil, err
+		}
+		return &domain.ModelListResp{
+			Models: models,
+		}, nil
 	}
 }
 
 func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckModelResp, error) {
 	checkResp := &domain.CheckModelResp{}
-	modelType, err := consts.ParseModelType(req.Type)
-	if err != nil {
-		checkResp.Error = err.Error()
-		return checkResp, nil
-	}
+	modelType := consts.ParseModelType(req.Type)
 
 	if modelType == consts.ModelTypeEmbedding || modelType == consts.ModelTypeRerank {
 		url := req.BaseURL
@@ -261,6 +268,7 @@ func GetChatModel(ctx context.Context, model *domain.ModelMetadata) (model.BaseC
 			config.HTTPClient = client
 		}
 	}
+
 	switch modelProvider {
 	case consts.ModelProviderDeepSeek:
 		chatModel, err := deepseek.NewChatModel(ctx, &deepseek.ChatModelConfig{
@@ -311,6 +319,7 @@ func GetChatModel(ctx context.Context, model *domain.ModelMetadata) (model.BaseC
 			return nil, fmt.Errorf("create chat model failed: %w", err)
 		}
 		return chatModel, nil
+	// 兼容 openai api
 	default:
 		chatModel, err := openai.NewChatModel(ctx, config)
 		if err != nil {
