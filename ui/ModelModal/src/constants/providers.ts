@@ -125,7 +125,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   Qiniu: {
     label: 'Qiniu',
     cn: '七牛云',
-    icon: 'icon-qiniu',
+    icon: 'icon-qiniuyun',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -175,7 +175,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   Yi: {
     label: 'Yi',
     cn: '零一万物',
-    icon: 'icon-yi',
+    icon: 'icon-lingyiwanwu',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -246,7 +246,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   CTYun: {
     label: 'CTYun',
     cn: '天翼云息壤',
-    icon: 'icon-ctyun',
+    icon: 'icon-tianyiyun',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -256,7 +256,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   TencentTI: {
     label: 'TencentTI',
     cn: '腾讯云TI',
-    icon: 'icon-tencentcloud',
+    icon: 'icon-tengxunyun',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -266,7 +266,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   BaiDuQianFan: {
     label: 'BaiDuQianFan',
     cn: '百度云千帆',
-    icon: 'icon-baiduqianfan',
+    icon: 'icon-baiduyun',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -276,7 +276,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   ModelScope: {
     label: 'ModelScope',
     cn: '魔搭社区',
-    icon: 'icon-modelscope',
+    icon: 'icon-modaGPT',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -296,7 +296,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   StepFun: {
     label: 'StepFun',
     cn: '阶跃星辰',
-    icon: 'icon-stepfun',
+    icon: 'icon-step',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -356,7 +356,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   DMXAPI: {
     label: 'DMXAPI',
     cn: 'DMXAPI',
-    icon: 'icon-dmxapi',
+    icon: 'icon-DMXAPI',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -373,20 +373,20 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     modelDocumentUrl: 'https://ai.burncloud.com/docs',
     defaultBaseUrl: 'https://ai.burncloud.com/v1',
   },
-  Grok: {
-    label: 'Grok',
-    cn: 'Grok',
-    icon: 'icon-grok',
-    urlWrite: false,
-    secretRequired: true,
-    customHeader: false,
-    modelDocumentUrl: 'https://docs.x.ai/',
-    defaultBaseUrl: 'https://api.x.ai/v1',
-  },
+  // Grok: {
+  //   label: 'Grok',
+  //   cn: 'Grok',
+  //   icon: 'icon-grok',
+  //   urlWrite: false,
+  //   secretRequired: true,
+  //   customHeader: false,
+  //   modelDocumentUrl: 'https://docs.x.ai/',
+  //   defaultBaseUrl: 'https://api.x.ai/v1',
+  // },
   Nvidia: {
     label: 'Nvidia',
     cn: '英伟达',
-    icon: 'icon-nvidia',
+    icon: 'icon-yingweida',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -406,7 +406,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   AI302: {
     label: 'AI302',
     cn: '302.AI',
-    icon: 'icon-302ai',
+    icon: 'icon-a-302ai',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -446,7 +446,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   Mistral: {
     label: 'Mistral',
     cn: 'Mistral',
-    icon: 'icon-mistral',
+    icon: 'icon-Mistral',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,

@@ -1,6 +1,6 @@
 {
   "name": "@yokowu/modelkit-ui",
-  "version": "0.4.2",
+  "version": "0.5.0",
   "description": "A reusable AI model configuration modal component for React applications",
   "private": false,
   "type": "module",
@@ -29,7 +29,8 @@
     "type-check": "tsc --noEmit",
     "lint": "eslint src --ext .ts,.tsx",
     "clean": "rimraf dist",
-    "prepublishOnly": "npm run build"
+    "prepublishOnly": "npm run build",
+    "icon": "node ./scripts/downLoadIcon.cjs"
   },
   "keywords": [
     "react",
