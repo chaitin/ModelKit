@@ -1,7 +1,6 @@
 package consts
 
 import (
-	"errors"
 	"strings"
 )
 
@@ -23,22 +22,22 @@ const (
 	ModelTypeFunctionCall ModelType = "function_call"
 )
 
-func ParseModelType(s string) (ModelType, error) {
+func ParseModelType(s string) ModelType {
 	switch s {
 	case "llm", "chat":
-		return ModelTypeChat, nil
+		return ModelTypeChat
 	case "coder", "code":
-		return ModelTypeCoder, nil
+		return ModelTypeCoder
 	case "embedding":
-		return ModelTypeEmbedding, nil
+		return ModelTypeEmbedding
 	case "reranker", "rerank":
-		return ModelTypeRerank, nil
+		return ModelTypeRerank
 	case "vision":
-		return ModelTypeVision, nil
+		return ModelTypeVision
 	case "function_call":
-		return ModelTypeFunctionCall, nil
+		return ModelTypeFunctionCall
 	default:
-		return "", errors.New("invalid model type")
+		return ModelTypeChat
 	}
 }
 

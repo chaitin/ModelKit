@@ -156,11 +156,7 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 
 func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckModelResp, error) {
 	checkResp := &domain.CheckModelResp{}
-	modelType, err := consts.ParseModelType(req.Type)
-	if err != nil {
-		checkResp.Error = err.Error()
-		return checkResp, nil
-	}
+	modelType := consts.ParseModelType(req.Type)
 
 	if modelType == consts.ModelTypeEmbedding || modelType == consts.ModelTypeRerank {
 		url := req.BaseURL

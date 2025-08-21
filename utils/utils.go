@@ -300,10 +300,8 @@ func GetHttpClientWithAPIHeaderMap(header string) *http.Client {
 func GetQuery(req *domain.ModelListReq) (request.Query, error) {
 	q := make(request.Query, 0)
 	provider := consts.ParseModelProvider(req.Provider)
-	modelType, err := consts.ParseModelType(req.Type)
-	if err != nil {
-		return q, err
-	}
+	modelType := consts.ParseModelType(req.Type)
+
 	if provider != consts.ModelProviderBaiZhiCloud && provider != consts.ModelProviderSiliconFlow {
 		return q, nil
 	}

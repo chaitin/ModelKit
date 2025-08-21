@@ -2,6 +2,21 @@ package domain
 
 import "github.com/chaitin/ModelKit/consts"
 
+type ModelMetadata struct {
+	ModelName string               `json:"id"`         // 模型的名字
+	Object    string               `json:"object"`     // 总是model
+	Created   int                  `json:"created"`    // 创建时间
+	Provider  consts.ModelProvider `json:"provider"`   // 提供商
+	ModelType consts.ModelType     `json:"model_type"` // 模型类型
+
+	BaseURL    string `json:"base_url"`
+	APIKey     string `json:"api_key"`
+	APIHeader  string `json:"api_header"`
+	APIVersion string `json:"api_version"` // for azure openai
+}
+
+var Models []ModelMetadata
+
 // getBaiZhiCloudModels 返回百智云模型列表
 func getBaiZhiCloudModels() []ModelMetadata {
 	return []ModelMetadata{
