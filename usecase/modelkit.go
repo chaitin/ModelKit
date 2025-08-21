@@ -31,8 +31,9 @@ import (
 	"github.com/chaitin/ModelKit/utils"
 )
 
-// getOpenAICompatibleModels 获取OpenAI兼容API的模型列表
-func getOpenAICompatibleModels(req *domain.ModelListReq, httpClient *http.Client) ([]domain.ModelListItem, error) {
+// reqModelListApi 获取OpenAI兼容API的模型列表
+// 使用泛型和接口抽象来支持不同供应商的响应格式
+func reqModelListApi[T domain.ModelResponseParser](req *domain.ModelListReq, httpClient *http.Client, responseType T) ([]domain.ModelListItem, error) {
 	u, err := url.Parse(req.BaseURL)
 	if err != nil {
 		return nil, err
@@ -44,7 +45,7 @@ func getOpenAICompatibleModels(req *domain.ModelListReq, httpClient *http.Client
 	if err != nil {
 		return nil, err
 	}
-	resp, err := request.Get[domain.OpenAIResp](
+	resp, err := request.Get[T](
 		client, u.Path,
 		request.WithHeader(
 			request.Header{
@@ -57,12 +58,7 @@ func getOpenAICompatibleModels(req *domain.ModelListReq, httpClient *http.Client
 		return nil, err
 	}
 
-	var models []domain.ModelListItem
-	for _, item := range resp.Data {
-		models = append(models, domain.ModelListItem{Model: item.ID})
-	}
-
-	return models, nil
+	return (*resp).ParseModels(), nil
 }
 
 func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelListResp, error) {
@@ -142,9 +138,18 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 		return &domain.ModelListResp{
 			Models: modelsList,
 		}, nil
-	// openai 兼容模型
+	case consts.ModelProviderGithub:
+		models, err := reqModelListApi(req, httpClient, &domain.GithubResp{})
+		if err != nil {
+			return nil, err
+		}
+		return &domain.ModelListResp{
+			Models: models,
+		}, nil
+		// openai 兼容模型
 	default:
-		models, err := getOpenAICompatibleModels(req, httpClient)
+		models, err := reqModelListApi(req, httpClient, &domain.OpenAIResp{})
+
 		if err != nil {
 			return nil, err
 		}
@@ -263,6 +268,7 @@ func GetChatModel(ctx context.Context, model *domain.ModelMetadata) (model.BaseC
 			config.HTTPClient = client
 		}
 	}
+
 	switch modelProvider {
 	case consts.ModelProviderDeepSeek:
 		chatModel, err := deepseek.NewChatModel(ctx, &deepseek.ChatModelConfig{

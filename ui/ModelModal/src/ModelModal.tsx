@@ -335,7 +335,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
         disabled: !success && providerBrand !== 'Other',
       }}
     >
-      <Stack direction={'row'} alignItems={'stretch'} gap={3}>
+      <Stack direction={'row'} alignItems={'stretch'} gap={3} sx={{ height: 500 }}>
         <Stack
           gap={1}
           sx={{
@@ -344,79 +344,121 @@ export const ModelModal: React.FC<ModelModalProps> = ({
             bgcolor: 'background.paper2',
             borderRadius: '10px',
             p: 1,
+            height: '100%',
+            display: 'flex',
+            flexDirection: 'column',
           }}
         >
           <Box
-            sx={{ fontSize: 14, lineHeight: '24px', fontWeight: 'bold', p: 1 }}
+            sx={{ fontSize: 14, lineHeight: '24px', fontWeight: 'bold', p: 1, flexShrink: 0 }}
           >
             模型供应商
           </Box>
-          {Object.values(providers)
-            .filter((it) => {
-              // 当model_type为chat或llm时显示所有供应商
-              if (model_type === 'chat' || model_type === 'llm' || model_type === 'code' || model_type === 'coder') {
-                return true;
-              }
-              // 其他情况只显示百智云和其它
-              return it.label === 'BaiZhiCloud' || it.label === 'Other';
-            })
-            .map((it) => (
-            <Stack
-              direction={'row'}
-              alignItems={'center'}
-              gap={1.5}
-              key={it.label}
-              sx={{
-                cursor: 'pointer',
-                fontSize: 14,
-                lineHeight: '24px',
-                p: 1,
-                borderRadius: '10px',
-                fontWeight: 'bold',
-                fontFamily: 'Gbold',
-                ...(providerBrand === it.label && {
-                  bgcolor: addOpacityToColor(theme.palette.primary.main, 0.1),
-                  color: 'primary.main',
-                }),
-                '&:hover': {
-                  color: 'primary.main',
-                },
-              }}
-              onClick={() => {
-                if (data && data.provider === it.label) {
-                  resetCurData(data);
-                } else {
-                  setModelUserList([]);
-                  setError('');
-                  setModelLoading(false);
-                  setSuccess(false);
-                  reset({
-                    provider: it.label as keyof typeof DEFAULT_MODEL_PROVIDERS,
-                    base_url:
-                      it.label === 'AzureOpenAI' ? '' : it.defaultBaseUrl,
-                    model_name: '',
-                    api_version: '',
-                    api_key: '',
-                    api_header_key: '',
-                    api_header_value: '',
-                    show_name: '',
-                    // 重置高级设置
-                    context_window_size: 64000,
-                    max_output_tokens: 8192,
-                    enable_r1_params: false,
-                    support_image: false,
-                    support_compute: false,
-                    support_prompt_caching: false,
-                  });
-                }
-              }}
-            >
-              <Icon type={it.icon} sx={{ fontSize: 18 }} />
-              {it.cn || it.label || '其他'}
+          <Box
+            sx={{
+              flex: 1,
+              overflowY: 'auto',
+              '&::-webkit-scrollbar': {
+                width: '6px',
+              },
+              '&::-webkit-scrollbar-track': {
+                background: 'transparent',
+              },
+              '&::-webkit-scrollbar-thumb': {
+                background: '#d0d0d0',
+                borderRadius: '3px',
+              },
+              '&::-webkit-scrollbar-thumb:hover': {
+                background: '#a0a0a0',
+              },
+            }}
+          >
+            <Stack gap={1}>
+              {Object.values(providers)
+                .filter((it) => {
+                  // 当model_type为chat或llm时显示所有供应商
+                  if (model_type === 'chat' || model_type === 'llm' || model_type === 'code' || model_type === 'coder') {
+                    return true;
+                  }
+                  // 其他情况只显示百智云和其它
+                  return it.label === 'BaiZhiCloud' || it.label === 'Other';
+                })
+                .map((it) => (
+                <Stack
+                  direction={'row'}
+                  alignItems={'center'}
+                  gap={1.5}
+                  key={it.label}
+                  sx={{
+                    cursor: 'pointer',
+                    fontSize: 14,
+                    lineHeight: '24px',
+                    p: 1,
+                    borderRadius: '10px',
+                    fontWeight: 'bold',
+                    fontFamily: 'Gbold',
+                    ...(providerBrand === it.label && {
+                      bgcolor: addOpacityToColor(theme.palette.primary.main, 0.1),
+                      color: 'primary.main',
+                    }),
+                    '&:hover': {
+                      color: 'primary.main',
+                    },
+                  }}
+                  onClick={() => {
+                    if (data && data.provider === it.label) {
+                      resetCurData(data);
+                    } else {
+                      setModelUserList([]);
+                      setError('');
+                      setModelLoading(false);
+                      setSuccess(false);
+                      reset({
+                        provider: it.label as keyof typeof DEFAULT_MODEL_PROVIDERS,
+                        base_url:
+                          it.label === 'AzureOpenAI' ? '' : it.defaultBaseUrl,
+                        model_name: '',
+                        api_version: '',
+                        api_key: '',
+                        api_header_key: '',
+                        api_header_value: '',
+                        show_name: '',
+                        // 重置高级设置
+                        context_window_size: 64000,
+                        max_output_tokens: 8192,
+                        enable_r1_params: false,
+                        support_image: false,
+                        support_compute: false,
+                        support_prompt_caching: false,
+                      });
+                    }
+                  }}
+                >
+                  <Icon type={it.icon} sx={{ fontSize: 18 }} />
+                  {it.cn || it.label || '其他'}
+                </Stack>
+              ))}
             </Stack>
-          ))}
+          </Box>
         </Stack>
-        <Box sx={{ flex: 1 }}>
+        <Box sx={{ 
+          flex: 1, 
+          height: '100%',
+          overflowY: 'auto',
+          '&::-webkit-scrollbar': {
+            width: '6px',
+          },
+          '&::-webkit-scrollbar-track': {
+            background: 'transparent',
+          },
+          '&::-webkit-scrollbar-thumb': {
+            background: '#d0d0d0',
+            borderRadius: '3px',
+          },
+          '&::-webkit-scrollbar-thumb:hover': {
+            background: '#a0a0a0',
+          },
+        }}>
           <Box sx={{ fontSize: 14, lineHeight: '32px' }}>
             API 地址{' '}
             <Box component={'span'} sx={{ color: 'red' }}>

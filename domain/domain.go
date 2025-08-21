@@ -70,11 +70,37 @@ func From(ModelProvider ModelProvider) []ModelListItem {
 	return result
 }
 
-type GithubData struct {
-	ID string `json:"id"`
+// ModelResponseParser 定义模型响应解析器接口
+type ModelResponseParser interface {
+	ParseModels() []ModelListItem
 }
 
-type GithubResp struct {
-	Object string        `json:"object"`
-	Data   []*OpenAIData `json:"data"`
+type GithubModel struct {
+	ID                         string            `json:"id"`
+	Name                       string            `json:"name"`
+	Registry                   string            `json:"registry"`
+	Publisher                  string            `json:"publisher"`
+	Summary                    string            `json:"summary"`
+	RateLimitTier             string            `json:"rate_limit_tier"`
+	HTMLURL                   string            `json:"html_url"`
+	Version                   string            `json:"version"`
+	Capabilities              []string          `json:"capabilities"`
+	Limits                    struct {
+		MaxInputTokens  int `json:"max_input_tokens"`
+		MaxOutputTokens int `json:"max_output_tokens"`
+	} `json:"limits"`
+	Tags                      []string          `json:"tags"`
+	SupportedInputModalities  []string          `json:"supported_input_modalities"`
+	SupportedOutputModalities []string          `json:"supported_output_modalities"`
+}
+
+type GithubResp []GithubModel
+
+// ParseModels 实现ModelResponseParser接口
+func (g *GithubResp) ParseModels() []ModelListItem {
+	var models []ModelListItem
+	for _, item := range *g {
+		models = append(models, ModelListItem{Model: item.ID})
+	}
+	return models
 }
