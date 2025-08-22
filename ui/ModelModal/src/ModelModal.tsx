@@ -376,12 +376,22 @@ export const ModelModal: React.FC<ModelModalProps> = ({
             <Stack gap={1}>
               {Object.values(providers)
                 .filter((it) => {
-                  // 当model_type为chat或llm时显示所有供应商
-                  if (model_type === 'chat' || model_type === 'llm' || model_type === 'code' || model_type === 'coder') {
-                    return true;
+                  // 根据model_type和provider配置决定是否显示
+                  switch (model_type) {
+                    case 'chat':
+                    case 'llm':
+                      return it.chat;
+                    case 'code':
+                    case 'coder':
+                      return it.code;
+                    case 'embedding':
+                      return it.embedding;
+                    case 'rerank':
+                    case 'reranker':
+                      return it.rerank;
+                    default:
+                      return it.label === 'BaiZhiCloud' || it.label === 'Other';
                   }
-                  // 其他情况只显示百智云和其它
-                  return it.label === 'BaiZhiCloud' || it.label === 'Other';
                 })
                 .map((it) => (
                 <Stack
