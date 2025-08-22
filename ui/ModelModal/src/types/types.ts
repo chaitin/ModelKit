@@ -131,10 +131,10 @@ export interface UpdateModelReq {
 
 // 模型服务接口
 export interface ModelService {
-  createModel: (data: CreateModelReq) => Promise<{ model: Model }>;
-  listModel: (data: ListModelReq) => Promise<{ models: ModelListItem[] }>;
+  createModel: (data: CreateModelReq) => Promise<{ model: Model; error?: string }>;
+  listModel: (data: ListModelReq) => Promise<{ models: ModelListItem[]; error?: string }>;
   checkModel: (data: CheckModelReq) => Promise<{ model: Model; error?: string }>;
-  updateModel: (data: UpdateModelReq) => Promise<{ model: Model }>;
+  updateModel: (data: UpdateModelReq) => Promise<{ model: Model; error?: string }>;
 }
 
 export interface ModelListItem {

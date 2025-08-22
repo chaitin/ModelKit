@@ -24,6 +24,7 @@ type Response struct {
 
 type ModelListResp struct {
 	Models []ModelListItem `json:"models"`
+	Error  string          `json:"error"`
 }
 
 type ModelListItem struct {
@@ -76,22 +77,22 @@ type ModelResponseParser interface {
 }
 
 type GithubModel struct {
-	ID                         string            `json:"id"`
-	Name                       string            `json:"name"`
-	Registry                   string            `json:"registry"`
-	Publisher                  string            `json:"publisher"`
-	Summary                    string            `json:"summary"`
-	RateLimitTier             string            `json:"rate_limit_tier"`
-	HTMLURL                   string            `json:"html_url"`
-	Version                   string            `json:"version"`
-	Capabilities              []string          `json:"capabilities"`
-	Limits                    struct {
+	ID            string   `json:"id"`
+	Name          string   `json:"name"`
+	Registry      string   `json:"registry"`
+	Publisher     string   `json:"publisher"`
+	Summary       string   `json:"summary"`
+	RateLimitTier string   `json:"rate_limit_tier"`
+	HTMLURL       string   `json:"html_url"`
+	Version       string   `json:"version"`
+	Capabilities  []string `json:"capabilities"`
+	Limits        struct {
 		MaxInputTokens  int `json:"max_input_tokens"`
 		MaxOutputTokens int `json:"max_output_tokens"`
 	} `json:"limits"`
-	Tags                      []string          `json:"tags"`
-	SupportedInputModalities  []string          `json:"supported_input_modalities"`
-	SupportedOutputModalities []string          `json:"supported_output_modalities"`
+	Tags                      []string `json:"tags"`
+	SupportedInputModalities  []string `json:"supported_input_modalities"`
+	SupportedOutputModalities []string `json:"supported_output_modalities"`
 }
 
 type GithubResp []GithubModel
