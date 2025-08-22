@@ -97,5 +97,8 @@ func main() {
 
 	NewModelKit(echo, nil, false)
 
-	echo.Start(":8080")
+	err := echo.Start(":8080")
+	if err != nil {
+		fmt.Println("err:", err)
+	}
 }

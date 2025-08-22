@@ -53,6 +53,10 @@ export interface ModelProviderConfig {
   urlWrite: boolean;
   secretRequired: boolean;
   customHeader: boolean;
+  chat: boolean;
+  code: boolean;
+  embedding: boolean;
+  rerank: boolean;
   modelDocumentUrl?: string;
   defaultBaseUrl: string;
 }
