@@ -36,14 +36,14 @@ import (
 func reqModelListApi[T domain.ModelResponseParser](req *domain.ModelListReq, httpClient *http.Client, responseType T) ([]domain.ModelListItem, error) {
 	u, err := url.Parse(req.BaseURL)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("解析BaseURL失败: %w", err)
 	}
 	u.Path = path.Join(u.Path, "/models")
 
 	client := request.NewClient(u.Scheme, u.Host, httpClient.Timeout, request.WithClient(httpClient))
 	query, err := utils.GetQuery(req)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("获取查询参数失败: %w", err)
 	}
 	resp, err := request.Get[T](
 		client, u.Path,
@@ -55,7 +55,7 @@ func reqModelListApi[T domain.ModelResponseParser](req *domain.ModelListReq, htt
 		request.WithQuery(query),
 	)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("请求模型列表API失败: %w", err)
 	}
 
 	return (*resp).ParseModels(), nil
@@ -86,7 +86,9 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 		// get from ollama http://10.10.16.24:11434/api/tags
 		u, err := url.Parse(req.BaseURL)
 		if err != nil {
-			return nil, err
+			return &domain.ModelListResp{
+				Error: fmt.Errorf("Ollama解析BaseURL失败: %w", err).Error(),
+			}, nil
 		}
 		u.Path = "/api/tags"
 		client := request.NewClient(u.Scheme, u.Host, httpClient.Timeout, request.WithClient(httpClient))
@@ -101,7 +103,9 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 	case consts.ModelProviderGemini:
 		client, err := generativeGenai.NewClient(ctx, option.WithAPIKey(req.APIKey))
 		if err != nil {
-			return nil, err
+			return &domain.ModelListResp{
+				Error: fmt.Errorf("创建Gemini客户端失败: %w", err).Error(),
+			}, nil
 		}
 		defer func() {
 			if closeErr := client.Close(); closeErr != nil {
@@ -132,7 +136,9 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 		}
 
 		if len(modelsList) == 0 {
-			return nil, fmt.Errorf("failed to get gemini models")
+			return &domain.ModelListResp{
+				Error: fmt.Errorf("获取Gemini模型列表失败: 未找到可用模型").Error(),
+			}, nil
 		}
 
 		return &domain.ModelListResp{
@@ -141,7 +147,9 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 	case consts.ModelProviderGithub:
 		models, err := reqModelListApi(req, httpClient, &domain.GithubResp{})
 		if err != nil {
-			return nil, err
+			return &domain.ModelListResp{
+				Error: fmt.Errorf("获取Github模型列表失败: %w", err).Error(),
+			}, nil
 		}
 		return &domain.ModelListResp{
 			Models: models,
@@ -151,7 +159,9 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 		models, err := reqModelListApi(req, httpClient, &domain.OpenAIResp{})
 
 		if err != nil {
-			return nil, err
+			return &domain.ModelListResp{
+				Error: fmt.Errorf("获取OpenAI兼容模型列表失败: %w", err).Error(),
+			}, nil
 		}
 		return &domain.ModelListResp{
 			Models: models,
@@ -188,19 +198,19 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckMo
 		}
 		body, err := json.Marshal(reqBody)
 		if err != nil {
-			checkResp.Error = fmt.Sprintf("marshal request body failed: %s", err.Error())
+			checkResp.Error = fmt.Sprintf("序列化请求体失败: %s", err.Error())
 			return checkResp, nil
 		}
 		request, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewBuffer(body))
 		if err != nil {
-			checkResp.Error = fmt.Sprintf("new request failed: %s", err.Error())
+			checkResp.Error = fmt.Sprintf("创建HTTP请求失败: %s", err.Error())
 			return checkResp, nil
 		}
 		request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", req.APIKey))
 		request.Header.Set("Content-Type", "application/json")
 		resp, err := http.DefaultClient.Do(request)
 		if err != nil {
-			checkResp.Error = fmt.Sprintf("send request failed: %s", err.Error())
+			checkResp.Error = fmt.Sprintf("发送HTTP请求失败: %s", err.Error())
 			return checkResp, nil
 		}
 		defer func() {
@@ -209,7 +219,7 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckMo
 			}
 		}()
 		if resp.StatusCode != http.StatusOK {
-			checkResp.Error = fmt.Sprintf("request failed: %s", resp.Status)
+			checkResp.Error = fmt.Sprintf("HTTP请求失败: %s", resp.Status)
 			return checkResp, nil
 		}
 		return checkResp, nil
@@ -225,7 +235,7 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckMo
 		ModelType:  modelType,
 	})
 	if err != nil {
-		checkResp.Error = err.Error()
+		checkResp.Error = fmt.Sprintf("获取聊天模型失败: %s", err.Error())
 		return checkResp, nil
 	}
 	resp, err := chatModel.Generate(ctx, []*schema.Message{
@@ -233,12 +243,12 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckMo
 		schema.UserMessage("hi"),
 	})
 	if err != nil {
-		checkResp.Error = err.Error()
+		checkResp.Error = fmt.Sprintf("生成聊天内容失败: %s", err.Error())
 		return checkResp, nil
 	}
 	content := resp.Content
 	if content == "" {
-		checkResp.Error = "generate failed"
+		checkResp.Error = "生成内容失败"
 		return checkResp, nil
 	}
 	checkResp.Content = content
@@ -278,7 +288,7 @@ func GetChatModel(ctx context.Context, model *domain.ModelMetadata) (model.BaseC
 			Temperature: temperature,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("create chat model failed: %w", err)
+			return nil, fmt.Errorf("创建DeepSeek聊天模型失败: %w", err)
 		}
 		return chatModel, nil
 	case consts.ModelProviderGemini:
@@ -286,7 +296,7 @@ func GetChatModel(ctx context.Context, model *domain.ModelMetadata) (model.BaseC
 			APIKey: model.APIKey,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("create genai client failed: %w", err)
+			return nil, fmt.Errorf("创建Genai客户端失败: %w", err)
 		}
 
 		chatModel, err := gemini.NewChatModel(ctx, &gemini.Config{
@@ -298,13 +308,13 @@ func GetChatModel(ctx context.Context, model *domain.ModelMetadata) (model.BaseC
 			},
 		})
 		if err != nil {
-			return nil, fmt.Errorf("create chat model failed: %w", err)
+			return nil, fmt.Errorf("创建Gemini聊天模型失败: %w", err)
 		}
 		return chatModel, nil
 	case consts.ModelProviderOllama:
 		baseUrl, err := utils.URLRemovePath(config.BaseURL)
 		if err != nil {
-			return nil, fmt.Errorf("ollama url parse failed: %w", err)
+			return nil, fmt.Errorf("解析Ollama URL失败: %w", err)
 		}
 
 		chatModel, err := ollama.NewChatModel(ctx, &ollama.ChatModelConfig{
@@ -316,14 +326,14 @@ func GetChatModel(ctx context.Context, model *domain.ModelMetadata) (model.BaseC
 			},
 		})
 		if err != nil {
-			return nil, fmt.Errorf("create chat model failed: %w", err)
+			return nil, fmt.Errorf("创建Ollama聊天模型失败: %w", err)
 		}
 		return chatModel, nil
 	// 兼容 openai api
 	default:
 		chatModel, err := openai.NewChatModel(ctx, config)
 		if err != nil {
-			return nil, fmt.Errorf("create chat model failed: %w", err)
+			return nil, fmt.Errorf("创建OpenAI兼容聊天模型失败: %w", err)
 		}
 		return chatModel, nil
 	}

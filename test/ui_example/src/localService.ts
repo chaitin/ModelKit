@@ -22,6 +22,7 @@ interface ApiResponse<T = any> {
 // 模型列表响应
 interface ModelListResponse {
   models: ModelListItem[];
+  error?: string;
 }
 
 // 模型检查响应
@@ -75,8 +76,7 @@ export class LocalModelService implements ModelService {
     return result;
   }
 
-  async listModel(data: ListModelReq): Promise<{ models: ModelListItem[] }> {
-    try {
+  async listModel(data: ListModelReq): Promise<{ models: ModelListItem[]; error?: string }> {
       const queryParams = new URLSearchParams();
       if (data.provider) queryParams.append('provider', data.provider);
       if (data.model_type) queryParams.append('model_type', data.model_type);
@@ -88,17 +88,12 @@ export class LocalModelService implements ModelService {
       const response = await this.request<ModelListResponse>(url, {
         method: 'GET',
       });
-      return { models: response.models };
-    } catch (error) {
-      console.error('Failed to list models:', error);
-      throw error;
-    }
+      console.log('listModel response:', response);
+      return { models: response.models, error: response.error };
   }
 
   async checkModel(data: CheckModelReq): Promise<{ model: Model; error?: string }> {
-    try {
       const queryParams = new URLSearchParams();
-      console.log('checkModel data:', data);
       if (data.provider) queryParams.append('provider', data.provider);
       if (data.model_name) queryParams.append('model_name', data.model_name);
       if (data.base_url) queryParams.append('base_url', data.base_url);
@@ -106,19 +101,12 @@ export class LocalModelService implements ModelService {
       if (data.api_header) queryParams.append('api_header', data.api_header);
       if (data.model_type) queryParams.append('model_type', data.model_type);
       const url = `/checkmodel${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+      console.log('checkModel url:', url);
       const response = await this.request<CheckModelResponse>(url, {
         method: 'GET',
       });
-      
-      if (response.error) {
-        throw new Error(response.error);
-      }
-      
-      return { model: response.model };
-    } catch (error) {
-      console.error('Failed to list models:', error);
-      throw error;
-    }
+      console.log('checkModel response:', response);
+      return { model: response.model, error: response.error };
   }
 
   async updateModel(data: UpdateModelReq): Promise<{ model: Model }> {

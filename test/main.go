@@ -32,9 +32,10 @@ func NewModelKit(
 func (p *ModelKit) GetModelList(c echo.Context) error {
 	var req domain.ModelListReq
 	if err := c.Bind(&req); err != nil {
-		return c.JSON(http.StatusBadRequest, domain.Response{
+		return c.JSON(http.StatusOK, domain.Response{
 			Success: false,
 			Message: "参数绑定失败: " + err.Error(),
+			Data:    nil,
 		})
 	}
 	fmt.Println("list model req:", req)
@@ -42,9 +43,10 @@ func (p *ModelKit) GetModelList(c echo.Context) error {
 	resp, err := usecase.ModelList(c.Request().Context(), &req)
 	if err != nil {
 		fmt.Println("err:", err)
-		return c.JSON(http.StatusInternalServerError, domain.Response{
-			Success: false,
+		return c.JSON(http.StatusOK, domain.Response{
+			Success: true,
 			Message: err.Error(),
+			Data:    resp,
 		})
 	}
 
@@ -65,13 +67,21 @@ func (p *ModelKit) CheckModel(c echo.Context) error {
 	}
 	fmt.Println("check model req:", req)
 
-	resp, _ := usecase.CheckModel(c.Request().Context(), &req)
+	resp, err := usecase.CheckModel(c.Request().Context(), &req)
+	if err != nil {
+		fmt.Println("err:", err)
+		return c.JSON(http.StatusOK, domain.Response{
+			Success: true,
+			Message: err.Error(),
+			Data:    resp,
+		})
+	}
 
 	// 如果检查过程中有错误，返回错误响应
 	if resp.Error != "" {
 		fmt.Println("resp.Error:", resp.Error)
 		return c.JSON(http.StatusOK, domain.Response{
-			Success: false,
+			Success: true,
 			Message: resp.Error,
 			Data:    resp,
 		})
