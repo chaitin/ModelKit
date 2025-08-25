@@ -159,7 +159,6 @@ export const ModelModal: React.FC<ModelModalProps> = ({
         setModelLoading(false);
       }).
       catch((res) => {
-        messageHandler.error("获取模型失败 " + res.error);
         setModelLoading(false);
       });
   };
@@ -219,7 +218,6 @@ export const ModelModal: React.FC<ModelModalProps> = ({
               setLoading(false);
             })
             .catch((res) => {
-              messageHandler.error("修改模型失败 " + res.error);
               setLoading(false);
             });
         } else {
@@ -254,13 +252,11 @@ export const ModelModal: React.FC<ModelModalProps> = ({
               setLoading(false);
             })
             .catch((res) => {
-              messageHandler.error("添加模型失败 " + res.error);
               setLoading(false);
             });
         }
       })
       .catch((res) => {
-        messageHandler.error("添加模型失败");
         setLoading(false);
       });
   };

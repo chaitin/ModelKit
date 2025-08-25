@@ -198,19 +198,19 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckMo
 		}
 		body, err := json.Marshal(reqBody)
 		if err != nil {
-			checkResp.Error = fmt.Sprintf("序列化请求体失败: %s", err.Error())
+			checkResp.Error = err.Error()
 			return checkResp, nil
 		}
 		request, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewBuffer(body))
 		if err != nil {
-			checkResp.Error = fmt.Sprintf("创建HTTP请求失败: %s", err.Error())
+			checkResp.Error = err.Error()
 			return checkResp, nil
 		}
 		request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", req.APIKey))
 		request.Header.Set("Content-Type", "application/json")
 		resp, err := http.DefaultClient.Do(request)
 		if err != nil {
-			checkResp.Error = fmt.Sprintf("发送HTTP请求失败: %s", err.Error())
+			checkResp.Error = err.Error()
 			return checkResp, nil
 		}
 		defer func() {
@@ -219,7 +219,7 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckMo
 			}
 		}()
 		if resp.StatusCode != http.StatusOK {
-			checkResp.Error = fmt.Sprintf("HTTP请求失败: %s", resp.Status)
+			checkResp.Error = resp.Status
 			return checkResp, nil
 		}
 		return checkResp, nil
@@ -235,7 +235,7 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckMo
 		ModelType:  modelType,
 	})
 	if err != nil {
-		checkResp.Error = fmt.Sprintf("获取聊天模型失败: %s", err.Error())
+		checkResp.Error = err.Error()
 		return checkResp, nil
 	}
 	resp, err := chatModel.Generate(ctx, []*schema.Message{
@@ -243,7 +243,7 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckMo
 		schema.UserMessage("hi"),
 	})
 	if err != nil {
-		checkResp.Error = fmt.Sprintf("生成聊天内容失败: %s", err.Error())
+		checkResp.Error = err.Error()
 		return checkResp, nil
 	}
 	content := resp.Content
