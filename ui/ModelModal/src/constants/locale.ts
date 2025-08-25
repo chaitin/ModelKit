@@ -25,7 +25,7 @@ export const LOCALE_MESSAGES: Record<'zh-CN' | 'en-US', Record<string, string>> 
     'urlRequired': 'URL 不能为空',
     'secretRequired': 'API Secret 不能为空',
     'modelNameRequired': '模型名称不能为空',
-    'modelNameHint': '需要与模型供应商提供的名称完全一致，不要随便填写',
+    'modelNameHint': '需要与模型供应商提供的名称完全一致',
     
     // 成功/错误消息
     'addSuccess': '添加成功',

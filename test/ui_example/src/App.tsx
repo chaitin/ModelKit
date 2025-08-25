@@ -173,6 +173,7 @@ function App() {
           modelService={localModelService}
           language="zh-CN"
           messageComponent={messageComponent}
+          is_close_model_remark={true}
         />
         
 

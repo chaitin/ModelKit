@@ -45,6 +45,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
   modelService,
   language = 'zh-CN',
   messageComponent,
+  is_close_model_remark = false,
 }: ModelModalProps) => {
   const theme = useTheme();
 
@@ -578,7 +579,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                 />
               )}
             />
-            {(modelUserList.length !== 0 || providerBrand === 'Other') && (
+            {(modelUserList.length !== 0 || providerBrand === 'Other') && !is_close_model_remark && (
               <>
                 <Box sx={{ fontSize: 14, lineHeight: '32px', mt: 2 }}>
                   模型备注
@@ -591,7 +592,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                   name='show_name'
                   rules={{
                     required: {
-                      value: true,
+                      value: !is_close_model_remark,
                       message: '模型备注不能为空',
                     },
                   }}
@@ -661,7 +662,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                   )}
                 />
                 <Box sx={{ fontSize: 12, color: 'error.main', mt: 1 }}>
-                  需要与模型供应商提供的名称完全一致，不要随便填写
+                  需要与模型供应商提供的名称完全一致
                 </Box>
               </>
             ) : modelUserList.length === 0 ? (
@@ -751,8 +752,8 @@ export const ModelModal: React.FC<ModelModalProps> = ({
 
               </>
             )}
-            {/* 高级设置部分 - 在选择了模型或者是其它供应商时显示 */}
-            {(modelUserList.length !== 0 || providerBrand === 'Other') && (
+            {/* 高级设置部分 - 在选择了模型或者是其它供应商时显示，但不包括embedding、rerank、reranker类型 */}
+            {(modelUserList.length !== 0 || providerBrand === 'Other') && !['embedding', 'rerank', 'reranker'].includes(model_type) && (
               <Box sx={{ mt: 2 }}>
                 <Accordion
                   sx={{
