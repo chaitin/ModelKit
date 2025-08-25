@@ -36,14 +36,14 @@ import (
 func reqModelListApi[T domain.ModelResponseParser](req *domain.ModelListReq, httpClient *http.Client, responseType T) ([]domain.ModelListItem, error) {
 	u, err := url.Parse(req.BaseURL)
 	if err != nil {
-		return nil, fmt.Errorf("解析BaseURL失败: %w", err)
+		return nil, err
 	}
 	u.Path = path.Join(u.Path, "/models")
 
 	client := request.NewClient(u.Scheme, u.Host, httpClient.Timeout, request.WithClient(httpClient))
 	query, err := utils.GetQuery(req)
 	if err != nil {
-		return nil, fmt.Errorf("获取查询参数失败: %w", err)
+		return nil, err
 	}
 	resp, err := request.Get[T](
 		client, u.Path,
@@ -55,7 +55,7 @@ func reqModelListApi[T domain.ModelResponseParser](req *domain.ModelListReq, htt
 		request.WithQuery(query),
 	)
 	if err != nil {
-		return nil, fmt.Errorf("请求模型列表API失败: %w", err)
+		return nil, err
 	}
 
 	return (*resp).ParseModels(), nil
@@ -87,7 +87,7 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 		u, err := url.Parse(req.BaseURL)
 		if err != nil {
 			return &domain.ModelListResp{
-				Error: fmt.Errorf("Ollama解析BaseURL失败: %w", err).Error(),
+				Error: err.Error(),
 			}, nil
 		}
 		u.Path = "/api/tags"
@@ -104,7 +104,7 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 		client, err := generativeGenai.NewClient(ctx, option.WithAPIKey(req.APIKey))
 		if err != nil {
 			return &domain.ModelListResp{
-				Error: fmt.Errorf("创建Gemini客户端失败: %w", err).Error(),
+				Error: err.Error(),
 			}, nil
 		}
 		defer func() {
@@ -148,7 +148,7 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 		models, err := reqModelListApi(req, httpClient, &domain.GithubResp{})
 		if err != nil {
 			return &domain.ModelListResp{
-				Error: fmt.Errorf("获取Github模型列表失败: %w", err).Error(),
+				Error: err.Error(),
 			}, nil
 		}
 		return &domain.ModelListResp{
@@ -160,7 +160,7 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 
 		if err != nil {
 			return &domain.ModelListResp{
-				Error: fmt.Errorf("获取OpenAI兼容模型列表失败: %w", err).Error(),
+				Error: err.Error(),
 			}, nil
 		}
 		return &domain.ModelListResp{
@@ -288,7 +288,7 @@ func GetChatModel(ctx context.Context, model *domain.ModelMetadata) (model.BaseC
 			Temperature: temperature,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("创建DeepSeek聊天模型失败: %w", err)
+			return nil, err
 		}
 		return chatModel, nil
 	case consts.ModelProviderGemini:
@@ -296,7 +296,7 @@ func GetChatModel(ctx context.Context, model *domain.ModelMetadata) (model.BaseC
 			APIKey: model.APIKey,
 		})
 		if err != nil {
-			return nil, fmt.Errorf("创建Genai客户端失败: %w", err)
+			return nil, err
 		}
 
 		chatModel, err := gemini.NewChatModel(ctx, &gemini.Config{
@@ -308,13 +308,13 @@ func GetChatModel(ctx context.Context, model *domain.ModelMetadata) (model.BaseC
 			},
 		})
 		if err != nil {
-			return nil, fmt.Errorf("创建Gemini聊天模型失败: %w", err)
+			return nil, err
 		}
 		return chatModel, nil
 	case consts.ModelProviderOllama:
 		baseUrl, err := utils.URLRemovePath(config.BaseURL)
 		if err != nil {
-			return nil, fmt.Errorf("解析Ollama URL失败: %w", err)
+			return nil, err
 		}
 
 		chatModel, err := ollama.NewChatModel(ctx, &ollama.ChatModelConfig{
@@ -326,14 +326,14 @@ func GetChatModel(ctx context.Context, model *domain.ModelMetadata) (model.BaseC
 			},
 		})
 		if err != nil {
-			return nil, fmt.Errorf("创建Ollama聊天模型失败: %w", err)
+			return nil, err
 		}
 		return chatModel, nil
 	// 兼容 openai api
 	default:
 		chatModel, err := openai.NewChatModel(ctx, config)
 		if err != nil {
-			return nil, fmt.Errorf("创建OpenAI兼容聊天模型失败: %w", err)
+			return nil, err
 		}
 		return chatModel, nil
 	}

@@ -418,7 +418,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
-    chat: true,
+    chat: false,
     code: true,
     embedding: false,
     rerank: false,
