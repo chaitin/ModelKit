@@ -69,6 +69,7 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 			MaxIdleConnsPerHost: 100,
 			MaxConnsPerHost:     100,
 			IdleConnTimeout:     time.Second * 30,
+			Proxy:               http.ProxyFromEnvironment,
 		},
 	}
 	provider := consts.ParseModelProvider(req.Provider)
@@ -208,7 +209,9 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckMo
 		}
 		request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", req.APIKey))
 		request.Header.Set("Content-Type", "application/json")
-		resp, err := http.DefaultClient.Do(request)
+		client := http.DefaultClient
+		client.Transport = http.DefaultTransport
+		resp, err := client.Do(request)
 		if err != nil {
 			checkResp.Error = err.Error()
 			return checkResp, nil
