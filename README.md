@@ -37,125 +37,6 @@ yarn add @yokowu/modelkit-ui
 
 需要实现以下4个接口，其中 `listModel` 和 `checkModel` 已提供业务逻辑，在handler中调用即可：
 
-#### ListModel 接口
-- **请求参数** (`domain.ModelListReq`):
-  ```go
-  type ModelListReq struct {
-      Provider  string `json:"provider" validate:"required,oneof=SiliconFlow OpenAI Ollama DeepSeek Moonshot AzureOpenAI BaiZhiCloud Hunyuan BaiLian Volcengine Gemini ZhiPu"`
-      BaseURL   string `json:"base_url" validate:"required"`
-      APIKey    string `json:"api_key"`
-      APIHeader string `json:"api_header"`
-      Type      string `json:"type" validate:"required,oneof=chat embedding rerank"`
-  }
-  ```
-- **响应参数** (`domain.ModelListResp`):
-  ```go
-  type ModelListResp struct {
-      Models []ModelListItem `json:"models"`
-  }
-  type ModelListItem struct {
-      Model string `json:"model"`
-  }
-  ```
-
-#### CheckModel 接口
-- **请求参数** (`domain.CheckModelReq`):
-  ```go
-  type CheckModelReq struct {
-      Provider   string `json:"provider" validate:"required,oneof=OpenAI Ollama DeepSeek SiliconFlow Moonshot Other AzureOpenAI BaiZhiCloud Hunyuan BaiLian Volcengine Gemini ZhiPu"`
-      Model      string `json:"model" validate:"required"`
-      BaseURL    string `json:"base_url" validate:"required"`
-      APIKey     string `json:"api_key"`
-      APIHeader  string `json:"api_header"`
-      APIVersion string `json:"api_version"` // for azure openai
-      Type       string `json:"type" validate:"required,oneof=chat embedding rerank"`
-  }
-  ```
-- **响应参数** (`domain.CheckModelResp`):
-  ```go
-  type CheckModelResp struct {
-      Error   string `json:"error"`
-      Content string `json:"content"`
-  }
-  ```
-
-#### CreateModel 接口
-- **请求参数** (`CreateModelReq`):
-  ```go
-  type CreateModelReq struct {
-      APIBase    string        `json:"api_base" validate:"required"`
-      APIHeader  string        `json:"api_header"`
-      APIKey     string        `json:"api_key"`
-      APIVersion string        `json:"api_version"`
-      ModelName  string        `json:"model_name" validate:"required"`
-      ModelType  string        `json:"model_type" validate:"oneof=llm coder embedding audio reranker"`
-      Param      *ModelParam   `json:"param"`
-      Provider   string        `json:"provider" validate:"required,oneof=SiliconFlow OpenAI Ollama DeepSeek Moonshot AzureOpenAI BaiZhiCloud Hunyuan BaiLian Volcengine Other"`
-      ShowName   string        `json:"show_name"`
-  }
-  
-  type ModelParam struct {
-      ContextWindow      int  `json:"context_window"`
-      MaxTokens          int  `json:"max_tokens"`
-      R1Enabled          bool `json:"r1_enabled"`
-      SupportComputerUse bool `json:"support_computer_use"`
-      SupportImages      bool `json:"support_images"`
-      SupportPromptCache bool `json:"support_prompt_cache"`
-  }
-  ```
-- **响应参数** (`CreateModelResp`):
-  ```go
-  type CreateModelResp struct {
-      Model Model `json:"model"`
-  }
-  ```
-
-#### UpdateModel 接口
-- **请求参数** (`UpdateModelReq`):
-  ```go
-  type UpdateModelReq struct {
-      ID         string        `json:"id" validate:"required"`
-      APIBase    string        `json:"api_base"`
-      APIHeader  string        `json:"api_header"`
-      APIKey     string        `json:"api_key"`
-      APIVersion string        `json:"api_version"`
-      ModelName  string        `json:"model_name"`
-      Param      *ModelParam   `json:"param"`
-      Provider   string        `json:"provider" validate:"oneof=SiliconFlow OpenAI Ollama DeepSeek Moonshot AzureOpenAI BaiZhiCloud Hunyuan BaiLian Volcengine Other"`
-      ShowName   string        `json:"show_name"`
-      Status     string        `json:"status" validate:"oneof=active inactive"`
-  }
-  ```
-- **响应参数** (`UpdateModelResp`):
-  ```go
-  type UpdateModelResp struct {
-      Model Model `json:"model"`
-  }
-  ```
-
-#### 通用Model结构
-```go
-type Model struct {
-    ID          string        `json:"id"`
-    APIBase     string        `json:"api_base"`
-    APIHeader   string        `json:"api_header"`
-    APIKey      string        `json:"api_key"`
-    APIVersion  string        `json:"api_version"`
-    CreatedAt   int64         `json:"created_at"`
-    Input       int           `json:"input"`
-    IsActive    bool          `json:"is_active"`
-    IsInternal  bool          `json:"is_internal"`
-    ModelName   string        `json:"model_name"`
-    ModelType   string        `json:"model_type"`
-    Output      int           `json:"output"`
-    Param       *ModelParam   `json:"param"`
-    Provider    string        `json:"provider"`
-    ShowName    string        `json:"show_name"`
-    Status      string        `json:"status"`
-    UpdatedAt   int64         `json:"updated_at"`
-}
-```
-
 ### 3. 后端使用方式
 
 在handler中调用 `listModel` 与 `checkModel` 业务逻辑：
@@ -340,26 +221,17 @@ function App() {
    - 说明更改的目的和影响
    - 关联相关的Issue（如果有）
 
-### 代码规范
-
-- **Go代码**: 遵循 `gofmt` 和 `golint` 标准
-- **TypeScript/React代码**: 遵循 ESLint 和 Prettier 配置
-- **提交信息**: 使用 [Conventional Commits](https://www.conventionalcommits.org/) 格式
-- **测试**: 新功能必须包含相应的单元测试
-
 ### 开发环境设置
 
 1. **后端开发**
    ```bash
    go mod tidy
-   go run main.go
    ```
 
 2. **前端开发**
    ```bash
    cd ui/ModelModal
-   npm install
-   npm run dev
+   pnpm install
    ```
 
 ## 📄 许可证

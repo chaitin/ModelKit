@@ -213,3 +213,7 @@ func ParseModelProvider(s string) ModelProvider {
 		return ModelProviderOther
 	}
 }
+
+
+var ApiKeyBalanceKeyWords = []string{"quota", "billing", "balance", "payment required"}
+

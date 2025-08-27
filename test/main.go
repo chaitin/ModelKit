@@ -38,7 +38,6 @@ func (p *ModelKit) GetModelList(c echo.Context) error {
 			Data:    nil,
 		})
 	}
-	fmt.Println("list model req:", req)
 
 	resp, err := usecase.ModelList(c.Request().Context(), &req)
 	if err != nil {
@@ -65,7 +64,6 @@ func (p *ModelKit) CheckModel(c echo.Context) error {
 			Message: "参数绑定失败: " + err.Error(),
 		})
 	}
-	fmt.Println("check model req:", req)
 
 	resp, err := usecase.CheckModel(c.Request().Context(), &req)
 	if err != nil {
