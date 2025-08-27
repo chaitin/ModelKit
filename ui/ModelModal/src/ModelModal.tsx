@@ -140,7 +140,10 @@ export const ModelModal: React.FC<ModelModalProps> = ({
           // 解析base_url，将host替换为host.docker.internal
           const url = new URL(value.base_url);
           url.hostname = 'host.docker.internal';
-          value.base_url = url.toString();
+          const newBaseUrl = url.toString();
+          // 永久更新表单中的base_url字段
+          setValue('base_url', newBaseUrl);
+          value.base_url = newBaseUrl;
           modelService.listModel({
             model_type,
             api_key: value.api_key,
@@ -175,7 +178,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
               setModelLoading(false);
             });
         } else if (res.error) {
-          messageHandler.error("获取模型失败");
+          messageHandler.error("获取模型失败 " + res.error);
           setModelLoading(false);
         } else {
           setModelUserList(
