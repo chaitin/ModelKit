@@ -356,7 +356,6 @@ func ollamaListModel(baseURL string, httpClient *http.Client, apiHeader string) 
 
 // 通过修复baseURL尝试修复其它供应商check err, 返回用于提示用户如何修复错误
 func tryFixBaseURL(ctx context.Context, req *domain.CheckModelReq, provider consts.ModelProvider, modelType consts.ModelType) (string, error) {
-	log.Println("尝试修复")
 	// 尝试添加v1
 	fixedBaseURL, err := baseURLAddV1(req.BaseURL)
 	// baseurl解析错误，直接返回
@@ -369,13 +368,10 @@ func tryFixBaseURL(ctx context.Context, req *domain.CheckModelReq, provider cons
 		_, err := getChatModelGenerateChat(ctx, provider, modelType, fixedBaseURL, req)
 		// 添加v1有效， 提示用户
 		if err == nil {
-			log.Println("添加v1有效")
 			return "请在API地址末尾添加/v1", nil
 		}
-		log.Println("添加v1无效", err, fixedBaseURL)
 	}
 
-	log.Println("尝试替换host")
 	// url末尾添加v1无效，尝试替换host为host.docker.internal
 	fixedBaseURL, err = baseURLReplaceHost(req.BaseURL)
 	// baseurl解析错误，直接返回
@@ -389,11 +385,9 @@ func tryFixBaseURL(ctx context.Context, req *domain.CheckModelReq, provider cons
 		if err == nil {
 			return "请将host替换为host.docker.internal", nil
 		}
-		log.Println("替换host无效", err, fixedBaseURL)
 	}
 
 	// 替换host也无效，尝试添加v1与替换host
-	log.Println("尝试添加v1与替换host")
 	fixedBaseURL, err = baseURLAddV1(req.BaseURL)
 	// baseurl解析错误，直接返回
 	if err != nil {
@@ -411,7 +405,6 @@ func tryFixBaseURL(ctx context.Context, req *domain.CheckModelReq, provider cons
 		if err == nil {
 			return "API地址末尾添加/v1， host替换为host.docker.internal", nil
 		}
-		log.Println("添加v1与替换host无效", err, fixedBaseURL)
 	}
 	return "", nil
 }

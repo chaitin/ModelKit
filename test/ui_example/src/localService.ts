@@ -88,7 +88,6 @@ export class LocalModelService implements ModelService {
       const response = await this.request<ModelListResponse>(url, {
         method: 'GET',
       });
-      console.log('listModel response:', response);
       return { models: response.models, error: response.error };
   }
 
@@ -101,11 +100,9 @@ export class LocalModelService implements ModelService {
       if (data.api_header) queryParams.append('api_header', data.api_header);
       if (data.model_type) queryParams.append('model_type', data.model_type);
       const url = `/checkmodel${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
-      console.log('checkModel url:', url);
       const response = await this.request<CheckModelResponse>(url, {
         method: 'GET',
       });
-      console.log('checkModel response:', response);
       return { model: response.model, error: response.error };
   }
 
