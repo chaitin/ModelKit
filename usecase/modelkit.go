@@ -31,37 +31,8 @@ import (
 	"github.com/chaitin/ModelKit/utils"
 )
 
-// reqModelListApi 获取OpenAI兼容API的模型列表
-// 使用泛型和接口抽象来支持不同供应商的响应格式
-func reqModelListApi[T domain.ModelResponseParser](req *domain.ModelListReq, httpClient *http.Client, responseType T) ([]domain.ModelListItem, error) {
-	u, err := url.Parse(req.BaseURL)
-	if err != nil {
-		return nil, err
-	}
-	u.Path = path.Join(u.Path, "/models")
-
-	client := request.NewClient(u.Scheme, u.Host, httpClient.Timeout, request.WithClient(httpClient))
-	query, err := utils.GetQuery(req)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := request.Get[T](
-		client, u.Path,
-		request.WithHeader(
-			request.Header{
-				"Authorization": fmt.Sprintf("Bearer %s", req.APIKey),
-			},
-		),
-		request.WithQuery(query),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return (*resp).ParseModels(), nil
-}
-
 func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelListResp, error) {
+	log.Printf("ModelList req: provider=%s, baseURL=%s", req.Provider, req.BaseURL)
 	httpClient := &http.Client{
 		Timeout: time.Second * 30,
 		Transport: &http.Transport{
@@ -84,23 +55,29 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 		}, nil
 	// 以下模型供应商需要特殊处理
 	case consts.ModelProviderOllama:
-		// get from ollama http://10.10.16.24:11434/api/tags
-		u, err := url.Parse(req.BaseURL)
+		resp, err := ollamaListModel(req.BaseURL, httpClient, req.APIHeader)
+		// 尝试通过替换baseURL的host为host.docker.internal解决ollama list err
 		if err != nil {
-			return &domain.ModelListResp{
-				Error: err.Error(),
-			}, nil
+			newBaseURL, err := baseURLReplaceHost(req.BaseURL)
+			if err != nil {
+				return &domain.ModelListResp{
+					Error: err.Error(),
+				}, nil
+			}
+			// 替换host后与原始host相同，无需继续请求
+			if newBaseURL == req.BaseURL {
+				return resp, nil
+			}
+			resp, err = ollamaListModel(newBaseURL, httpClient, req.APIHeader)
+			// 替换后可以成功请求
+			if err == nil {
+				return &domain.ModelListResp{
+					Error: fmt.Errorf("请将host替换为host.docker.internal").Error(),
+				}, nil
+			}
 		}
-		u.Path = "/api/tags"
-		client := request.NewClient(u.Scheme, u.Host, httpClient.Timeout, request.WithClient(httpClient))
-
-		h := request.Header{}
-		if req.APIHeader != "" {
-			headers := request.GetHeaderMap(req.APIHeader)
-			maps.Copy(h, headers)
-		}
-
-		return request.Get[domain.ModelListResp](client, u.Path, request.WithHeader(h))
+		// end
+		return resp, nil
 	case consts.ModelProviderGemini:
 		client, err := generativeGenai.NewClient(ctx, option.WithAPIKey(req.APIKey))
 		if err != nil {
@@ -171,9 +148,11 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 }
 
 func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckModelResp, error) {
+	log.Printf("CheckModel req: provider=%s, model=%s, baseURL=%s", req.Provider, req.Model, req.BaseURL)
 	checkResp := &domain.CheckModelResp{}
 	modelType := consts.ParseModelType(req.Type)
 
+	// embedding 与 rerank 模型检查
 	if modelType == consts.ModelTypeEmbedding || modelType == consts.ModelTypeRerank {
 		url := req.BaseURL
 		reqBody := map[string]any{}
@@ -227,34 +206,45 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckMo
 		}
 		return checkResp, nil
 	}
+	// end
 	provider := consts.ParseModelProvider(req.Provider)
-	chatModel, err := GetChatModel(ctx, &domain.ModelMetadata{
-		Provider:   provider,
-		ModelName:  req.Model,
-		APIKey:     req.APIKey,
-		APIHeader:  req.APIHeader,
-		BaseURL:    req.BaseURL,
-		APIVersion: req.APIVersion,
-		ModelType:  modelType,
-	})
+
+	resp, err := getChatModelGenerateChat(ctx, provider, modelType, req.BaseURL, req)
+	// 其他模型供应商，尝试修复baseURL
+	if err != nil && provider == consts.ModelProviderOther {
+		res, err := fixProviderOtherCheckErr(ctx, req, provider, modelType)
+		if err != nil {
+			checkResp.Error = err.Error()
+			return checkResp, nil
+		}
+		if res != "" {
+			checkResp.Error = res
+			return checkResp, nil
+		}
+	}
+	// end
+	if err != nil && provider != consts.ModelProviderOther {
+		// 检查错误信息中是否包含余额相关关键词
+		errorMsg := strings.ToLower(err.Error())
+		for _, keyword := range consts.ApiKeyBalanceKeyWords {
+			if strings.Contains(errorMsg, keyword) {
+				checkResp.Error = "API Key余额不足"
+				return checkResp, nil
+			}
+		}
+		checkResp.Error = err.Error()
+		return checkResp, nil
+	}
 	if err != nil {
 		checkResp.Error = err.Error()
 		return checkResp, nil
 	}
-	resp, err := chatModel.Generate(ctx, []*schema.Message{
-		schema.SystemMessage("You are a helpful assistant."),
-		schema.UserMessage("hi"),
-	})
-	if err != nil {
-		checkResp.Error = err.Error()
-		return checkResp, nil
-	}
-	content := resp.Content
-	if content == "" {
+
+	if resp.Content == "" {
 		checkResp.Error = "生成内容失败"
 		return checkResp, nil
 	}
-	checkResp.Content = content
+	checkResp.Content = resp.Content
 	return checkResp, nil
 }
 
@@ -340,4 +330,161 @@ func GetChatModel(ctx context.Context, model *domain.ModelMetadata) (model.BaseC
 		}
 		return chatModel, nil
 	}
+}
+
+// 以下是辅助函数，用于处理模型列表和检查相关的功能
+
+func ollamaListModel(baseURL string, httpClient *http.Client, apiHeader string) (*domain.ModelListResp, error) {
+	// get from ollama http://10.10.16.24:11434/api/tags
+	u, err := url.Parse(baseURL)
+	if err != nil {
+		return &domain.ModelListResp{
+			Error: err.Error(),
+		}, nil
+	}
+	u.Path = "/api/tags"
+	client := request.NewClient(u.Scheme, u.Host, httpClient.Timeout, request.WithClient(httpClient))
+
+	h := request.Header{}
+	if apiHeader != "" {
+		headers := request.GetHeaderMap(apiHeader)
+		maps.Copy(h, headers)
+	}
+	return request.Get[domain.ModelListResp](client, u.Path, request.WithHeader(h))
+}
+
+// 通过修复baseURL尝试修复其它供应商check err, 返回用于提示用户如何修复错误
+func fixProviderOtherCheckErr(ctx context.Context, req *domain.CheckModelReq, provider consts.ModelProvider, modelType consts.ModelType) (string, error) {
+	log.Println("尝试修复")
+	// 尝试添加v1
+	fixedBaseURL, err := baseURLAddV1(req.BaseURL)
+	// baseurl解析错误，直接返回
+	if err != nil {
+		log.Printf("baseurl解析错误: %v", err)
+		return "", err
+	}
+
+	// baseurl被修改，重新请求
+	if fixedBaseURL != req.BaseURL {
+		_, err := getChatModelGenerateChat(ctx, provider, modelType, fixedBaseURL, req)
+		// 添加v1有效， 提示用户
+		if err == nil {
+			log.Println("添加v1有效")
+			return "请在API地址末尾添加/v1", nil
+		}
+		log.Println("添加v1无效", err)
+	}
+
+	// url末尾添加v1无效，尝试替换host为host.docker.internal
+	fixedBaseURL, err = baseURLReplaceHost(req.BaseURL)
+	// baseurl解析错误，直接返回
+	if err != nil {
+		return "", err
+	}
+
+	if fixedBaseURL != req.BaseURL {
+		_, err := getChatModelGenerateChat(ctx, provider, modelType, fixedBaseURL, req)
+		// 替换host有效， 提示用户
+		if err == nil {
+			return "请将host替换为host.docker.internal", nil
+		}
+	}
+
+	// 替换host也无效，尝试添加v1与替换host
+	fixedBaseURL, err = baseURLAddV1(req.BaseURL)
+	// baseurl解析错误，直接返回
+	if err != nil {
+		return "", err
+	}
+	fixedBaseURL, err = baseURLReplaceHost(fixedBaseURL)
+	// baseurl解析错误，直接返回
+	if err != nil {
+		return "", err
+	}
+	// baseurl被修改，重新请求
+	if fixedBaseURL != req.BaseURL {
+		_, err := getChatModelGenerateChat(ctx, provider, modelType, fixedBaseURL, req)
+		// 添加v1与替换host有效， 提示用户
+		if err == nil {
+			return "API地址末尾添加/v1， host替换为host.docker.internal", nil
+		}
+	}
+	return "", nil
+}
+
+func getChatModelGenerateChat(ctx context.Context, provider consts.ModelProvider, modelType consts.ModelType, baseURL string, req *domain.CheckModelReq) (*schema.Message, error) {
+	chatModel, err := GetChatModel(ctx, &domain.ModelMetadata{
+		Provider:   provider,
+		ModelName:  req.Model,
+		APIKey:     req.APIKey,
+		APIHeader:  req.APIHeader,
+		BaseURL:    baseURL,
+		APIVersion: req.APIVersion,
+		ModelType:  modelType,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	return chatModel.Generate(ctx, []*schema.Message{
+		schema.SystemMessage("You are a helpful assistant."),
+		schema.UserMessage("hi"),
+	})
+}
+
+// baseURL添加/v1
+func baseURLAddV1(inputURL string) (string, error) {
+	rawURL, err := url.Parse(inputURL)
+	if err != nil {
+		return "", err
+	}
+	// 没有path, 则添加/v1
+	if rawURL.Path == "" {
+		rawURL.Path = "/v1"
+	}
+	return rawURL.String(), nil
+}
+
+// baseURL的host换成host.docker.internal
+func baseURLReplaceHost(inputURL string) (string, error) {
+	rawURL, err := url.Parse(inputURL)
+	if err != nil {
+		return "", err
+	}
+	hostAddress := "host.docker.internal"
+
+	if rawURL.Host != hostAddress {
+		rawURL.Host = hostAddress
+	}
+	return rawURL.String(), nil
+}
+
+// reqModelListApi 获取OpenAI兼容API的模型列表
+// 使用泛型和接口抽象来支持不同供应商的响应格式
+func reqModelListApi[T domain.ModelResponseParser](req *domain.ModelListReq, httpClient *http.Client, responseType T) ([]domain.ModelListItem, error) {
+	u, err := url.Parse(req.BaseURL)
+	if err != nil {
+		return nil, err
+	}
+	u.Path = path.Join(u.Path, "/models")
+
+	client := request.NewClient(u.Scheme, u.Host, httpClient.Timeout, request.WithClient(httpClient))
+	query, err := utils.GetQuery(req)
+	if err != nil {
+		return nil, err
+	}
+	resp, err := request.Get[T](
+		client, u.Path,
+		request.WithHeader(
+			request.Header{
+				"Authorization": fmt.Sprintf("Bearer %s", req.APIKey),
+			},
+		),
+		request.WithQuery(query),
+	)
+	if err != nil {
+		return nil, err
+	}
+
+	return (*resp).ParseModels(), nil
 }

@@ -135,8 +135,47 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       api_header: value.api_header || header,
     })
       .then((res) => {
-        if (res.error) {
-          messageHandler.error("获取模型失败 " + res.error);
+        // 替换host即可成功请求的情况， 替换host继续请求
+        if (res.error && res.error.includes("请将host替换为host.docker.internal")) {
+          // 解析base_url，将host替换为host.docker.internal
+          const url = new URL(value.base_url);
+          url.hostname = 'host.docker.internal';
+          value.base_url = url.toString();
+          modelService.listModel({
+            model_type,
+            api_key: value.api_key,
+            base_url: value.base_url,
+            provider: value.provider as Exclude<typeof value.provider, 'Other'>,
+            api_header: value.api_header || header,
+          }).then((res) => {
+            if (res.error) {
+              messageHandler.error("获取模型失败");
+              setModelLoading(false);
+            } else {
+              setModelUserList(
+                (res.models || [])
+                  .filter((item): item is { model: string } => !!item.model)
+                  .sort((a, b) => a.model!.localeCompare(b.model!))
+              );
+              if (
+                data &&
+                (res.models || []).find((it) => it.model === data.model_name)
+              ) {
+                setValue('model_name', data.model_name!);
+              } else {
+                setValue('model_name', res.models?.[0]?.model || '');
+              }
+              setSuccess(true);
+            }
+          }).
+            finally(() => {
+              setModelLoading(false);
+            }).
+            catch((res) => {
+              setModelLoading(false);
+            });
+        } else if (res.error) {
+          messageHandler.error("获取模型失败");
           setModelLoading(false);
         } else {
           setModelUserList(
@@ -181,10 +220,28 @@ export const ModelModal: React.FC<ModelModalProps> = ({
     }
     )
       .then((res) => {
-        if (res.error) {
+        // 错误处理
+        if (res.error && res.error.includes("API地址末尾添加/v1， host替换为host.docker.internal")){
+          // 解析base_url，将host替换为host.docker.internal
+          const url = new URL(value.base_url);
+          url.hostname = 'host.docker.internal';
+          value.base_url = url.toString();
+          value.base_url = value.base_url + '/v1';
+        } else if (res.error && res.error.includes("请在API地址末尾添加/v1")) {
+          value.base_url = value.base_url + '/v1';
+        } else if (res.error && res.error.includes("请将host替换为host.docker.internal")) {
+          // 解析base_url，将host替换为host.docker.internal
+          const url = new URL(value.base_url);
+          url.hostname = 'host.docker.internal';
+          value.base_url = url.toString();
+        } else if (res.error) {
           messageHandler.error("模型检查失败 " + res.error);
           setLoading(false);
-        } else if (data) {
+          return;
+        }
+        // end
+
+        if (data) {
           modelService.updateModel({
             api_key: value.api_key,
             model_type,
@@ -207,7 +264,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
           })
             .then((res) => {
               if (res.error) {
-                messageHandler.error("修改模型失败 " + res.error);
+                messageHandler.error("修改模型失败");
                 setLoading(false);
               } else {
                 messageHandler.success('修改成功');
@@ -218,6 +275,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
               setLoading(false);
             })
             .catch((res) => {
+              messageHandler.error("修改模型失败");
               setLoading(false);
             });
         } else {
@@ -241,7 +299,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
           })
             .then((res) => {
               if (res.error) {
-                messageHandler.error("添加模型失败 " + res.error);
+                messageHandler.error("添加模型失败");
                 setLoading(false);
               } else {
                 messageHandler.success('添加成功');
@@ -252,11 +310,13 @@ export const ModelModal: React.FC<ModelModalProps> = ({
               setLoading(false);
             })
             .catch((res) => {
+              messageHandler.error("添加模型失败");
               setLoading(false);
             });
         }
       })
       .catch((res) => {
+        messageHandler.error("检查模型失败");
         setLoading(false);
       });
   };
@@ -514,6 +574,11 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                 />
               )}
             />
+            {providerBrand === 'Other' && (
+              <Box sx={{ fontSize: 12, color: 'error.main', mt: 1 }}>
+                模型供应商必须支持与 OpenAI 兼容的 API 格式
+              </Box>
+            )}
             <Stack
               direction={'row'}
               alignItems={'center'}
@@ -521,7 +586,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
               sx={{ fontSize: 14, lineHeight: '32px', mt: 2 }}
             >
               <Box>
-                API Secret
+                API Key
                 {providers[providerBrand].secretRequired && (
                   <Box component={'span'} sx={{ color: 'red' }}>
                     {' '}
@@ -545,7 +610,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                     )
                   }
                 >
-                  查看文档
+                  获取API Key
                 </Box>
               )}
             </Stack>
@@ -555,7 +620,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
               rules={{
                 required: {
                   value: providers[providerBrand].secretRequired,
-                  message: 'API Secret 不能为空',
+                  message: 'API Key 不能为空',
                 },
               }}
               render={({ field }) => (

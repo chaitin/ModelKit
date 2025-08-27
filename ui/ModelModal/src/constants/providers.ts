@@ -27,7 +27,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: true,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://docs.bigmodel.cn/',
+    modelDocumentUrl: 'https://open.bigmodel.cn/usercenter/apikeys',
     defaultBaseUrl: 'https://open.bigmodel.cn/api/paas/v4',
   },
   DeepSeek: {
@@ -41,7 +41,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: true,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://platform.deepseek.com/api-docs/',
+    modelDocumentUrl: 'https://platform.deepseek.com/api_keys',
     defaultBaseUrl: 'https://api.deepseek.com/v1',
   },
   Hunyuan: {
@@ -55,7 +55,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: true,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://cloud.tencent.com/document/product/1729/111007',
+    modelDocumentUrl: 'https://console.cloud.tencent.com/hunyuan/api-key',
     defaultBaseUrl: 'https://api.hunyuan.cloud.tencent.com/v1',
   },
   BaiLian: {
@@ -69,7 +69,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: true,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://help.aliyun.com/zh/model-studio/getting-started/',
+    modelDocumentUrl: 'https://bailian.console.aliyun.com/?tab=model#/api-key',
     defaultBaseUrl: 'https://dashscope.aliyuncs.com/compatible-mode/v1',
   },
   Volcengine: {
@@ -83,7 +83,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: true,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://www.volcengine.com/docs/82379/1182403',
+    modelDocumentUrl: 'https://console.volcengine.com/ark/region:ark+cn-beijing/apiKey',
     defaultBaseUrl: 'https://ark.cn-beijing.volces.com/api/v3',
   },
   OpenAI: {
@@ -97,7 +97,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: true,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://platform.openai.com/docs',
+    modelDocumentUrl: 'https://platform.openai.com/api-keys',
     defaultBaseUrl: 'https://api.openai.com/v1',
   },
   Ollama: {
@@ -125,7 +125,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: true,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://docs.siliconflow.cn/',
+    modelDocumentUrl: 'https://cloud.siliconflow.cn/me/account/ak',
     defaultBaseUrl: 'https://api.siliconflow.cn/v1',
   },
   Moonshot: {
@@ -139,7 +139,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: true,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://platform.moonshot.cn/docs/',
+    modelDocumentUrl: 'https://platform.moonshot.cn/console/api-keys',
     defaultBaseUrl: 'https://api.moonshot.cn/v1',
   },
   AzureOpenAI: {
@@ -153,7 +153,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: true,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://learn.microsoft.com/en-us/azure/ai-services/openai/',
+    modelDocumentUrl: 'https://portal.azure.com/#view/Microsoft_Azure_ProjectOxford/CognitiveServicesHub/~/OpenAI',
     defaultBaseUrl: 'https://<resource_name>.openai.azure.com',
   },
   Gemini: {
@@ -167,7 +167,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: true,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://ai.google.dev/gemini-api/docs',
+    modelDocumentUrl: 'https://aistudio.google.com/app/apikey',
     defaultBaseUrl: 'https://generativelanguage.googleapis.com',
   },
   Qiniu: {
@@ -181,7 +181,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: false,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://developer.qiniu.com/aitokenapi',
+    modelDocumentUrl: 'https://portal.qiniu.com/ai-inference/api-key',
     defaultBaseUrl: 'https://api.qnaigc.com/v1',
   },
   // NewAPI: {
@@ -235,7 +235,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: false,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://platform.lingyiwanwu.com/docs',
+    modelDocumentUrl: 'https://platform.lingyiwanwu.com/apikeys',
     defaultBaseUrl: 'https://api.lingyiwanwu.com/v1',
   },
   // Baichuan: {
@@ -310,7 +310,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: false,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://www.ctyun.cn/products/ctxirang',
+    modelDocumentUrl: 'https://huiju.ctyun.cn/service/serviceGroup',
     defaultBaseUrl: 'https://wishub-x1.ctyun.cn/v1',
   },
   TencentTI: {
@@ -324,7 +324,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: false,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://cloud.tencent.com/document/product/1772',
+    modelDocumentUrl: 'https://console.cloud.tencent.com/lkeap/api',
     defaultBaseUrl: 'https://api.lkeap.cloud.tencent.com/v1',
   },
   BaiDuQianFan: {
@@ -338,7 +338,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: false,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://cloud.baidu.com/doc/index.html',
+    modelDocumentUrl: 'https://console.bce.baidu.com/iam/#/iam/apikey/list',
     defaultBaseUrl: 'https://qianfan.baidubce.com/v2',
   },
   ModelScope: {
@@ -352,7 +352,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: false,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://modelscope.cn/docs/model-service/API-Inference/intro',
+    modelDocumentUrl: 'https://modelscope.cn/my/myaccesstoken',
     defaultBaseUrl: 'https://api-inference.modelscope.cn/v1',
   },
   Infini: {
@@ -366,7 +366,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: true,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://docs.infini-ai.com/gen-studio/api/maas.html#/operations/chatCompletions',
+    modelDocumentUrl: 'https://cloud.infini-ai.com/iam/secret/key',
     defaultBaseUrl: 'https://cloud.infini-ai.com/maas/v1',
   },
   StepFun: {
@@ -380,7 +380,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: false,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://platform.stepfun.com/docs/overview/concept',
+    modelDocumentUrl: 'https://platform.stepfun.com/interface-key',
     defaultBaseUrl: 'https://api.stepfun.com/v1',
   },
   LanYun: {
@@ -394,7 +394,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: false,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://archive.lanyun.net/#/maas/',
+    modelDocumentUrl: 'https://maas.lanyun.net/#/system/apiKey',
     defaultBaseUrl: 'https://maas-api.lanyun.net/v1',
   },
   AlayaNew: {
@@ -408,7 +408,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: false,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://docs.alayanew.com/docs/modelService/interview?utm_source=cherrystudio',
+    modelDocumentUrl: ' https://www.alayanew.com/backend/register',
     defaultBaseUrl: 'https://deepseek.alayanew.com/v1',
   },
   PPIO: {
@@ -422,7 +422,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: true,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://docs.cherry-ai.com/pre-basic/providers/ppio?invited_by=JYT9GD&utm_source=github_cherry-studio',
+    modelDocumentUrl: 'https://ppio.com/settings/key-management',
     defaultBaseUrl: 'https://api.ppinfra.com/v3/openai',
   },
   AiHubMix: {
@@ -436,7 +436,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: false,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://doc.aihubmix.com/',
+    modelDocumentUrl: 'https://aihubmix.com',
     defaultBaseUrl: 'https://aihubmix.com/v1',
   },
   OcoolAI: {
@@ -450,7 +450,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: true,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://docs.ocoolai.com/',
+    modelDocumentUrl: 'https://one.ocoolai.com/token',
     defaultBaseUrl: 'https://api.ocoolai.com/v1',
   },
   DMXAPI: {
@@ -464,7 +464,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: false,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://dmxapi.cn/models.html#code-block',
+    modelDocumentUrl: 'https://www.dmxapi.cn/register',
     defaultBaseUrl: 'https://www.dmxapi.cn/v1',
   },
   BurnCloud: {
@@ -478,7 +478,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: false,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://ai.burncloud.com/docs',
+    modelDocumentUrl: 'https://ai.burncloud.com/console/token',
     defaultBaseUrl: 'https://ai.burncloud.com/v1',
   },
   // Grok: {
@@ -502,7 +502,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: false,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://docs.api.nvidia.com/nim/reference/llm-apis',
+    modelDocumentUrl: 'https://build.nvidia.com/?integrate_nim=true&hosted_api=true&modal=integrate-nim',
     defaultBaseUrl: 'https://integrate.api.nvidia.com/v1',
   },
   TokenFlux: {
@@ -530,7 +530,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: true,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://302ai.apifox.cn/api-147522039',
+    modelDocumentUrl: 'https://dash.302.ai/apis/list',
     defaultBaseUrl: 'https://api.302.ai/v1',
   },
   Cephalon: {
@@ -544,7 +544,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: false,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://cephalon.cloud/apitoken/1864244127731589124',
+    modelDocumentUrl: 'https://cephalon.cloud/api',
     defaultBaseUrl: 'https://cephalon.cloud/user-center/v1/model',
   },
   OpenRouter: {
@@ -558,7 +558,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: false,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://openrouter.ai/docs/quick-start',
+    modelDocumentUrl: 'https://openrouter.ai/settings/keys',
     defaultBaseUrl: 'https://openrouter.ai/api/v1',
   },
   Fireworks: {
@@ -572,7 +572,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: true,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://docs.fireworks.ai/getting-started/introduction',
+    modelDocumentUrl: 'https://app.fireworks.ai/settings/users/api-keys',
     defaultBaseUrl: 'https://api.fireworks.ai/inference/v1',
   },
   Mistral: {
@@ -586,7 +586,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: false,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://docs.mistral.ai',
+    modelDocumentUrl: 'https://console.mistral.ai/api-keys/',
     defaultBaseUrl: 'https://api.mistral.ai/v1',
   },
   Perplexity: {
@@ -600,7 +600,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: false,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://docs.perplexity.ai/home',
+    modelDocumentUrl: 'https://www.perplexity.ai/settings/api',
     defaultBaseUrl: 'https://api.perplexity.ai',
   },
   Hyperbolic: {
@@ -614,7 +614,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: false,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://docs.hyperbolic.xyz',
+    modelDocumentUrl: 'https://app.hyperbolic.xyz/settings',
     defaultBaseUrl: 'https://api.hyperbolic.xyz/v1',
   },
   // VoyageAI: {
@@ -642,7 +642,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     cn: '其他',
     icon: 'icon-a-AIshezhi',
     urlWrite: true,
-    secretRequired: true,
+    secretRequired: false,
     customHeader: false,
     chat: true,
     code: true,
