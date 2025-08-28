@@ -5,7 +5,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   BaiZhiCloud: {
     label: 'BaiZhiCloud',
     cn: '百智云',
-    icon: 'icon-baizhiyunlogo',
+    icon: 'ikun-baizhiyunlogo',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -19,7 +19,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   ZhiPu: {
     label: 'ZhiPu',
     cn: '智谱',
-    icon: 'icon-zhipuqingyan', // 需要添加对应的图标
+    icon: 'ikun-zhipuqingyan', // 需要添加对应的图标
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -33,7 +33,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   DeepSeek: {
     label: 'DeepSeek',
     cn: 'DeepSeek',
-    icon: 'icon-deepseek',
+    icon: 'ikun-deepseek',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -47,7 +47,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   Hunyuan: {
     label: 'Hunyuan',
     cn: '腾讯混元',
-    icon: 'icon-tengxunhunyuan',
+    icon: 'ikun-tengxunhunyuan',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -61,7 +61,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   BaiLian: {
     label: 'BaiLian',
     cn: '阿里云百炼',
-    icon: 'icon-aliyunbailian',
+    icon: 'ikun-aliyunbailian',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -75,7 +75,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   Volcengine: {
     label: 'Volcengine',
     cn: '火山引擎',
-    icon: 'icon-huoshanyinqing',
+    icon: 'ikun-huoshanyinqing',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -89,7 +89,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   OpenAI: {
     label: 'OpenAI',
     cn: 'OpenAI',
-    icon: 'icon-chatgpt',
+    icon: 'ikun-chatgpt',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -103,7 +103,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   Ollama: {
     label: 'Ollama',
     cn: 'Ollama',
-    icon: 'icon-ollama',
+    icon: 'ikun-ollama',
     urlWrite: true,
     secretRequired: false,
     customHeader: true,
@@ -117,7 +117,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   SiliconFlow: {
     label: 'SiliconFlow',
     cn: '硅基流动',
-    icon: 'icon-siliconflow1',
+    icon: 'ikun-siliconflow1',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -131,7 +131,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   Moonshot: {
     label: 'Moonshot',
     cn: '月之暗面',
-    icon: 'icon-Kim',
+    icon: 'ikun-Kim',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -145,7 +145,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   AzureOpenAI: {
     label: 'AzureOpenAI',
     cn: 'Azure OpenAI',
-    icon: 'icon-azure',
+    icon: 'ikun-azure',
     urlWrite: true,
     secretRequired: true,
     customHeader: false,
@@ -159,7 +159,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   Gemini: {
     label: 'Gemini',
     cn: 'Gemini',
-    icon: 'icon-gemini',
+    icon: 'ikun-gemini',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -173,7 +173,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   Qiniu: {
     label: 'Qiniu',
     cn: '七牛云',
-    icon: 'icon-qiniuyun',
+    icon: 'ikun-qiniuyun',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -187,7 +187,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   // NewAPI: {
   //   label: 'NewAPI',
   //   cn: 'New API',
-  //   icon: 'icon-newapi',
+  //   icon: 'ikun-newapi',
   //   urlWrite: true,
   //   secretRequired: true,
   //   customHeader: false,
@@ -197,7 +197,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   // LMStudio: {
   //   label: 'LMStudio',
   //   cn: 'LM Studio',
-  //   icon: 'icon-lmstudio',
+  //   icon: 'ikun-lmstudio',
   //   urlWrite: true,
   //   secretRequired: false,
   //   customHeader: false,
@@ -207,7 +207,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   // Anthropic: {
   //   label: 'Anthropic',
   //   cn: 'Anthropic',
-  //   icon: 'icon-anthropic',
+  //   icon: 'ikun-anthropic',
   //   urlWrite: false,
   //   secretRequired: true,
   //   customHeader: false,
@@ -217,7 +217,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   // GitHub: {
   //   label: 'GitHub',
   //   cn: 'GitHub Models',
-  //   icon: 'icon-github',
+  //   icon: 'ikun-github',
   //   urlWrite: false,
   //   secretRequired: true,
   //   customHeader: false,
@@ -227,7 +227,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   Yi: {
     label: 'Yi',
     cn: '零一万物',
-    icon: 'icon-lingyiwanwu',
+    icon: 'ikun-lingyiwanwu',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -241,7 +241,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   // Baichuan: {
   //   label: 'Baichuan',
   //   cn: '百川智能',
-  //   icon: 'icon-baichuan',
+  //   icon: 'ikun-baichuan',
   //   urlWrite: false,
   //   secretRequired: true,
   //   customHeader: false,
@@ -251,7 +251,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   // Ph8: {
   //   label: 'Ph8',
   //   cn: 'PH8大模型开放平台',
-  //   icon: 'icon-ph8',
+  //   icon: 'ikun-ph8',
   //   urlWrite: false,
   //   secretRequired: true,
   //   customHeader: false,
@@ -261,7 +261,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   // MiniMax: {
   //   label: 'MiniMax',
   //   cn: 'MiniMax',
-  //   icon: 'icon-minimax',
+  //   icon: 'ikun-minimax',
   //   urlWrite: false,
   //   secretRequired: true,
   //   customHeader: false,
@@ -271,7 +271,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   // Groq: {
   //   label: 'Groq',
   //   cn: 'Groq',
-  //   icon: 'icon-groq',
+  //   icon: 'ikun-groq',
   //   urlWrite: false,
   //   secretRequired: true,
   //   customHeader: false,
@@ -281,7 +281,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   // Together: {
   //   label: 'Together',
   //   cn: 'Together',
-  //   icon: 'icon-together',
+  //   icon: 'ikun-together',
   //   urlWrite: false,
   //   secretRequired: true,
   //   customHeader: false,
@@ -291,7 +291,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   // Jina: {
   //   label: 'Jina',
   //   cn: 'Jina',
-  //   icon: 'icon-hyperbolic',
+  //   icon: 'ikun-hyperbolic',
   //   urlWrite: false,
   //   secretRequired: true,
   //   customHeader: false,
@@ -302,7 +302,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   CTYun: {
     label: 'CTYun',
     cn: '天翼云息壤',
-    icon: 'icon-tianyiyun',
+    icon: 'ikun-tianyiyun',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -316,7 +316,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   TencentTI: {
     label: 'TencentTI',
     cn: '腾讯云TI',
-    icon: 'icon-tengxunyun',
+    icon: 'ikun-tengxunyun',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -330,7 +330,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   BaiDuQianFan: {
     label: 'BaiDuQianFan',
     cn: '百度云千帆',
-    icon: 'icon-baiduyun',
+    icon: 'ikun-baiduyun',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -344,7 +344,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   ModelScope: {
     label: 'ModelScope',
     cn: '魔搭社区',
-    icon: 'icon-modaGPT',
+    icon: 'ikun-modaGPT',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -358,7 +358,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   Infini: {
     label: 'Infini',
     cn: '无问芯穹',
-    icon: 'icon-infini',
+    icon: 'ikun-infini',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -372,7 +372,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   StepFun: {
     label: 'StepFun',
     cn: '阶跃星辰',
-    icon: 'icon-step',
+    icon: 'ikun-step',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -386,7 +386,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   LanYun: {
     label: 'LanYun',
     cn: '蓝耘科技',
-    icon: 'icon-lanyun',
+    icon: 'ikun-lanyun',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -400,7 +400,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   AlayaNew: {
     label: 'AlayaNew',
     cn: '九章智算云',
-    icon: 'icon-alayanew',
+    icon: 'ikun-alayanew',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -414,7 +414,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   PPIO: {
     label: 'PPIO',
     cn: '欧派云',
-    icon: 'icon-ppio',
+    icon: 'ikun-ppio',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -428,7 +428,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   AiHubMix: {
     label: 'AiHubMix',
     cn: 'AiHubMix',
-    icon: 'icon-aihubmix',
+    icon: 'ikun-aihubmix',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -442,7 +442,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   OcoolAI: {
     label: 'OcoolAI',
     cn: 'OcoolAI',
-    icon: 'icon-ocoolai',
+    icon: 'ikun-ocoolai',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -456,7 +456,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   DMXAPI: {
     label: 'DMXAPI',
     cn: 'DMXAPI',
-    icon: 'icon-DMXAPI',
+    icon: 'ikun-DMXAPI',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -470,7 +470,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   BurnCloud: {
     label: 'BurnCloud',
     cn: 'BurnCloud',
-    icon: 'icon-burncloud',
+    icon: 'ikun-burncloud',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -484,7 +484,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   // Grok: {
   //   label: 'Grok',
   //   cn: 'Grok',
-  //   icon: 'icon-grok',
+  //   icon: 'ikun-grok',
   //   urlWrite: false,
   //   secretRequired: true,
   //   customHeader: false,
@@ -494,7 +494,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   Nvidia: {
     label: 'Nvidia',
     cn: '英伟达',
-    icon: 'icon-yingweida',
+    icon: 'ikun-yingweida',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -508,7 +508,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   TokenFlux: {
     label: 'TokenFlux',
     cn: 'TokenFlux',
-    icon: 'icon-tokenflux',
+    icon: 'ikun-tokenflux',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -522,7 +522,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   AI302: {
     label: 'AI302',
     cn: '302.AI',
-    icon: 'icon-a-302ai',
+    icon: 'ikun-a-302ai',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -536,7 +536,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   Cephalon: {
     label: 'Cephalon',
     cn: 'Cephalon',
-    icon: 'icon-cephalon',
+    icon: 'ikun-cephalon',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -550,7 +550,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   OpenRouter: {
     label: 'OpenRouter',
     cn: 'OpenRouter',
-    icon: 'icon-openrouter',
+    icon: 'ikun-openrouter',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -564,7 +564,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   Fireworks: {
     label: 'Fireworks',
     cn: 'Fireworks',
-    icon: 'icon-fireworks',
+    icon: 'ikun-fireworks',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -578,7 +578,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   Mistral: {
     label: 'Mistral',
     cn: 'Mistral',
-    icon: 'icon-Mistral',
+    icon: 'ikun-Mistral',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -592,7 +592,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   Perplexity: {
     label: 'Perplexity',
     cn: 'Perplexity',
-    icon: 'icon-perplexity',
+    icon: 'ikun-perplexity',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -606,7 +606,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   Hyperbolic: {
     label: 'Hyperbolic',
     cn: 'Hyperbolic',
-    icon: 'icon-hyperbolic',
+    icon: 'ikun-hyperbolic',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -620,7 +620,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   // VoyageAI: {
   //   label: 'VoyageAI',
   //   cn: 'Voyage AI',
-  //   icon: 'icon-voyageai',
+  //   icon: 'ikun-voyageai',
   //   urlWrite: false,
   //   secretRequired: true,
   //   customHeader: false,
@@ -630,7 +630,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   // Poe: {
   //   label: 'Poe',
   //   cn: 'Poe',
-  //   icon: 'icon-poe',
+  //   icon: 'ikun-poe',
   //   urlWrite: false,
   //   secretRequired: true,
   //   customHeader: false,
@@ -640,7 +640,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   Other: {
     label: 'Other',
     cn: '其他',
-    icon: 'icon-a-AIshezhi',
+    icon: 'ikun-a-AIshezhi',
     urlWrite: true,
     secretRequired: false,
     customHeader: false,
