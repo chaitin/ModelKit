@@ -507,6 +507,11 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                   value: true,
                   message: 'URL 不能为空',
                 },
+                validate: (value) => {
+                  if (!value) return true; // 空值由required规则处理
+                  const hasScheme = /^https?:\/\//i.test(value);
+                  return hasScheme || 'API地址必须包含协议（http://或https://）';
+                },
               }}
               render={({ field }) => (
                 <TextField
@@ -682,7 +687,6 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                 </Box>
               </>
             ) : modelUserList.length === 0 ? (
-              <>
                 <Button
                   fullWidth
                   variant='outlined'
@@ -699,12 +703,6 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                 >
                   获取模型列表
                 </Button>
-                {addModelError && (
-                  <Box sx={{ fontSize: 12, color: 'error.main', mt: 1 }}>
-                    {addModelError}
-                  </Box>
-                )}
-              </>
             ) : (
               <>
                 <Box sx={{ fontSize: 14, lineHeight: '32px', mt: 2 }}>
