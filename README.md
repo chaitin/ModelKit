@@ -36,6 +36,10 @@ yarn add @yokowu/modelkit-ui
 ### 2. 实现接口
 
 需要实现以下4个接口，其中 `listModel` 和 `checkModel` 已提供业务逻辑，在handler中调用即可：
++ `listModel`：获取模型列表
++ `checkModel`：检查模型配置
++ `createModel`：创建模型
++ `updateModel`：更新模型
 
 ### 3. 后端使用方式
 

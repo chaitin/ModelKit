@@ -89,6 +89,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
   const [loading, setLoading] = useState(false);
   const [modelLoading, setModelLoading] = useState(false);
   const [error, setError] = useState('');
+  const [addModelError, setAddModelError] = useState('');
   const [success, setSuccess] = useState(false);
   const [expandAdvanced, setExpandAdvanced] = useState(false);
 
@@ -116,6 +117,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
     setLoading(false);
     setModelLoading(false);
     setError('');
+    setAddModelError('');
     // 重置高级设置的展开状态
     setExpandAdvanced(false);
     refresh();
@@ -126,6 +128,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
     if (value.api_header_key && value.api_header_value) {
       header = value.api_header_key + '=' + value.api_header_value;
     }
+    setAddModelError('');
     setModelLoading(true);
     modelService.listModel({
       model_type,
@@ -135,50 +138,9 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       api_header: value.api_header || header,
     })
       .then((res) => {
-        // 替换host即可成功请求的情况， 替换host继续请求
-        if (res.error && res.error.includes("请将host替换为host.docker.internal")) {
-          // 解析base_url，将host替换为host.docker.internal
-          const url = new URL(value.base_url);
-          url.hostname = 'host.docker.internal';
-          const newBaseUrl = url.toString();
-          // 永久更新表单中的base_url字段
-          setValue('base_url', newBaseUrl);
-          value.base_url = newBaseUrl;
-          modelService.listModel({
-            model_type,
-            api_key: value.api_key,
-            base_url: value.base_url,
-            provider: value.provider as Exclude<typeof value.provider, 'Other'>,
-            api_header: value.api_header || header,
-          }).then((res) => {
-            if (res.error) {
-              messageHandler.error("获取模型失败");
-              setModelLoading(false);
-            } else {
-              setModelUserList(
-                (res.models || [])
-                  .filter((item): item is { model: string } => !!item.model)
-                  .sort((a, b) => a.model!.localeCompare(b.model!))
-              );
-              if (
-                data &&
-                (res.models || []).find((it) => it.model === data.model_name)
-              ) {
-                setValue('model_name', data.model_name!);
-              } else {
-                setValue('model_name', res.models?.[0]?.model || '');
-              }
-              setSuccess(true);
-            }
-          }).
-            finally(() => {
-              setModelLoading(false);
-            }).
-            catch((res) => {
-              setModelLoading(false);
-            });
-        } else if (res.error) {
-          messageHandler.error("获取模型失败 " + res.error);
+        if (res.error) {
+          messageHandler.error("获取模型列表失败");
+          setAddModelError(res.error);
           setModelLoading(false);
         } else {
           setModelUserList(
@@ -195,6 +157,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
             setValue('model_name', res.models?.[0]?.model || '');
           }
           setSuccess(true);
+          setAddModelError('');
         }
       })
       .finally(() => {
@@ -211,6 +174,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       header = value.api_header_key + '=' + value.api_header_value;
     }
     setError('');
+    setAddModelError('');
     setLoading(true);
     modelService.checkModel({
       model_type,
@@ -224,27 +188,11 @@ export const ModelModal: React.FC<ModelModalProps> = ({
     )
       .then((res) => {
         // 错误处理
-        if (res.error && res.error.includes("API地址末尾添加/v1， host替换为host.docker.internal")){
-          // 解析base_url，将host替换为host.docker.internal
-          const url = new URL(value.base_url);
-          url.hostname = 'host.docker.internal';
-          value.base_url = url.toString();
-          value.base_url = value.base_url + '/v1';
-        } else if (res.error && res.error.includes("请在API地址末尾添加/v1")) {
-          value.base_url = value.base_url + '/v1';
-        } else if (res.error && res.error.includes("请将host替换为host.docker.internal")) {
-          // 解析base_url，将host替换为host.docker.internal
-          const url = new URL(value.base_url);
-          url.hostname = 'host.docker.internal';
-          value.base_url = url.toString();
-        } else if (res.error) {
-          messageHandler.error("模型检查失败 " + res.error);
+        if (res.error) {
+          messageHandler.error("模型检查失败");
+          setAddModelError(res.error);
           setLoading(false);
-          return;
-        }
-        // end
-
-        if (data) {
+        } else if (data) {
           modelService.updateModel({
             api_key: value.api_key,
             model_type,
@@ -496,6 +444,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                         } else {
                           setModelUserList([]);
                           setError('');
+                          setAddModelError('');
                           setModelLoading(false);
                           setSuccess(false);
                           reset({
@@ -573,6 +522,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                     setModelUserList([]);
                     setValue('model_name', '');
                     setSuccess(false);
+                    setAddModelError('');
                   }}
                 />
               )}
@@ -639,6 +589,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                     setModelUserList([]);
                     setValue('model_name', '');
                     setSuccess(false);
+                    setAddModelError('');
                   }}
                 />
               )}
@@ -694,6 +645,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                         setModelUserList([]);
                         setValue('model_name', '');
                         setSuccess(false);
+                        setAddModelError('');
                       }}
                     />
                   )}
@@ -730,22 +682,29 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                 </Box>
               </>
             ) : modelUserList.length === 0 ? (
-              <Button
-                fullWidth
-                variant='outlined'
-                loading={modelLoading}
-                sx={{
-                  mt: 4,
-                  borderRadius: '10px',
-                  boxShadow: 'none',
-                  fontFamily: `var(--font-gilory), var(--font-HarmonyOS), 'PingFang SC', 'Roboto', 'Helvetica', 'Arial', sans-serif`,
-                  color: 'black',
-                  borderColor: 'black'
-                }}
-                onClick={handleSubmit(getModel)}
-              >
-                获取模型列表
-              </Button>
+              <>
+                <Button
+                  fullWidth
+                  variant='outlined'
+                  loading={modelLoading}
+                  sx={{
+                    mt: 4,
+                    borderRadius: '10px',
+                    boxShadow: 'none',
+                    fontFamily: `var(--font-gilory), var(--font-HarmonyOS), 'PingFang SC', 'Roboto', 'Helvetica', 'Arial', sans-serif`,
+                    color: 'black',
+                    borderColor: 'black'
+                  }}
+                  onClick={handleSubmit(getModel)}
+                >
+                  获取模型列表
+                </Button>
+                {addModelError && (
+                  <Box sx={{ fontSize: 12, color: 'error.main', mt: 1 }}>
+                    {addModelError}
+                  </Box>
+                )}
+              </>
             ) : (
               <>
                 <Box sx={{ fontSize: 14, lineHeight: '32px', mt: 2 }}>
@@ -956,6 +915,21 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                   </AccordionDetails>
                 </Accordion>
               </Box>
+            )}
+            {addModelError && (
+              <Card
+                sx={{
+                  color: 'error.main',
+                  mt: 2,
+                  fontSize: 12,
+                  p: 2,
+                  bgcolor: 'background.paper2',
+                  border: '1px solid',
+                  borderColor: 'error.main',
+                }}
+              >
+                {addModelError}
+              </Card>
             )}
             {error && (
               <Card

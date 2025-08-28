@@ -214,6 +214,16 @@ func ParseModelProvider(s string) ModelProvider {
 	}
 }
 
-
 var ApiKeyBalanceKeyWords = []string{"quota", "billing", "balance", "payment required"}
 
+type AddModelBaseURLErrType string
+
+const (
+	AddModelBaseURLErrTypeHost   AddModelBaseURLErrType = "host"    // 建议使用宿主机主机名
+	AddModelBaseURLErrTypeV1Path AddModelBaseURLErrType = "v1_path" // 建议在API地址末尾添加/v1
+)
+
+const LinuxHost = "172.17.0.1"
+const MacWinHost = "host.docker.internal"
+const LocalHost = "localhost"
+const LocalIP = "127.0.0.1"
