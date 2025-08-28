@@ -10,6 +10,7 @@ import (
 	"net/http"
 	"net/url"
 	"path"
+	"runtime"
 	"slices"
 	"strings"
 	"time"
@@ -56,23 +57,16 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 	// 以下模型供应商需要特殊处理
 	case consts.ModelProviderOllama:
 		resp, err := ollamaListModel(req.BaseURL, httpClient, req.APIHeader)
-		// 尝试通过替换baseURL的host为host.docker.internal解决ollama list err
+		// ollama list发生错误， 尝试修复url
 		if err != nil {
-			newBaseURL, replaceHostErr := baseURLReplaceHost(req.BaseURL)
-			if replaceHostErr != nil {
+			msg := generateBaseURLFixSuggestion(err.Error(), req.BaseURL)
+			if msg == "" {
 				return &domain.ModelListResp{
 					Error: err.Error(),
 				}, nil
-			}
-			// 替换host后与原始host相同，无需继续请求
-			if newBaseURL == req.BaseURL {
-				return resp, nil
-			}
-			_, listErr := ollamaListModel(newBaseURL, httpClient, req.APIHeader)
-			// 替换后可以成功请求
-			if listErr == nil {
+			} else {
 				return &domain.ModelListResp{
-					Error: fmt.Errorf("请将host替换为host.docker.internal").Error(),
+					Error: msg,
 				}, nil
 			}
 		}
@@ -207,21 +201,18 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckMo
 		return checkResp, nil
 	}
 	// end
-	// end
 	provider := consts.ParseModelProvider(req.Provider)
 
 	resp, err := getChatModelGenerateChat(ctx, provider, modelType, req.BaseURL, req)
 	// 其他模型供应商，尝试修复baseURL
 	if err != nil && provider == consts.ModelProviderOther {
-		res, err := tryFixBaseURL(ctx, req, provider, modelType)
-		if err != nil {
+		msg := generateBaseURLFixSuggestion(err.Error(), req.BaseURL)
+		if msg == "" {
 			checkResp.Error = err.Error()
-			return checkResp, nil
+		} else {
+			checkResp.Error = msg
 		}
-		if res != "" {
-			checkResp.Error = res
-			return checkResp, nil
-		}
+		return checkResp, nil
 	}
 	// end
 	if err != nil && provider != consts.ModelProviderOther {
@@ -334,14 +325,11 @@ func GetChatModel(ctx context.Context, model *domain.ModelMetadata) (model.BaseC
 }
 
 // 以下是辅助函数，用于处理模型列表和检查相关的功能
-
 func ollamaListModel(baseURL string, httpClient *http.Client, apiHeader string) (*domain.ModelListResp, error) {
 	// get from ollama http://10.10.16.24:11434/api/tags
 	u, err := url.Parse(baseURL)
 	if err != nil {
-		return &domain.ModelListResp{
-			Error: err.Error(),
-		}, nil
+		return nil, err
 	}
 	u.Path = "/api/tags"
 	client := request.NewClient(u.Scheme, u.Host, httpClient.Timeout, request.WithClient(httpClient))
@@ -352,61 +340,6 @@ func ollamaListModel(baseURL string, httpClient *http.Client, apiHeader string) 
 		maps.Copy(h, headers)
 	}
 	return request.Get[domain.ModelListResp](client, u.Path, request.WithHeader(h))
-}
-
-// 通过修复baseURL尝试修复其它供应商check err, 返回用于提示用户如何修复错误
-func tryFixBaseURL(ctx context.Context, req *domain.CheckModelReq, provider consts.ModelProvider, modelType consts.ModelType) (string, error) {
-	// 尝试添加v1
-	fixedBaseURL, err := baseURLAddV1(req.BaseURL)
-	// baseurl解析错误，直接返回
-	if err != nil {
-		return "", err
-	}
-
-	// baseurl被修改，重新请求
-	if fixedBaseURL != req.BaseURL {
-		_, err := getChatModelGenerateChat(ctx, provider, modelType, fixedBaseURL, req)
-		// 添加v1有效， 提示用户
-		if err == nil {
-			return "请在API地址末尾添加/v1", nil
-		}
-	}
-
-	// url末尾添加v1无效，尝试替换host为host.docker.internal
-	fixedBaseURL, err = baseURLReplaceHost(req.BaseURL)
-	// baseurl解析错误，直接返回
-	if err != nil {
-		return "", err
-	}
-
-	if fixedBaseURL != req.BaseURL {
-		_, err := getChatModelGenerateChat(ctx, provider, modelType, fixedBaseURL, req)
-		// 替换host有效， 提示用户
-		if err == nil {
-			return "请将host替换为host.docker.internal", nil
-		}
-	}
-
-	// 替换host也无效，尝试添加v1与替换host
-	fixedBaseURL, err = baseURLAddV1(req.BaseURL)
-	// baseurl解析错误，直接返回
-	if err != nil {
-		return "", err
-	}
-	fixedBaseURL, err = baseURLReplaceHost(fixedBaseURL)
-	// baseurl解析错误，直接返回
-	if err != nil {
-		return "", err
-	}
-	// baseurl被修改，重新请求
-	if fixedBaseURL != req.BaseURL {
-		_, err := getChatModelGenerateChat(ctx, provider, modelType, fixedBaseURL, req)
-		// 添加v1与替换host有效， 提示用户
-		if err == nil {
-			return "API地址末尾添加/v1， host替换为host.docker.internal", nil
-		}
-	}
-	return "", nil
 }
 
 func getChatModelGenerateChat(ctx context.Context, provider consts.ModelProvider, modelType consts.ModelType, baseURL string, req *domain.CheckModelReq) (*schema.Message, error) {
@@ -448,7 +381,13 @@ func baseURLReplaceHost(inputURL string) (string, error) {
 	if err != nil {
 		return "", err
 	}
-	hostAddress := "host.docker.internal"
+
+	var hostAddress string
+	if runtime.GOOS == "linux" {
+		hostAddress = consts.LinuxHost
+	} else {
+		hostAddress = consts.MacWinHost
+	}
 
 	if rawURL.Hostname() != hostAddress {
 		if rawURL.Port() != "" {
@@ -488,4 +427,50 @@ func reqModelListApi[T domain.ModelResponseParser](req *domain.ModelListReq, htt
 	}
 
 	return (*resp).ParseModels(), nil
+}
+
+func generateBaseURLFixSuggestion(errContent string, baseURL string) string {
+	var is404, isLocal, hasPath bool
+	if strings.Contains(errContent, "404") || strings.Contains(errContent, "connection refused") {
+		is404 = true
+	}
+	parsedURL, err := url.Parse(baseURL)
+	if err != nil {
+		return ""
+	}
+	if strings.Contains(parsedURL.Host, consts.LocalHost) || strings.Contains(parsedURL.Host, consts.LocalIP) {
+		isLocal = true
+	}
+
+	if parsedURL.Path != "" {
+		hasPath = true
+	}
+
+	errType := consts.AddModelBaseURLErrTypeHost
+	// 404 且是本地地址，建议使用宿主机主机名
+	if is404 && isLocal {
+		errType = consts.AddModelBaseURLErrTypeHost
+	} else if !isLocal && !hasPath && !is404 {
+		// 不是本地地址，且没有path，且不是404，建议在API地址末尾添加/v1
+		errType = consts.AddModelBaseURLErrTypeV1Path
+	} else {
+		return ""
+	}
+
+	switch errType {
+	case consts.AddModelBaseURLErrTypeHost:
+		fixedURL, err := baseURLReplaceHost(baseURL)
+		if err != nil {
+			return ""
+		}
+		return "建议在API地址使用宿主机主机名: " + fixedURL
+	case consts.AddModelBaseURLErrTypeV1Path:
+		fixedURL, err := baseURLAddV1(baseURL)
+		if err != nil {
+			return ""
+		}
+		return "建议在API地址末尾添加/v1: " + fixedURL
+	default:
+		return ""
+	}
 }

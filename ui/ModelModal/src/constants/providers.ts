@@ -117,7 +117,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   SiliconFlow: {
     label: 'SiliconFlow',
     cn: '硅基流动',
-    icon: 'icon-a-ziyuan2',
+    icon: 'icon-siliconflow1',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
