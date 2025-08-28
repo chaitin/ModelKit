@@ -446,12 +446,12 @@ func generateBaseURLFixSuggestion(errContent string, baseURL string) string {
 		hasPath = true
 	}
 
-	errType := consts.AddModelBaseURLErrTypeHost
+	var errType consts.AddModelBaseURLErrType
 	// 404 且是本地地址，建议使用宿主机主机名
 	if is404 && isLocal {
 		errType = consts.AddModelBaseURLErrTypeHost
-	} else if !isLocal && !hasPath && !is404 {
-		// 不是本地地址，且没有path，且不是404，建议在API地址末尾添加/v1
+	} else if !isLocal && !hasPath {
+		// 不是本地地址，且没有path，建议在API地址末尾添加/v1
 		errType = consts.AddModelBaseURLErrTypeV1Path
 	} else {
 		return ""
