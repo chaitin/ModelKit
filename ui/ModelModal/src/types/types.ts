@@ -64,15 +64,6 @@ export interface ModelProviderConfig {
 // 模型提供商映射
 export type ModelProviderMap = Record<string, ModelProviderConfig>;
 
-export interface ModelParam {
-  context_window?: number;
-  max_tokens?: number;
-  r1_enabled?: boolean;
-  support_computer_use?: boolean;
-  support_images?: boolean;
-  support_prompt_cache?: boolean;
-}
-
 // 创建模型数据
 export interface CreateModelReq {
   base_url?: string;
