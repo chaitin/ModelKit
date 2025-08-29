@@ -84,6 +84,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
   });
 
   const providerBrand = watch('provider');
+  const isOllama = providerBrand === 'Ollama';
 
   const [modelUserList, setModelUserList] = useState<{ model: string }[]>([]);
 
@@ -509,7 +510,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                   message: 'URL 不能为空',
                 },
                 validate: (value) => {
-                  const res = isValidURL(value);
+                  const res = isValidURL(value, isOllama);
                   return res === "" || res;
                 }
               }}
