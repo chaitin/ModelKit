@@ -15,7 +15,7 @@ export const addOpacityToColor = (color: string, opacity: number): string => {
 /**
  * 验证URL格式
  */
-export const isValidURL = (url: string): string => {
+export const isValidURL = (url: string, isOllama: boolean): string => {
   try {
     const urlObj = new URL(url);
 
@@ -31,12 +31,13 @@ export const isValidURL = (url: string): string => {
 
     // 3. 检查是否以 /v+数字 结尾 或者 包含/v+数字/
     const pathPattern = /\/v\d+(\/.*)?$/;
-    if (!pathPattern.test(urlObj.pathname)) {
+    if (!isOllama && !pathPattern.test(urlObj.pathname)) {
       return "模型供应商必须支持与 OpenAI 兼容的 API 格式";
     }
 
     return "";
   } catch {
+    return "URL格式错误";
     return "URL格式错误";
   }
 };
