@@ -15,6 +15,12 @@ ModelKit 是一个强大的AI模型管理平台，支持多种AI服务提供商�
 - **国际化支持**: 内置中英文多语言支持
 - **可复用组件**: 提供开箱即用的ModelModal组件，支持在其他项目中快速集成
 
+## ⚡️ 界面展示
+
+| 添加模型                                 | 模型列表                                    |  
+| ------------------------------------------------ | ------------------------------------------------ |
+| <img src="./images/image-add-model.jpeg" width=370 /> | <img src="./images/image-list-model.jpg" width=370 /> |
+
 ## 在项目中集成ModelKit
 
 ### 1. 安装依赖
@@ -189,42 +195,6 @@ function App() {
 }
 ```
 
-## 🤝 贡献指南
-
-我们欢迎所有形式的贡献！无论是bug修复、新功能开发、文档改进还是问题反馈，都对项目的发展非常有价值。
-
-### 如何贡献
-
-1. **Fork 项目**
-   ```bash
-   git clone https://github.com/chaitin/ModelKit.git
-   cd ModelKit
-   ```
-
-2. **创建功能分支**
-   ```bash
-   git checkout -b feature/your-feature-name
-   ```
-
-3. **进行开发**
-   - 遵循现有的代码风格和约定
-
-4. **提交更改**
-   ```bash
-   git add .
-   git commit -m "feat: 添加新功能描述"
-   ```
-
-5. **推送到远程仓库**
-   ```bash
-   git push origin feature/your-feature-name
-   ```
-
-6. **创建 Pull Request**
-   - 提供清晰的PR描述
-   - 说明更改的目的和影响
-   - 关联相关的Issue（如果有）
-
 ### 开发环境设置
 
 1. **后端开发**
@@ -237,10 +207,6 @@ function App() {
    cd ui/ModelModal
    pnpm install
    ```
-
-## 📄 许可证
-
-本项目采用 [MIT License](LICENSE) 开源协议。
 
 ## 🙏 致谢
 
