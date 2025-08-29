@@ -533,6 +533,11 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                 />
               )}
             />
+            {providerBrand === 'Other' && (
+              <Box sx={{ fontSize: 12, color: 'error.main', mt: 1 }}>
+                模型供应商必须支持与 OpenAI 兼容的 API 格式
+              </Box>
+            )}
             <Stack
               direction={'row'}
               alignItems={'center'}
