@@ -25,6 +25,7 @@ import { DEFAULT_MODEL_PROVIDERS } from './constants/providers';
 import { getLocaleMessage } from './constants/locale';
 import './assets/fonts/iconfont';
 import { lightTheme } from './theme';
+import { isValidURL } from './utils';
 
 const titleMap: Record<string, string> = {
   ["llm"]: '对话模型',
@@ -508,10 +509,9 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                   message: 'URL 不能为空',
                 },
                 validate: (value) => {
-                  if (!value) return true; // 空值由required规则处理
-                  const hasScheme = /^https?:\/\//i.test(value);
-                  return hasScheme || 'API地址必须包含协议（http://或https://）';
-                },
+                  const res = isValidURL(value);
+                  return res === "" || res;
+                }
               }}
               render={({ field }) => (
                 <TextField
@@ -532,11 +532,6 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                 />
               )}
             />
-            {providerBrand === 'Other' && (
-              <Box sx={{ fontSize: 12, color: 'error.main', mt: 1 }}>
-                模型供应商必须支持与 OpenAI 兼容的 API 格式
-              </Box>
-            )}
             <Stack
               direction={'row'}
               alignItems={'center'}
@@ -687,22 +682,22 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                 </Box>
               </>
             ) : modelUserList.length === 0 ? (
-                <Button
-                  fullWidth
-                  variant='outlined'
-                  loading={modelLoading}
-                  sx={{
-                    mt: 4,
-                    borderRadius: '10px',
-                    boxShadow: 'none',
-                    fontFamily: `var(--font-gilory), var(--font-HarmonyOS), 'PingFang SC', 'Roboto', 'Helvetica', 'Arial', sans-serif`,
-                    color: 'black',
-                    borderColor: 'black'
-                  }}
-                  onClick={handleSubmit(getModel)}
-                >
-                  获取模型列表
-                </Button>
+              <Button
+                fullWidth
+                variant='outlined'
+                loading={modelLoading}
+                sx={{
+                  mt: 4,
+                  borderRadius: '10px',
+                  boxShadow: 'none',
+                  fontFamily: `var(--font-gilory), var(--font-HarmonyOS), 'PingFang SC', 'Roboto', 'Helvetica', 'Arial', sans-serif`,
+                  color: 'black',
+                  borderColor: 'black'
+                }}
+                onClick={handleSubmit(getModel)}
+              >
+                获取模型列表
+              </Button>
             ) : (
               <>
                 <Box sx={{ fontSize: 14, lineHeight: '32px', mt: 2 }}>

@@ -112,7 +112,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     embedding: false,
     rerank: false,
     modelDocumentUrl: 'https://github.com/ollama/ollama/tree/main/docs',
-    defaultBaseUrl: 'http://127.0.0.1:11434',
+    defaultBaseUrl: 'http://172.17.0.1:11434',
   },
   SiliconFlow: {
     label: 'SiliconFlow',
