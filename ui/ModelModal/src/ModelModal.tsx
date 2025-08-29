@@ -909,6 +909,30 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                             />
                           )}
                         />
+                        <Controller
+                          control={control}
+                          name='support_image'
+                          render={({ field }) => (
+                            <FormControlLabel
+                              control={
+                                <Checkbox
+                                  checked={field.value}
+                                  onChange={(e) => field.onChange(e.target.checked)}
+                                  size='small'
+                                />
+                              }
+                              label={
+                                <Box sx={{ fontSize: 12 }}>
+                                  启用图片
+                                  <Box component="span" sx={{ ml: 1, color: 'text.secondary', fontSize: 11 }}>
+                                    (支持图片输入的模型可以启用此选项)
+                                  </Box>
+                                </Box>
+                              }
+                              sx={{ margin: 0 }}
+                            />
+                          )}
+                        />
                       </Stack>
                     </Stack>
                   </AccordionDetails>
