@@ -26,7 +26,6 @@ import { getLocaleMessage } from './constants/locale';
 import './assets/fonts/iconfont';
 import { lightTheme } from './theme';
 import { isValidURL } from './utils';
-import { isValidURL } from './utils';
 
 const titleMap: Record<string, string> = {
   ["llm"]: '对话模型',
@@ -684,22 +683,6 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                 </Box>
               </>
             ) : modelUserList.length === 0 ? (
-              <Button
-                fullWidth
-                variant='outlined'
-                loading={modelLoading}
-                sx={{
-                  mt: 4,
-                  borderRadius: '10px',
-                  boxShadow: 'none',
-                  fontFamily: `var(--font-gilory), var(--font-HarmonyOS), 'PingFang SC', 'Roboto', 'Helvetica', 'Arial', sans-serif`,
-                  color: 'black',
-                  borderColor: 'black'
-                }}
-                onClick={handleSubmit(getModel)}
-              >
-                获取模型列表
-              </Button>
               <Button
                 fullWidth
                 variant='outlined'
