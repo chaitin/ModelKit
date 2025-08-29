@@ -38,7 +38,6 @@ export const isValidURL = (url: string, isOllama: boolean): string => {
     return "";
   } catch {
     return "URL格式错误";
-    return "URL格式错误";
   }
 };
 
