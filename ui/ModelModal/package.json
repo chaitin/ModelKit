@@ -1,6 +1,6 @@
 {
   "name": "@yokowu/modelkit-ui",
-  "version": "0.7.5",
+  "version": "0.7.6",
   "description": "A reusable AI model configuration modal component for React applications",
   "private": false,
   "type": "module",

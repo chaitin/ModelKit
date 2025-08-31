@@ -59,7 +59,7 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 		resp, err := ollamaListModel(req.BaseURL, httpClient, req.APIHeader)
 		// ollama list发生错误， 尝试修复url
 		if err != nil {
-			msg := generateBaseURLFixSuggestion(err.Error(), req.BaseURL)
+			msg := generateBaseURLFixSuggestion(err.Error(), req.BaseURL, provider)
 			if msg == "" {
 				return &domain.ModelListResp{
 					Error: err.Error(),
@@ -206,7 +206,7 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckMo
 	resp, err := getChatModelGenerateChat(ctx, provider, modelType, req.BaseURL, req)
 	// 其他模型供应商，尝试修复baseURL
 	if err != nil && provider == consts.ModelProviderOther {
-		msg := generateBaseURLFixSuggestion(err.Error(), req.BaseURL)
+		msg := generateBaseURLFixSuggestion(err.Error(), req.BaseURL, provider)
 		if msg == "" {
 			checkResp.Error = err.Error()
 		} else {
@@ -429,8 +429,8 @@ func reqModelListApi[T domain.ModelResponseParser](req *domain.ModelListReq, htt
 	return (*resp).ParseModels(), nil
 }
 
-func generateBaseURLFixSuggestion(errContent string, baseURL string) string {
-	var is404, isLocal, hasPath bool
+func generateBaseURLFixSuggestion(errContent string, baseURL string, provider consts.ModelProvider) string {
+	var is404, isLocal, hasPath , isOther bool
 	if strings.Contains(errContent, "404") || strings.Contains(errContent, "connection refused") {
 		is404 = true
 	}
@@ -441,16 +441,16 @@ func generateBaseURLFixSuggestion(errContent string, baseURL string) string {
 	if strings.Contains(parsedURL.Host, consts.LocalHost) || strings.Contains(parsedURL.Host, consts.LocalIP) {
 		isLocal = true
 	}
-
 	if parsedURL.Path != "" {
 		hasPath = true
 	}
+	isOther = provider == consts.ModelProviderOther
 
 	var errType consts.AddModelBaseURLErrType
 	// 404 且是本地地址，建议使用宿主机主机名
 	if is404 && isLocal {
 		errType = consts.AddModelBaseURLErrTypeHost
-	} else if !isLocal && !hasPath {
+	} else if !isLocal && !hasPath && isOther {
 		// 不是本地地址，且没有path，建议在API地址末尾添加/v1
 		errType = consts.AddModelBaseURLErrTypeV1Path
 	} else {

@@ -30,10 +30,10 @@ export const isValidURL = (url: string, isOllama: boolean): string => {
     }
 
     // 3. 检查是否以 /v+数字 结尾 或者 包含/v+数字/
-    // const pathPattern = /\/v\d+(\/.*)?$/;
-    // if (!isOllama && !pathPattern.test(urlObj.pathname)) {
-    //   return "模型供应商必须支持与 OpenAI 兼容的 API 格式";
-    // }
+    const pathPattern = /\/v\d+(\/.*)?$/;
+    if (!isOllama && !pathPattern.test(urlObj.pathname)) {
+      return "模型供应商必须支持与 OpenAI 兼容的 API 格式";
+    }
 
     return "";
   } catch {
