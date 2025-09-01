@@ -27,7 +27,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     code: true,
     embedding: false,
     rerank: false,
-    modelDocumentUrl: 'https://open.bigmodel.cn/usercenter/apikeys',
+    modelDocumentUrl: 'https://zhipuaishengchan.datasink.sensorsdata.cn/t/Tv',
     defaultBaseUrl: 'https://open.bigmodel.cn/api/paas/v4',
   },
   DeepSeek: {
