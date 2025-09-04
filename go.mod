@@ -10,12 +10,10 @@ require (
 	github.com/cloudwego/eino v0.3.51
 	github.com/cloudwego/eino-ext/components/model/deepseek v0.0.0-20250522060253-ddb617598b09
 	github.com/cloudwego/eino-ext/components/model/gemini v0.1.2
-	github.com/cloudwego/eino-ext/components/model/ollama v0.0.0-20250624023530-68a1e4282a8e
 	github.com/cloudwego/eino-ext/components/model/openai v0.0.0-20250710065240-482d48888f25
 	github.com/google/generative-ai-go v0.20.1
 	github.com/google/uuid v1.6.0
 	github.com/labstack/echo/v4 v4.13.4
-	github.com/ollama/ollama v0.6.5
 	github.com/yuin/goldmark v1.7.11
 	google.golang.org/api v0.239.0
 	google.golang.org/genai v1.13.0
