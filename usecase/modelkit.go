@@ -6,7 +6,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"maps"
 	"net/http"
 	"net/url"
 	"path"
@@ -17,12 +16,10 @@ import (
 
 	"github.com/cloudwego/eino-ext/components/model/deepseek"
 	"github.com/cloudwego/eino-ext/components/model/gemini"
-	"github.com/cloudwego/eino-ext/components/model/ollama"
 	"github.com/cloudwego/eino-ext/components/model/openai"
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/schema"
 	generativeGenai "github.com/google/generative-ai-go/genai"
-	"github.com/ollama/ollama/api"
 	"google.golang.org/api/option"
 	"google.golang.org/genai"
 
@@ -54,24 +51,6 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 		return &domain.ModelListResp{
 			Models: domain.From(domain.ModelProviders[provider]),
 		}, nil
-	// 以下模型供应商需要特殊处理
-	case consts.ModelProviderOllama:
-		resp, err := ollamaListModel(req.BaseURL, httpClient, req.APIHeader)
-		// ollama list发生错误， 尝试修复url
-		if err != nil {
-			msg := generateBaseURLFixSuggestion(err.Error(), req.BaseURL, provider)
-			if msg == "" {
-				return &domain.ModelListResp{
-					Error: err.Error(),
-				}, nil
-			} else {
-				return &domain.ModelListResp{
-					Error: msg,
-				}, nil
-			}
-		}
-		// end
-		return resp, err
 	case consts.ModelProviderGemini:
 		client, err := generativeGenai.NewClient(ctx, option.WithAPIKey(req.APIKey))
 		if err != nil {
@@ -296,24 +275,6 @@ func GetChatModel(ctx context.Context, model *domain.ModelMetadata) (model.BaseC
 			return nil, err
 		}
 		return chatModel, nil
-	case consts.ModelProviderOllama:
-		baseUrl, err := utils.URLRemovePath(config.BaseURL)
-		if err != nil {
-			return nil, err
-		}
-
-		chatModel, err := ollama.NewChatModel(ctx, &ollama.ChatModelConfig{
-			BaseURL: baseUrl,
-			Timeout: config.Timeout,
-			Model:   config.Model,
-			Options: &api.Options{
-				Temperature: temperature,
-			},
-		})
-		if err != nil {
-			return nil, err
-		}
-		return chatModel, nil
 	// 兼容 openai api
 	default:
 		chatModel, err := openai.NewChatModel(ctx, config)
@@ -325,23 +286,6 @@ func GetChatModel(ctx context.Context, model *domain.ModelMetadata) (model.BaseC
 }
 
 // 以下是辅助函数，用于处理模型列表和检查相关的功能
-func ollamaListModel(baseURL string, httpClient *http.Client, apiHeader string) (*domain.ModelListResp, error) {
-	// get from ollama http://10.10.16.24:11434/api/tags
-	u, err := url.Parse(baseURL)
-	if err != nil {
-		return nil, err
-	}
-	u.Path = "/api/tags"
-	client := request.NewClient(u.Scheme, u.Host, httpClient.Timeout, request.WithClient(httpClient))
-
-	h := request.Header{}
-	if apiHeader != "" {
-		headers := request.GetHeaderMap(apiHeader)
-		maps.Copy(h, headers)
-	}
-	return request.Get[domain.ModelListResp](client, u.Path, request.WithHeader(h))
-}
-
 func getChatModelGenerateChat(ctx context.Context, provider consts.ModelProvider, modelType consts.ModelType, baseURL string, req *domain.CheckModelReq) (*schema.Message, error) {
 	chatModel, err := GetChatModel(ctx, &domain.ModelMetadata{
 		Provider:   provider,
