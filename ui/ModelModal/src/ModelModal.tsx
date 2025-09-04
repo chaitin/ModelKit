@@ -84,7 +84,6 @@ export const ModelModal: React.FC<ModelModalProps> = ({
   });
 
   const providerBrand = watch('provider');
-  const isOllama = providerBrand === 'Ollama';
 
   const [modelUserList, setModelUserList] = useState<{ model: string }[]>([]);
 
@@ -510,7 +509,10 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                   message: 'URL 不能为空',
                 },
                 validate: (value) => {
-                  const res = isValidURL(value, isOllama);
+                  if (!providers[providerBrand].urlWrite || providerBrand === 'AzureOpenAI') {
+                    return true;
+                  }
+                  const res = isValidURL(value);
                   return res === "" || res;
                 }
               }}
