@@ -57,6 +57,7 @@ export interface ModelProviderConfig {
   code: boolean;
   embedding: boolean;
   rerank: boolean;
+  analysis: boolean;
   modelDocumentUrl?: string;
   defaultBaseUrl: string;
 }

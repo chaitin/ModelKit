@@ -111,6 +111,7 @@ function App() {
                 <MenuItem value={'embedding'}>向量模型</MenuItem>
                 <MenuItem value={'audio'}>音频模型</MenuItem>
                 <MenuItem value={'reranker'}>重排序模型</MenuItem>
+                <MenuItem value={'analysis'}>分析模型</MenuItem>
               </Select>
             </FormControl>
           </Box>

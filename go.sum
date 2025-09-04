@@ -38,8 +38,6 @@ github.com/cloudwego/eino-ext/components/model/deepseek v0.0.0-20250522060253-dd
 github.com/cloudwego/eino-ext/components/model/deepseek v0.0.0-20250522060253-ddb617598b09/go.mod h1:JMBM8HTVQo0YaCBA0hWsZME6lDKFmMCU8jScQrZHiUc=
 github.com/cloudwego/eino-ext/components/model/gemini v0.1.2 h1:bt9xftOQhP0Nuh1Po6ZNljSzBvv11Aw6hFLR7V1sLd8=
 github.com/cloudwego/eino-ext/components/model/gemini v0.1.2/go.mod h1:1tv89uZ9hR/4AyQ+9yxFWLn52GaJDKtPXdEY7WZdyZc=
-github.com/cloudwego/eino-ext/components/model/ollama v0.0.0-20250624023530-68a1e4282a8e h1:eJ5vCso7pS3mjvqG0bjJXA6kELCPTu1w5pINmUct13A=
-github.com/cloudwego/eino-ext/components/model/ollama v0.0.0-20250624023530-68a1e4282a8e/go.mod h1:BiBTDNJAD/tHDUEy4fqHW2YpBLgzb2jzQFM8S/vibLA=
 github.com/cloudwego/eino-ext/components/model/openai v0.0.0-20250710065240-482d48888f25 h1:VpyaCtZLktcYVC4vY0+D9e6TD35VAHteI+Zv6JUHFfQ=
 github.com/cloudwego/eino-ext/components/model/openai v0.0.0-20250710065240-482d48888f25/go.mod h1:2mFQQnlhJrNgbW6YX1MOUUfXkGSbTz9Ylx37fbR0xBo=
 github.com/cloudwego/eino-ext/libs/acl/openai v0.0.0-20250626133421-3c142631c961 h1:fGE3RFHaAsrLjA+2fkE0YMsPrkFI6pEKKZmbhD42L7E=
@@ -161,8 +159,6 @@ github.com/nicksnyder/go-i18n/v2 v2.6.0 h1:C/m2NNWNiTB6SK4Ao8df5EWm3JETSTIGNXBpM
 github.com/nicksnyder/go-i18n/v2 v2.6.0/go.mod h1:88sRqr0C6OPyJn0/KRNaEz1uWorjxIKP7rUUcvycecE=
 github.com/nikolalohinski/gonja v1.5.3 h1:GsA+EEaZDZPGJ8JtpeGN78jidhOlxeJROpqMT9fTj9c=
 github.com/nikolalohinski/gonja v1.5.3/go.mod h1:RmjwxNiXAEqcq1HeK5SSMmqFJvKOfTfXhkJv6YBtPa4=
-github.com/ollama/ollama v0.6.5 h1:vXKkVX57ql/1ZzMw4SVK866Qfd6pjwEcITVyEpF0QXQ=
-github.com/ollama/ollama v0.6.5/go.mod h1:pGgtoNyc9DdM6oZI6yMfI6jTk2Eh4c36c2GpfQCH7PY=
 github.com/onsi/ginkgo v1.6.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/ginkgo v1.8.0/go.mod h1:lLunBs/Ym6LB5Z9jYTR76FiuTmxDTDusOGeTQH+WWjE=
 github.com/onsi/gomega v1.5.0/go.mod h1:ex+gbHU/CVuBBDIJjb2X0qEXbFg53c61hWP/1CpauHY=
