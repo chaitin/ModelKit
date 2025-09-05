@@ -775,7 +775,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
               </>
             )}
             {/* 高级设置部分 - 在选择了模型或者是其它供应商时显示，但不包括embedding、rerank、reranker、analysis类型 */}
-            {(modelUserList.length !== 0 || providerBrand === 'Other') && !['embedding', 'rerank', 'reranker', 'analysis'].includes(model_type) && (
+            {(modelUserList.length !== 0 || providerBrand === 'Other') && !['embedding', 'rerank', 'reranker'].includes(model_type) && (
               <Box sx={{ mt: 2 }}>
                 <Accordion
                   sx={{
