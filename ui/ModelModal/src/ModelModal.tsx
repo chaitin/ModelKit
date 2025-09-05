@@ -11,6 +11,7 @@ import {
   AccordionDetails,
   Checkbox,
   FormControlLabel,
+  ListSubheader,
 } from '@mui/material';
 import { Icon, message, Modal, ThemeProvider } from '@c-x/ui';
 import Card from './components/card';
@@ -26,7 +27,7 @@ import { DEFAULT_MODEL_PROVIDERS } from './constants/providers';
 import { getLocaleMessage } from './constants/locale';
 import './assets/fonts/iconfont';
 import { lightTheme } from './theme';
-import { isValidURL } from './utils';
+import { isValidURL, getModelGroup } from './utils';
 
 const titleMap: Record<string, string> = {
   ["llm"]: '对话模型',
@@ -726,20 +727,38 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                       error={!!errors.model_name}
                       helperText={errors.model_name?.message}
                     >
-                      {modelUserList.map((it) => (
-                        <MenuItem key={it.model} value={it.model}>
-                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                            <Box sx={{ flex: 1 }}>{it.model}</Box>
-                            <ModelTagsWithLabel 
-                              model_id={it.model} 
-                              provider={providerBrand} 
-                              size={10}
-                              showLabel={false}
-                              showTooltip={false}
-                            />
-                          </Box>
-                        </MenuItem>
-                      ))}
+                      {(() => {
+                        // 按组分类模型
+                        const groupedModels = modelUserList.reduce((acc, model) => {
+                          const group = getModelGroup(model.model);
+                          if (!acc[group]) {
+                            acc[group] = [];
+                          }
+                          acc[group].push(model);
+                          return acc;
+                        }, {} as Record<string, typeof modelUserList>);
+
+                        // 渲染分组后的模型
+                        return Object.entries(groupedModels).map(([group, models]) => [
+                          <ListSubheader key={`header-${group}`} sx={{ backgroundColor: 'transparent', fontWeight: 'bold', position: 'static' }}>
+                            {group}
+                          </ListSubheader>,
+                          ...models.map((it) => (
+                            <MenuItem key={it.model} value={it.model}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                                <Box sx={{ flex: 1 }}>{it.model}</Box>
+                                <ModelTagsWithLabel 
+                                  model_id={it.model} 
+                                  provider={providerBrand} 
+                                  size={10}
+                                  showLabel={false}
+                                  showTooltip={false}
+                                />
+                              </Box>
+                            </MenuItem>
+                          ))
+                        ]).flat();
+                      })()}
                     </TextField>
                   )}
                 />

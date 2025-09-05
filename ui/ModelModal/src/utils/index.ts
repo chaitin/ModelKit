@@ -1,4 +1,3 @@
-import { Model } from "@/types/types";
 import { CLAUDE_SUPPORTED_WEBSEARCH_REGEX, DOUBAO_THINKING_MODEL_REGEX, EMBEDDING_REGEX, FUNCTION_CALLING_REGEX, GEMINI_SEARCH_REGEX, REASONING_REGEX, RERANKING_REGEX, TEXT_TO_IMAGE_REGEX, VISION_REGEX } from "./regex";
 import { PERPLEXITY_SEARCH_MODELS } from "@/constants/models";
 
@@ -594,4 +593,15 @@ export function isWebSearchModel(model_id: string, provider: string): boolean {
   }
 
   return false
+}
+
+export const getModelGroup = (model_id: string): string => {
+  // 1. 提取model_id第一个-之前的部分
+  const firstPart = model_id.split('-')[0];
+  
+  // 2. 从头获取连续的纯字母部分
+  const withoutNumbers = firstPart.match(/^[a-zA-Z]+/)?.[0] || '';
+  
+  // 3. 返回结果
+  return withoutNumbers;
 }
