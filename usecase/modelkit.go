@@ -5,6 +5,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"net/url"
@@ -211,11 +212,11 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckMo
 		return checkResp, nil
 	}
 
-	if resp.Content == "" {
+	if resp == "" {
 		checkResp.Error = "生成内容失败"
 		return checkResp, nil
 	}
-	checkResp.Content = resp.Content
+	checkResp.Content = resp
 	return checkResp, nil
 }
 
@@ -286,7 +287,7 @@ func GetChatModel(ctx context.Context, model *domain.ModelMetadata) (model.BaseC
 }
 
 // 以下是辅助函数，用于处理模型列表和检查相关的功能
-func getChatModelGenerateChat(ctx context.Context, provider consts.ModelProvider, modelType consts.ModelType, baseURL string, req *domain.CheckModelReq) (*schema.Message, error) {
+func getChatModelGenerateChat(ctx context.Context, provider consts.ModelProvider, modelType consts.ModelType, baseURL string, req *domain.CheckModelReq) (string, error) {
 	chatModel, err := GetChatModel(ctx, &domain.ModelMetadata{
 		Provider:   provider,
 		ModelName:  req.Model,
@@ -297,13 +298,49 @@ func getChatModelGenerateChat(ctx context.Context, provider consts.ModelProvider
 		ModelType:  modelType,
 	})
 	if err != nil {
-		return nil, err
+		return "", err
 	}
 
-	return chatModel.Generate(ctx, []*schema.Message{
+	genResp, err := chatModel.Generate(ctx, []*schema.Message{
 		schema.SystemMessage("You are a helpful assistant."),
 		schema.UserMessage("hi"),
 	})
+	// 非流式生成失败，尝试流式生成
+	if err != nil || genResp.Content == "" {
+		log.Printf("Generate chat failed, err: %v", err)
+		streamRes, streamErr := streamCheck(ctx, &chatModel)
+		if streamErr != nil {
+			log.Printf("Stream chat failed, err: %v", streamErr)
+			return "", err
+		}
+		return streamRes, nil
+	}
+
+	return genResp.Content, nil
+}
+
+func streamCheck(ctx context.Context, chatModel *model.BaseChatModel) (string, error) {
+	var res string
+	streamResult, err := (*chatModel).Stream(ctx, []*schema.Message{
+		schema.SystemMessage("You are a helpful assistant."),
+		schema.UserMessage("hi"),
+	})
+	if err != nil {
+		return "", err
+	}
+
+	for {
+		chunk, err := streamResult.Recv()
+		if err == io.EOF {
+			break
+		}
+		if err != nil {
+			// 错误处理
+		}
+		// 响应片段处理
+		res += chunk.Content
+	}
+	return res, nil
 }
 
 // baseURL添加/v1
@@ -374,7 +411,7 @@ func reqModelListApi[T domain.ModelResponseParser](req *domain.ModelListReq, htt
 }
 
 func generateBaseURLFixSuggestion(errContent string, baseURL string, provider consts.ModelProvider) string {
-	var is404, isLocal, hasPath , isOther bool
+	var is404, isLocal, hasPath, isOther bool
 	if strings.Contains(errContent, "404") || strings.Contains(errContent, "connection refused") {
 		is404 = true
 	}
