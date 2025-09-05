@@ -14,6 +14,7 @@ import {
 } from '@mui/material';
 import { Icon, message, Modal, ThemeProvider } from '@c-x/ui';
 import Card from './components/card';
+import ModelTagsWithLabel from './components/ModelTagsWithLabel';
 import React, { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import {
@@ -727,7 +728,16 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                     >
                       {modelUserList.map((it) => (
                         <MenuItem key={it.model} value={it.model}>
-                          {it.model}
+                          <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                            <Box sx={{ flex: 1 }}>{it.model}</Box>
+                            <ModelTagsWithLabel 
+                              model_id={it.model} 
+                              provider={providerBrand} 
+                              size={10}
+                              showLabel={false}
+                              showTooltip={false}
+                            />
+                          </Box>
                         </MenuItem>
                       ))}
                     </TextField>
