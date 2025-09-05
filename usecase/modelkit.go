@@ -335,7 +335,7 @@ func streamCheck(ctx context.Context, chatModel *model.BaseChatModel) (string, e
 			break
 		}
 		if err != nil {
-			// 错误处理
+			return "", err
 		}
 		// 响应片段处理
 		res += chunk.Content
