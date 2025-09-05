@@ -5,7 +5,7 @@ import {
   isRerankModel,
   isVisionModel,
   isWebSearchModel
-} from '../utils'
+} from '../utils/model'
 import { FC, memo, useLayoutEffect, useMemo, useRef, useState } from 'react'
 import styled from 'styled-components'
 import { useTranslation } from 'react-i18next'
