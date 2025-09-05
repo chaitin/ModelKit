@@ -27,7 +27,8 @@ import { DEFAULT_MODEL_PROVIDERS } from './constants/providers';
 import { getLocaleMessage } from './constants/locale';
 import './assets/fonts/iconfont';
 import { lightTheme } from './theme';
-import { isValidURL, getModelGroup } from './utils';
+import { isValidURL } from './utils';
+import { getModelGroup } from './utils/model';
 
 const titleMap: Record<string, string> = {
   ["llm"]: '对话模型',
@@ -87,6 +88,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
   });
 
   const providerBrand = watch('provider');
+  const baseUrl = watch('base_url');
 
   const [modelUserList, setModelUserList] = useState<{ model: string }[]>([]);
 
@@ -127,6 +129,23 @@ export const ModelModal: React.FC<ModelModalProps> = ({
     refresh();
   };
 
+  // 获取处理后的URL（与灰色显示逻辑一致）
+  const getProcessedUrl = (baseUrl: string, provider: string) => {
+    if (!providers[provider].urlWrite) {
+      return baseUrl;
+    }
+    if (baseUrl.endsWith('#')) {
+      return baseUrl.replace('#', '');
+    }
+    if (baseUrl.endsWith('/')) {
+      return baseUrl.slice(0, -1);
+    }
+    if (baseUrl) {
+      return baseUrl + '/v1';
+    }
+    return baseUrl;
+  };
+
   const getModel = (value: AddModelForm) => {
     let header = '';
     if (value.api_header_key && value.api_header_value) {
@@ -137,7 +156,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
     modelService.listModel({
       model_type,
       api_key: value.api_key,
-      base_url: value.base_url,
+      base_url: getProcessedUrl(value.base_url, value.provider),
       provider: value.provider as Exclude<typeof value.provider, 'Other'>,
       api_header: value.api_header || header,
     })
@@ -184,7 +203,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       model_type,
       model_name: value.model_name,
       api_key: value.api_key,
-      base_url: value.base_url,
+      base_url: getProcessedUrl(value.base_url, value.provider),
       api_version: value.api_version,
       provider: value.provider,
       api_header: value.api_header || header,
@@ -200,7 +219,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
           modelService.updateModel({
             api_key: value.api_key,
             model_type,
-            base_url: value.base_url,
+            base_url: getProcessedUrl(value.base_url, value.provider),
             model_name: value.model_name,
             api_header: value.api_header || header,
             api_version: value.api_version,
@@ -237,7 +256,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
           modelService.createModel({
             model_type,
             api_key: value.api_key,
-            base_url: value.base_url,
+            base_url: getProcessedUrl(value.base_url, value.provider),
             model_name: value.model_name,
             api_header: value.api_header || header,
             provider: value.provider as Exclude<typeof value.provider, 'Other'>,
@@ -540,6 +559,26 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                 />
               )}
             />
+            {baseUrl && providers[providerBrand].urlWrite && (
+              <Stack
+                direction={'row'}
+                alignItems={'center'}
+                justifyContent={'space-between'}
+                sx={{
+                  fontSize: 12,
+                  color: 'text.secondary',
+                  mt: 0.5,
+                }}
+              >
+                <Box sx={{ wordBreak: 'break-all', flex: 1 }}>
+                  {/* 如果URL以#结尾，显示去掉#的原始URL；如果以/结尾，去掉/且不添加/v1；否则在URL结尾自动添加/v1 */}
+                  {baseUrl.endsWith('#') ? baseUrl.replace('#', '') : (baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : (baseUrl && !baseUrl.endsWith('/v1') ? baseUrl + '/v1' : baseUrl))}
+                </Box>
+                <Box sx={{ ml: 2, flexShrink: 0, fontSize: 10, opacity: 0.7 }}>
+                  /结尾忽略V1版本，#结尾强制使用输入地址
+                </Box>
+              </Stack>
+            )}
             <Stack
               direction={'row'}
               alignItems={'center'}

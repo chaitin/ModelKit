@@ -29,22 +29,6 @@ export const isValidURL = (url: string): string => {
       return "请使用宿主机主机名(linux:172.17.0.1, mac/windows:host.docker.internal)";
     }
 
-    // 3. 检查是否以斜杠结尾
-    if (url.endsWith('/')) {
-      return "请去掉URL末尾的斜杠";
-    }
-
-    // 4. 检查路径中是否包含 /chat/completions
-    if (urlObj.pathname.includes('/chat/completions')) {
-      return "请去掉URL中的/chat/completions路径";
-    }
-
-    // 5. 检查是否以 /v+数字 结尾 或者 包含/v+数字/
-    const pathPattern = /\/v\d+(\/.*)?$/;
-    if (!pathPattern.test(urlObj.pathname)) {
-      return "模型供应商必须支持与 OpenAI 兼容的 API 格式";
-    }
-
     return "";
   } catch {
     return "URL格式错误";
