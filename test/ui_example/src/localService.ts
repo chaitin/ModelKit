@@ -8,9 +8,8 @@ import {
   ModelListItem,
 } from '@yokowu/modelkit-ui';
 
-
-// 本地Go服务的基础URL
-const BASE_URL = 'http://localhost:8080/api/v1/modelkit';
+// 本地Go服务的基础URL - 从环境变量读取，如果没有则使用默认值
+const BASE_URL = import.meta.env.VITE_API_BASE_URL || 'http://10.2.101.122:8080/api/v1/modelkit';
 
 // API响应格式
 interface ApiResponse<T = any> {

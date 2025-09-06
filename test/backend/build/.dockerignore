@@ -1,0 +1,74 @@
+# Git 相关文件
+.git
+.gitignore
+.github
+
+# 文档文件
+*.md
+README*
+CONTRIBUTING*
+LICENSE*
+docs/
+
+# 构建产物
+build/
+dist/
+target/
+*.exe
+*.dll
+*.so
+*.dylib
+
+# 测试文件
+*_test.go
+testdata/
+*.test
+coverage.out
+
+# IDE 和编辑器文件
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+Thumbs.db
+
+# 临时文件
+*.tmp
+*.temp
+*.log
+
+# Node.js 相关（如果有前端代码）
+node_modules/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+.npm
+.yarn
+package-lock.json
+yarn.lock
+pnpm-lock.yaml
+
+# 环境配置文件
+.env
+.env.local
+.env.*.local
+
+# 缓存目录
+.cache/
+
+# 其他不需要的文件
+*.tar
+*.tar.gz
+*.zip
+*.rar
+
+# UI 相关文件（不需要在后端镜像中）
+ui/
+test/ui_example/
+
+# 镜像文件
+*.tar
+*.tar.gz
+modelmodal-example-latest.tar
