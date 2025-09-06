@@ -28,7 +28,7 @@ import { getLocaleMessage } from './constants/locale';
 import './assets/fonts/iconfont';
 import { lightTheme } from './theme';
 import { isValidURL } from './utils';
-import { getModelGroup } from './utils/model';
+import { getModelGroup, getModelLogo } from './utils/model';
 
 const titleMap: Record<string, string> = {
   ["llm"]: '对话模型',
@@ -785,7 +785,16 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                           ...models.map((it) => (
                             <MenuItem key={it.model} value={it.model}>
                               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
-                                <Box sx={{ flex: 1 }}>{it.model}</Box>
+                                <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                                  {getModelLogo(it.model) && (
+                                    <Box component="img" 
+                                      src={getModelLogo(it.model)} 
+                                      alt={`${it.model} logo`}
+                                      sx={{ width: 20, height: 20, mr: 1, borderRadius: '50%' }}
+                                    />
+                                  )}
+                                  {it.model}
+                                </Box>
                                 <ModelTagsWithLabel 
                                   model_id={it.model} 
                                   provider={providerBrand} 
