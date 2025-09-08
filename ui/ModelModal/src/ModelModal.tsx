@@ -135,15 +135,17 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       return baseUrl;
     }
     if (baseUrl.endsWith('#')) {
-      return baseUrl.replace('#', '');
+      return baseUrl.replace('#', '')
     }
-    if (baseUrl.endsWith('/')) {
-      return baseUrl.slice(0, -1);
+    const forceUseOriginalHost = () => {
+      if (baseUrl.endsWith('/')) {
+        return true
+      }
+
+      return baseUrl.endsWith('volces.com/api/v3')
     }
-    if (baseUrl) {
-      return baseUrl + '/v1';
-    }
-    return baseUrl;
+
+    return forceUseOriginalHost() ? baseUrl : `${baseUrl}/v1`
   };
 
   const getModel = (value: AddModelForm) => {
@@ -572,7 +574,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
               >
                 <Box sx={{ wordBreak: 'break-all', flex: 1 }}>
                   {/* 如果URL以#结尾，显示去掉#的原始URL；如果以/结尾，去掉/且不添加/v1；否则在URL结尾自动添加/v1 */}
-                  {baseUrl.endsWith('#') ? baseUrl.replace('#', '') : (baseUrl.endsWith('/') ? baseUrl.slice(0, -1) : (baseUrl && !baseUrl.endsWith('/v1') ? baseUrl + '/v1' : baseUrl))}
+                  {baseUrl && providers[providerBrand].urlWrite && getProcessedUrl(baseUrl, providerBrand)}
                 </Box>
                 <Box sx={{ ml: 2, flexShrink: 0, fontSize: 10, opacity: 0.7 }}>
                   /结尾忽略V1版本，#结尾强制使用输入地址
@@ -787,17 +789,17 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                               <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
                                 <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
                                   {getModelLogo(it.model) && (
-                                    <Box component="img" 
-                                      src={getModelLogo(it.model)} 
+                                    <Box component="img"
+                                      src={getModelLogo(it.model)}
                                       alt={`${it.model} logo`}
                                       sx={{ width: 20, height: 20, mr: 1, borderRadius: '50%' }}
                                     />
                                   )}
                                   {it.model}
                                 </Box>
-                                <ModelTagsWithLabel 
-                                  model_id={it.model} 
-                                  provider={providerBrand} 
+                                <ModelTagsWithLabel
+                                  model_id={it.model}
+                                  provider={providerBrand}
                                   size={10}
                                   showLabel={false}
                                   showTooltip={false}

@@ -692,7 +692,7 @@ export function getModelLogo(modelId: string) {
   for (const key in logoMap) {
     const regex = new RegExp(key, 'i')
     if (regex.test(modelId)) {
-      return logoMap[key]
+      return logoMap[key as keyof typeof logoMap]
     }
   }
 

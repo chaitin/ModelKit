@@ -1,5 +1,5 @@
-import { CloseOutlined } from '@ant-design/icons'
-import { Tooltip } from 'antd'
+import { Clear } from '@mui/icons-material'
+import { Tooltip } from '@mui/material'
 import { CSSProperties, FC, memo, useMemo } from 'react'
 import styled from 'styled-components'
 
@@ -56,7 +56,7 @@ const CustomTag: FC<CustomTagProps> = ({
   )
 
   return tooltip ? (
-    <Tooltip title={tooltip} placement="top" mouseEnterDelay={0.3}>
+    <Tooltip title={tooltip} placement="top">
       {tagContent}
     </Tooltip>
   ) : (
@@ -85,7 +85,7 @@ const Tag = styled.div<{ $color: string; $size: number; $closable: boolean }>`
   }
 `
 
-const CloseIcon = styled(CloseOutlined)<{ $size: number; $color: string }>`
+const CloseIcon = styled(Clear)<{ $size: number; $color: string }>`
   cursor: pointer;
   font-size: ${({ $size }) => $size * 0.8}px;
   color: ${({ $color }) => $color};

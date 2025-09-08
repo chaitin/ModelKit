@@ -19,12 +19,7 @@ export const isValidURL = (url: string): string => {
   try {
     const urlObj = new URL(url);
 
-    // 1. 检查是否有 schema
-    if (!urlObj.protocol) {
-      return "URL 必须包含协议（如 http:// 或 https://）";
-    }
-
-    // 2. 检查是否是 localhost 或 127.0.0.1
+    // 1. 检查是否是 localhost 或 127.0.0.1
     if (urlObj.hostname === 'localhost' || urlObj.hostname === '127.0.0.1') {
       return "请使用宿主机主机名(linux:172.17.0.1, mac/windows:host.docker.internal)";
     }
