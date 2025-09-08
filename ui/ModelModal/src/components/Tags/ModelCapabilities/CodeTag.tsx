@@ -15,7 +15,7 @@ export const CodeTag = ({ size, showTooltip, showLabel, ...restProps }: Props) =
     <CustomTag
       size={size}
       color="#6366f1"
-      icon="Code"
+      icon="代码生成"
       tooltip={showTooltip ? t('models.type.code_generation') : undefined}
       {...restProps}>
       {showLabel ? t('models.type.code_generation') : ''}
