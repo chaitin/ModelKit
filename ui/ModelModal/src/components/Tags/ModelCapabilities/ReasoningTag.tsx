@@ -14,7 +14,7 @@ export const ReasoningTag = ({ size, showTooltip, showLabel, ...restProps }: Pro
     <CustomTag
       size={size}
       color="#6372bd"
-      icon="推理"
+      icon="深度思考"
       tooltip={showTooltip ? t('models.type.reasoning') : undefined}
       {...restProps}>
       {showLabel ? t('models.type.reasoning') : ''}
