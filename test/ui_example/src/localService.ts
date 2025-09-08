@@ -78,7 +78,7 @@ export class LocalModelService implements ModelService {
   async listModel(data: ListModelReq): Promise<{ models: ModelListItem[]; error?: string }> {
       const queryParams = new URLSearchParams();
       if (data.provider) queryParams.append('provider', data.provider);
-      if (data.model_type) queryParams.append('model_type', data.model_type);
+      if (data.model_type) queryParams.append('type', data.model_type);
       if (data.base_url) queryParams.append('base_url', data.base_url);
       if (data.api_key) queryParams.append('api_key', data.api_key);
       if (data.api_header) queryParams.append('api_header', data.api_header);

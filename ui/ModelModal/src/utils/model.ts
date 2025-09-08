@@ -1,5 +1,5 @@
 import { getLowerBaseModelName } from "."
-import { CLAUDE_SUPPORTED_WEBSEARCH_REGEX, DOUBAO_THINKING_MODEL_REGEX, EMBEDDING_REGEX, FUNCTION_CALLING_REGEX, GEMINI_SEARCH_REGEX, REASONING_REGEX, RERANKING_REGEX, TEXT_TO_IMAGE_REGEX, VISION_REGEX } from "./regex";
+import { CLAUDE_SUPPORTED_WEBSEARCH_REGEX, CODE_REGEX, DOUBAO_THINKING_MODEL_REGEX, EMBEDDING_REGEX, FUNCTION_CALLING_REGEX, GEMINI_SEARCH_REGEX, REASONING_REGEX, RERANKING_REGEX, TEXT_TO_IMAGE_REGEX, VISION_REGEX } from "./regex";
 import { PERPLEXITY_SEARCH_MODELS } from "@/constants/models";
 
 import Ai360ModelLogo from '@/assets/images/models/360.png'
@@ -217,6 +217,15 @@ export function isVisionModel(model_id: string, provider: string): boolean {
   }
 
   return VISION_REGEX.test(modelId) || false
+}
+
+export function isCodeModel(model_id: string, provider: string): boolean {
+  if (!model_id || isEmbeddingModel(model_id, provider) || isRerankModel(model_id)) {
+    return false
+  }
+
+  const modelId = getLowerBaseModelName(model_id)
+  return CODE_REGEX.test(modelId) || false
 }
 
 export function isTextToImageModel(model_id: string): boolean {

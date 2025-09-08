@@ -6,6 +6,9 @@ export const VISION_REGEX = new RegExp(
   'i'
 )
 
+// 检查模型是否支持代码功能
+export const CODE_REGEX = /(?:^o3$|.*(code|claude\s+sonnet|claude\s+opus|gpt-4\.1|gpt-4o|gpt-5|gemini[\s-]+2\.5|o4-mini|kimi-k2).*)/i
+
 // 重排模型
 export const RERANKING_REGEX = /(?:rerank|re-rank|re-ranker|re-ranking|retrieval|retriever)/i
 

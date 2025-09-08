@@ -1,4 +1,5 @@
 import {
+  isCodeModel,
   isEmbeddingModel,
   isFunctionCallingModel,
   isReasoningModel,
@@ -11,6 +12,7 @@ import styled from 'styled-components'
 import { useTranslation } from 'react-i18next'
 import CustomTag from './Tags/CustomTag'
 import {
+  CodeTag,
   EmbeddingTag,
   ReasoningTag,
   RerankerTag,
@@ -83,6 +85,7 @@ const ModelTagsWithLabel: FC<ModelTagsProps> = ({
       {showToolsCalling && isFunctionCallingModel(model_id, provider) && (
         <ToolsCallingTag size={size} showTooltip={showTooltip} showLabel={shouldShowLabel} />
       )}
+      {isCodeModel(model_id, provider) && <CodeTag size={size} showTooltip={showTooltip} showLabel={shouldShowLabel} />}
       {isEmbeddingModel(model_id, provider) && <EmbeddingTag size={size} />}
       {isRerankModel(model_id) && <RerankerTag size={size} />}
     </Container>
