@@ -11,9 +11,11 @@ import {
   AccordionDetails,
   Checkbox,
   FormControlLabel,
+  ListSubheader,
 } from '@mui/material';
 import { Icon, message, Modal, ThemeProvider } from '@c-x/ui';
 import Card from './components/card';
+import ModelTagsWithLabel from './components/ModelTagsWithLabel';
 import React, { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import {
@@ -26,6 +28,7 @@ import { getLocaleMessage } from './constants/locale';
 import './assets/fonts/iconfont';
 import { lightTheme } from './theme';
 import { isValidURL } from './utils';
+import { getModelGroup, getModelLogo } from './utils/model';
 
 const titleMap: Record<string, string> = {
   ["llm"]: '对话模型',
@@ -85,6 +88,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
   });
 
   const providerBrand = watch('provider');
+  const baseUrl = watch('base_url');
 
   const [modelUserList, setModelUserList] = useState<{ model: string }[]>([]);
 
@@ -125,6 +129,25 @@ export const ModelModal: React.FC<ModelModalProps> = ({
     refresh();
   };
 
+  // 获取处理后的URL（与灰色显示逻辑一致）
+  const getProcessedUrl = (baseUrl: string, provider: string) => {
+    if (!providers[provider].urlWrite) {
+      return baseUrl;
+    }
+    if (baseUrl.endsWith('#')) {
+      return baseUrl.replace('#', '')
+    }
+    const forceUseOriginalHost = () => {
+      if (baseUrl.endsWith('/')) {
+        return true
+      }
+
+      return baseUrl.endsWith('volces.com/api/v3')
+    }
+
+    return forceUseOriginalHost() ? baseUrl : `${baseUrl}/v1`
+  };
+
   const getModel = (value: AddModelForm) => {
     let header = '';
     if (value.api_header_key && value.api_header_value) {
@@ -135,7 +158,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
     modelService.listModel({
       model_type,
       api_key: value.api_key,
-      base_url: value.base_url,
+      base_url: getProcessedUrl(value.base_url, value.provider),
       provider: value.provider as Exclude<typeof value.provider, 'Other'>,
       api_header: value.api_header || header,
     })
@@ -182,7 +205,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       model_type,
       model_name: value.model_name,
       api_key: value.api_key,
-      base_url: value.base_url,
+      base_url: getProcessedUrl(value.base_url, value.provider),
       api_version: value.api_version,
       provider: value.provider,
       api_header: value.api_header || header,
@@ -198,7 +221,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
           modelService.updateModel({
             api_key: value.api_key,
             model_type,
-            base_url: value.base_url,
+            base_url: getProcessedUrl(value.base_url, value.provider),
             model_name: value.model_name,
             api_header: value.api_header || header,
             api_version: value.api_version,
@@ -235,7 +258,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
           modelService.createModel({
             model_type,
             api_key: value.api_key,
-            base_url: value.base_url,
+            base_url: getProcessedUrl(value.base_url, value.provider),
             model_name: value.model_name,
             api_header: value.api_header || header,
             provider: value.provider as Exclude<typeof value.provider, 'Other'>,
@@ -538,6 +561,26 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                 />
               )}
             />
+            {baseUrl && providers[providerBrand].urlWrite && (
+              <Stack
+                direction={'row'}
+                alignItems={'center'}
+                justifyContent={'space-between'}
+                sx={{
+                  fontSize: 12,
+                  color: 'text.secondary',
+                  mt: 0.5,
+                }}
+              >
+                <Box sx={{ wordBreak: 'break-all', flex: 1 }}>
+                  {/* 如果URL以#结尾，显示去掉#的原始URL；如果以/结尾，去掉/且不添加/v1；否则在URL结尾自动添加/v1 */}
+                  {baseUrl && providers[providerBrand].urlWrite && getProcessedUrl(baseUrl, providerBrand)}
+                </Box>
+                <Box sx={{ ml: 2, flexShrink: 0, fontSize: 10, opacity: 0.7 }}>
+                  /结尾忽略V1版本，#结尾强制使用输入地址
+                </Box>
+              </Stack>
+            )}
             <Stack
               direction={'row'}
               alignItems={'center'}
@@ -725,11 +768,47 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                       error={!!errors.model_name}
                       helperText={errors.model_name?.message}
                     >
-                      {modelUserList.map((it) => (
-                        <MenuItem key={it.model} value={it.model}>
-                          {it.model}
-                        </MenuItem>
-                      ))}
+                      {(() => {
+                        // 按组分类模型
+                        const groupedModels = modelUserList.reduce((acc, model) => {
+                          const group = getModelGroup(model.model);
+                          if (!acc[group]) {
+                            acc[group] = [];
+                          }
+                          acc[group].push(model);
+                          return acc;
+                        }, {} as Record<string, typeof modelUserList>);
+
+                        // 渲染分组后的模型
+                        return Object.entries(groupedModels).map(([group, models]) => [
+                          <ListSubheader key={`header-${group}`} sx={{ backgroundColor: 'transparent', fontWeight: 'bold', position: 'static' }}>
+                            {group}
+                          </ListSubheader>,
+                          ...models.map((it) => (
+                            <MenuItem key={it.model} value={it.model}>
+                              <Box sx={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', width: '100%' }}>
+                                <Box sx={{ display: 'flex', alignItems: 'center', flex: 1 }}>
+                                  {getModelLogo(it.model) && (
+                                    <Box component="img"
+                                      src={getModelLogo(it.model)}
+                                      alt={`${it.model} logo`}
+                                      sx={{ width: 20, height: 20, mr: 1, borderRadius: '50%' }}
+                                    />
+                                  )}
+                                  {it.model}
+                                </Box>
+                                <ModelTagsWithLabel
+                                  model_id={it.model}
+                                  provider={providerBrand}
+                                  size={10}
+                                  showLabel={false}
+                                  showTooltip={false}
+                                />
+                              </Box>
+                            </MenuItem>
+                          ))
+                        ]).flat();
+                      })()}
                     </TextField>
                   )}
                 />

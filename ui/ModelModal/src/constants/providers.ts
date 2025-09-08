@@ -120,7 +120,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     rerank: false,
     analysis: true,
     modelDocumentUrl: 'https://github.com/ollama/ollama/tree/main/docs',
-    defaultBaseUrl: 'http://172.17.0.1:11434/v1',
+    defaultBaseUrl: 'http://172.17.0.1:11434',
   },
   SiliconFlow: {
     label: 'SiliconFlow',

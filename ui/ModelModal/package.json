@@ -55,15 +55,20 @@
   },
   "dependencies": {
     "@c-x/ui": "^1.0.9",
+    "@emotion/react": "^11.14.0",
+    "@emotion/styled": "^11.14.1",
+    "@mui/icons-material": "^7.3.2",
     "@mui/material": "^6.4.12",
     "react": "^19.1.0",
     "react-activity-calendar": "^2.7.12",
     "react-copy-to-clipboard": "^5.1.0",
     "react-dom": "^19.1.0",
     "react-hook-form": "^7.56.4",
+    "react-i18next": "^15.7.3",
     "react-markdown": "^10.1.0",
     "react-router-dom": "^7.6.0",
-    "react-syntax-highlighter": "^15.6.1"
+    "react-syntax-highlighter": "^15.6.1",
+    "styled-components": "^6.1.19"
   },
   "devDependencies": {
     "@types/node": "^24.2.1",

@@ -110,7 +110,19 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 	default:
 		models, err := reqModelListApi(req, httpClient, &domain.OpenAIResp{})
 
-		if err != nil {
+		// ollama可能有url输入格式问题
+		if err != nil && provider == consts.ModelProviderOllama {
+			msg := generateBaseURLFixSuggestion(err.Error(), req.BaseURL, provider)
+			if msg == "" {
+				return &domain.ModelListResp{
+					Error: err.Error(),
+				}, nil
+			} else {
+				return &domain.ModelListResp{
+					Error: msg,
+				}, nil
+			}
+		} else if err != nil {
 			return &domain.ModelListResp{
 				Error: err.Error(),
 			}, nil
@@ -184,8 +196,8 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckMo
 	provider := consts.ParseModelProvider(req.Provider)
 
 	resp, err := getChatModelGenerateChat(ctx, provider, modelType, req.BaseURL, req)
-	// 其他模型供应商，尝试修复baseURL
-	if err != nil && provider == consts.ModelProviderOther {
+	// 可编辑url的供应商，尝试修复baseURL
+	if err != nil && (provider == consts.ModelProviderOther || provider == consts.ModelProviderOllama || provider == consts.ModelProviderAzureOpenAI) {
 		msg := generateBaseURLFixSuggestion(err.Error(), req.BaseURL, provider)
 		if msg == "" {
 			checkResp.Error = err.Error()
@@ -380,6 +392,16 @@ func baseURLReplaceHost(inputURL string) (string, error) {
 	return rawURL.String(), nil
 }
 
+func baseURLReplaceSlash(inputURL string) (string, error) {
+	rawURL, err := url.Parse(inputURL)
+	if err != nil {
+		return "", err
+	}
+	// 去掉末尾的/
+	rawURL.Path = strings.TrimSuffix(rawURL.Path, "/")
+	return rawURL.String(), nil
+}
+
 // reqModelListApi 获取OpenAI兼容API的模型列表
 // 使用泛型和接口抽象来支持不同供应商的响应格式
 func reqModelListApi[T domain.ModelResponseParser](req *domain.ModelListReq, httpClient *http.Client, responseType T) ([]domain.ModelListItem, error) {
@@ -411,13 +433,17 @@ func reqModelListApi[T domain.ModelResponseParser](req *domain.ModelListReq, htt
 }
 
 func generateBaseURLFixSuggestion(errContent string, baseURL string, provider consts.ModelProvider) string {
-	var is404, isLocal, hasPath, isOther bool
-	if strings.Contains(errContent, "404") || strings.Contains(errContent, "connection refused") {
-		is404 = true
-	}
+	var is404, isLocal, hasPath, isOther, isEndWithSlash bool
 	parsedURL, err := url.Parse(baseURL)
 	if err != nil {
 		return ""
+	}
+
+	if strings.HasSuffix(baseURL, "/") {
+		isEndWithSlash = true
+	}
+	if strings.Contains(errContent, "404") || strings.Contains(errContent, "connection refused") {
+		is404 = true
 	}
 	if strings.Contains(parsedURL.Host, consts.LocalHost) || strings.Contains(parsedURL.Host, consts.LocalIP) {
 		isLocal = true
@@ -428,8 +454,11 @@ func generateBaseURLFixSuggestion(errContent string, baseURL string, provider co
 	isOther = provider == consts.ModelProviderOther
 
 	var errType consts.AddModelBaseURLErrType
-	// 404 且是本地地址，建议使用宿主机主机名
-	if is404 && isLocal {
+	if strings.Contains(errContent, "chat/completions") {
+		errType = consts.AddModelBaseURLErrTypeChatCompletions
+	} else if isEndWithSlash {
+		errType = consts.AddModelBaseURLErrTypeSlash
+	} else if is404 && isLocal { // 404 且是本地地址，建议使用宿主机主机名
 		errType = consts.AddModelBaseURLErrTypeHost
 	} else if !isLocal && !hasPath && isOther {
 		// 不是本地地址，且没有path，建议在API地址末尾添加/v1
@@ -451,6 +480,14 @@ func generateBaseURLFixSuggestion(errContent string, baseURL string, provider co
 			return ""
 		}
 		return "建议在API地址末尾添加/v1: " + fixedURL
+	case consts.AddModelBaseURLErrTypeSlash:
+		fixedURL, err := baseURLReplaceSlash(baseURL)
+		if err != nil {
+			return ""
+		}
+		return "请去掉API地址末尾的/: " + fixedURL
+	case consts.AddModelBaseURLErrTypeChatCompletions:
+		return "请去掉/chat/completions路径"
 	default:
 		return ""
 	}
