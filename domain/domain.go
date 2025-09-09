@@ -1,7 +1,7 @@
 package domain
 
 import (
-	"github.com/chaitin/ModelKit/consts"
+	"github.com/chaitin/ModelKit/v2/consts"
 )
 
 type ModelKit interface {

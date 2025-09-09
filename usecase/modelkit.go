@@ -27,10 +27,10 @@ import (
 	"google.golang.org/api/option"
 	"google.golang.org/genai"
 
-	"github.com/chaitin/ModelKit/consts"
-	"github.com/chaitin/ModelKit/domain"
-	"github.com/chaitin/ModelKit/pkg/request"
-	"github.com/chaitin/ModelKit/utils"
+	"github.com/chaitin/ModelKit/v2/consts"
+	"github.com/chaitin/ModelKit/v2/domain"
+	"github.com/chaitin/ModelKit/v2/pkg/request"
+	"github.com/chaitin/ModelKit/v2/utils"
 )
 
 func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelListResp, error) {

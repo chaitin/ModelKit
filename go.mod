@@ -1,4 +1,4 @@
-module github.com/chaitin/ModelKit
+module github.com/chaitin/ModelKit/v2
 
 go 1.24.0
 

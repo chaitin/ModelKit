@@ -1,8 +1,8 @@
 package usecase
 
 import (
-	"github.com/chaitin/ModelKit/consts"
-	"github.com/chaitin/ModelKit/domain"
+	"github.com/chaitin/ModelKit/v2/consts"
+	"github.com/chaitin/ModelKit/v2/domain"
 )
 
 type OpenAI struct{}
