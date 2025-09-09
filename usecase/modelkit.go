@@ -554,12 +554,6 @@ func generateBaseURLFixSuggestion(errContent string, baseURL string, provider co
 			return ""
 		}
 		return "建议在API地址使用宿主机主机名: " + fixedURL
-	case consts.AddModelBaseURLErrTypeV1Path:
-		fixedURL, err := baseURLAddV1(baseURL)
-		if err != nil {
-			return ""
-		}
-		return "建议在API地址末尾添加/v1: " + fixedURL
 	case consts.AddModelBaseURLErrTypeSlash:
 		fixedURL, err := baseURLReplaceSlash(baseURL)
 		if err != nil {
