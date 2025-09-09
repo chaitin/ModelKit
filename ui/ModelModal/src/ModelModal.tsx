@@ -12,7 +12,10 @@ import {
   Checkbox,
   FormControlLabel,
   ListSubheader,
+  InputAdornment,
+  IconButton,
 } from '@mui/material';
+import { Visibility, VisibilityOff } from '@mui/icons-material';
 import { Icon, message, Modal, ThemeProvider } from '@c-x/ui';
 import Card from './components/card';
 import ModelTagsWithLabel from './components/ModelTagsWithLabel';
@@ -100,6 +103,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
   const [addModelError, setAddModelError] = useState('');
   const [success, setSuccess] = useState(false);
   const [expandAdvanced, setExpandAdvanced] = useState(false);
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleReset = () => {
     onClose();
@@ -633,10 +637,23 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                   {...field}
                   fullWidth
                   size='small'
-                  type='password'
+                  type={showPassword ? 'text' : 'password'}
                   placeholder=''
                   error={!!errors.api_key}
                   helperText={errors.api_key?.message}
+                  InputProps={{
+                    endAdornment: (
+                      <InputAdornment position="end">
+                        <IconButton
+                          aria-label="toggle password visibility"
+                          onClick={() => setShowPassword(!showPassword)}
+                          edge="end"
+                        >
+                          {showPassword ? <VisibilityOff /> : <Visibility />}
+                        </IconButton>
+                      </InputAdornment>
+                    ),
+                  }}
                   onChange={(e) => {
                     field.onChange(e.target.value);
                     setModelUserList([]);
@@ -775,7 +792,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                         MenuProps: {
                           PaperProps: {
                             sx: {
-                              maxHeight: 300,
+                              maxHeight: 450,
                               '& .MuiList-root': {
                                 paddingTop: 0,
                               }

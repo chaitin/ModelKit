@@ -37,10 +37,10 @@ const ModelTagFilter: React.FC<ModelTagFilterProps> = ({
   // 定义可用的标签类型
   const availableTags = [
     { key: 'all', label: '全部', color: 'default' as const },
-    { key: 'reasoning', label: '深度思考', color: 'primary' as const },
-    { key: 'vision', label: '视觉', color: 'secondary' as const },
-    { key: 'function_calling', label: '工具调用', color: 'success' as const },
     { key: 'code', label: '代码生成', color: 'warning' as const },
+    { key: 'reasoning', label: '深度思考', color: 'primary' as const },
+    { key: 'function_calling', label: '工具调用', color: 'success' as const },
+    { key: 'vision', label: '视觉', color: 'secondary' as const },
     { key: 'embedding', label: '向量', color: 'error' as const },
     { key: 'rerank', label: '重排', color: 'default' as const }
   ];
