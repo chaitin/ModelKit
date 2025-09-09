@@ -7,13 +7,15 @@ toolchain go1.24.2
 require (
 	github.com/GoYoko/web v1.4.0
 	github.com/JohannesKaufmann/html-to-markdown/v2 v2.3.3
-	github.com/cloudwego/eino v0.3.51
+	github.com/cloudwego/eino v0.4.7
 	github.com/cloudwego/eino-ext/components/model/deepseek v0.0.0-20250522060253-ddb617598b09
 	github.com/cloudwego/eino-ext/components/model/gemini v0.1.2
+	github.com/cloudwego/eino-ext/components/model/ollama v0.1.2
 	github.com/cloudwego/eino-ext/components/model/openai v0.0.0-20250710065240-482d48888f25
 	github.com/google/generative-ai-go v0.20.1
 	github.com/google/uuid v1.6.0
 	github.com/labstack/echo/v4 v4.13.4
+	github.com/ollama/ollama v0.11.9
 	github.com/yuin/goldmark v1.7.11
 	google.golang.org/api v0.239.0
 	google.golang.org/genai v1.13.0
@@ -28,12 +30,15 @@ require (
 	cloud.google.com/go/longrunning v0.5.7 // indirect
 	github.com/BurntSushi/toml v1.5.0 // indirect
 	github.com/JohannesKaufmann/dom v0.2.0 // indirect
+	github.com/bahlo/generic-list-go v0.2.0 // indirect
+	github.com/buger/jsonparser v1.1.1 // indirect
 	github.com/bytedance/sonic v1.14.0 // indirect
 	github.com/bytedance/sonic/loader v0.3.0 // indirect
 	github.com/cloudwego/base64x v0.1.6 // indirect
 	github.com/cloudwego/eino-ext/libs/acl/openai v0.0.0-20250626133421-3c142631c961 // indirect
 	github.com/cohesion-org/deepseek-go v1.2.8 // indirect
 	github.com/dustin/go-humanize v1.0.1 // indirect
+	github.com/eino-contrib/jsonschema v1.0.0 // indirect
 	github.com/evanphx/json-patch v0.5.2 // indirect
 	github.com/felixge/httpsnoop v1.0.4 // indirect
 	github.com/gabriel-vasile/mimetype v1.4.9 // indirect
@@ -78,6 +83,7 @@ require (
 	github.com/ugorji/go/codec v1.3.0 // indirect
 	github.com/valyala/bytebufferpool v1.0.0 // indirect
 	github.com/valyala/fasttemplate v1.2.2 // indirect
+	github.com/wk8/go-ordered-map/v2 v2.1.8 // indirect
 	github.com/yargevad/filepathx v1.0.0 // indirect
 	go.opentelemetry.io/auto/sdk v1.1.0 // indirect
 	go.opentelemetry.io/contrib/instrumentation/google.golang.org/grpc/otelgrpc v0.61.0 // indirect
