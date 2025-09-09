@@ -16,6 +16,7 @@ import {
 import { Icon, message, Modal, ThemeProvider } from '@c-x/ui';
 import Card from './components/card';
 import ModelTagsWithLabel from './components/ModelTagsWithLabel';
+import ModelTagFilter from './components/ModelTagFilter';
 import React, { useEffect, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import {
@@ -91,6 +92,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
   const baseUrl = watch('base_url');
 
   const [modelUserList, setModelUserList] = useState<{ model: string }[]>([]);
+  const [filteredModelList, setFilteredModelList] = useState<{ model: string; provider: string }[]>([]);
 
   const [loading, setLoading] = useState(false);
   const [modelLoading, setModelLoading] = useState(false);
@@ -119,6 +121,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       support_prompt_caching: false,
     });
     setModelUserList([]);
+    setFilteredModelList([]);
     setSuccess(false);
     setLoading(false);
     setModelLoading(false);
@@ -767,20 +770,35 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                       placeholder=''
                       error={!!errors.model_name}
                       helperText={errors.model_name?.message}
+                      SelectProps={{
+                        MenuProps: {
+                          PaperProps: {
+                            sx: {
+                              maxHeight: 300,
+                              '& .MuiList-root': {
+                                paddingTop: 0,
+                              }
+                            }
+                          }
+                        }
+                      }}
                     >
                       {(() => {
+                        // 使用筛选后的模型列表，如果没有筛选则使用原始列表
+                        const modelsToShow = filteredModelList.length > 0 ? filteredModelList : modelUserList.map(item => ({ model: item.model, provider: providerBrand }));
+                        
                         // 按组分类模型
-                        const groupedModels = modelUserList.reduce((acc, model) => {
+                        const groupedModels = modelsToShow.reduce((acc, model) => {
                           const group = getModelGroup(model.model);
                           if (!acc[group]) {
                             acc[group] = [];
                           }
                           acc[group].push(model);
                           return acc;
-                        }, {} as Record<string, typeof modelUserList>);
+                        }, {} as Record<string, typeof modelsToShow>);
 
                         // 渲染分组后的模型
-                        return Object.entries(groupedModels).map(([group, models]) => [
+                        const modelItems = Object.entries(groupedModels).map(([group, models]) => [
                           <ListSubheader key={`header-${group}`} sx={{ backgroundColor: 'transparent', fontWeight: 'bold', position: 'static' }}>
                             {group}
                           </ListSubheader>,
@@ -808,6 +826,47 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                             </MenuItem>
                           ))
                         ]).flat();
+
+                        return [
+                          <MenuItem
+                            key="sticky-chip"
+                            disableRipple
+                            disableTouchRipple
+                            sx={{
+                              position: 'sticky',
+                              top: 0,
+                              zIndex: 1000,
+                              backgroundColor: '#ffffff !important',
+                              borderBottom: '1px solid',
+                              borderColor: 'divider',
+                              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
+                              '&:hover': {
+                                backgroundColor: '#ffffff !important'
+                              },
+                              '&:focus': {
+                                backgroundColor: '#ffffff !important'
+                              },
+                              cursor: 'default',
+                              '&.Mui-selected': {
+                                backgroundColor: '#ffffff !important'
+                              },
+                              '&.Mui-selected:hover': {
+                                backgroundColor: '#ffffff !important'
+                              }
+                            }}
+                            onClick={(e) => {
+                              e.preventDefault();
+                            }}
+                          >
+                            <ModelTagFilter
+                          models={modelUserList.map(item => ({ model: item.model, provider: providerBrand }))}
+                          onFilteredModelsChange={(filteredModels) => {
+                            setFilteredModelList(filteredModels);
+                          }}
+                        />
+                          </MenuItem>,
+                          ...modelItems
+                        ];
                       })()}
                     </TextField>
                   )}

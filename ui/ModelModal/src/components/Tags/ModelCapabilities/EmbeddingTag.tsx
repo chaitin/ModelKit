@@ -8,5 +8,5 @@ type Props = {
 
 export const EmbeddingTag = ({ size, ...restProps }: Props) => {
   const { t } = useTranslation()
-  return <CustomTag size={size} color="#FFA500" icon="嵌入" {...restProps} />
+  return <CustomTag size={size} color="#FFA500" icon="向量" {...restProps} />
 }
