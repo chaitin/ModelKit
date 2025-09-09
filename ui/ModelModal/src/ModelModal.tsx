@@ -146,9 +146,9 @@ export const ModelModal: React.FC<ModelModalProps> = ({
     }
     const forceUseOriginalHost = () => {
       if (baseUrl.endsWith('/')) {
+        baseUrl = baseUrl.slice(0, -1)
         return true
       }
-
       return baseUrl.endsWith('volces.com/api/v3')
     }
 
@@ -580,8 +580,18 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                 }}
               >
                 <Box sx={{ wordBreak: 'break-all', flex: 1 }}>
-                  {/* 如果URL以#结尾，显示去掉#的原始URL；如果以/结尾，去掉/且不添加/v1；否则在URL结尾自动添加/v1 */}
-                  {baseUrl && providers[providerBrand].urlWrite && getProcessedUrl(baseUrl, providerBrand)}
+                  {/* 根据模型类型显示不同的URL后缀：embedding显示/embeddings，rerank显示/rerank，其他显示/chat/completions */}
+                  {baseUrl && providers[providerBrand].urlWrite && (() => {
+                    const processedUrl = getProcessedUrl(baseUrl, providerBrand);
+                    // 根据模型类型添加不同的后缀
+                    if (model_type === 'embedding') {
+                      return `${processedUrl}/embeddings`;
+                    } else if (model_type === 'rerank' || model_type === 'reranker') {
+                      return `${processedUrl}/rerank`;
+                    } else {
+                      return `${processedUrl}/chat/completions`;
+                    }
+                  })()}
                 </Box>
                 <Box sx={{ ml: 2, flexShrink: 0, fontSize: 10, opacity: 0.7 }}>
                   /结尾忽略V1版本，#结尾强制使用输入地址
