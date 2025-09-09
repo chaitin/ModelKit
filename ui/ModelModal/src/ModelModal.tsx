@@ -586,6 +586,9 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                   {/* 根据模型类型显示不同的URL后缀：embedding显示/embeddings，rerank显示/rerank，其他显示/chat/completions */}
                   {baseUrl && providers[providerBrand].urlWrite && (() => {
                     const processedUrl = getProcessedUrl(baseUrl, providerBrand);
+                    if (baseUrl.endsWith('#')) {
+                      return processedUrl;
+                    }
                     // 根据模型类型添加不同的后缀
                     if (model_type === 'embedding') {
                       return `${processedUrl}/embeddings`;

@@ -534,7 +534,7 @@ func generateBaseURLFixSuggestion(errContent string, baseURL string, provider co
 	isOther = provider == consts.ModelProviderOther
 
 	var errType consts.AddModelBaseURLErrType
-	if strings.Contains(errContent, "chat/completions") {
+	if strings.Contains(baseURL, "chat/completions") {
 		errType = consts.AddModelBaseURLErrTypeChatCompletions
 	} else if isEndWithSlash {
 		errType = consts.AddModelBaseURLErrTypeSlash
