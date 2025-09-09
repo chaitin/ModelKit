@@ -1,6 +1,6 @@
 package domain
 
-import "github.com/chaitin/ModelKit/consts"
+import "github.com/chaitin/ModelKit/v2/consts"
 
 type ModelMetadata struct {
 	ModelName string               `json:"id"`         // 模型的名字
@@ -334,6 +334,7 @@ func getSiliconFlowModels() []ModelMetadata {
 		{ModelName: "Qwen/Qwen3-Coder-30B-A3B-Instruct", Object: "model", Provider: consts.ModelProviderSiliconFlow, ModelType: consts.ModelTypeCoder},
 	}
 }
+
 // 月之暗面模型
 func getMoonshotModels() []ModelMetadata {
 	return []ModelMetadata{

@@ -6,9 +6,9 @@ import (
 
 	"github.com/labstack/echo/v4/middleware"
 
-	"github.com/chaitin/ModelKit/domain"
-	"github.com/chaitin/ModelKit/pkg/log"
-	"github.com/chaitin/ModelKit/usecase"
+	"github.com/chaitin/ModelKit/v2/domain"
+	"github.com/chaitin/ModelKit/v2/pkg/log"
+	"github.com/chaitin/ModelKit/v2/usecase"
 	"github.com/labstack/echo/v4"
 )
 

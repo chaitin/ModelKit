@@ -27,7 +27,7 @@ ModelKit 是一个强大的AI模型管理平台，支持多种AI服务提供商�
 
 #### 后端依赖
 ```bash
-go get github.com/chaitin/ModelKit
+go get github.com/chaitin/ModelKit/v2
 go get github.com/labstack/echo/v4
 go get github.com/go-playground/validator/v10
 ```
@@ -56,8 +56,8 @@ package v1
 
 import (
     "net/http"
-    "github.com/chaitin/ModelKit/domain"
-    "github.com/chaitin/ModelKit/usecase"
+    "github.com/chaitin/ModelKit/v2/domain"
+    "github.com/chaitin/ModelKit/v2/usecase"
     "github.com/labstack/echo/v4"
 )
 

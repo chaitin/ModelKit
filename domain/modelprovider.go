@@ -1,6 +1,6 @@
 package domain
 
-import "github.com/chaitin/ModelKit/consts"
+import "github.com/chaitin/ModelKit/v2/consts"
 
 type IModelProvider[T any] interface {
 	ListModel(subType string, provider string) ([]T, error)
