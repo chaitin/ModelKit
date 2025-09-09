@@ -633,6 +633,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                   {...field}
                   fullWidth
                   size='small'
+                  type='password'
                   placeholder=''
                   error={!!errors.api_key}
                   helperText={errors.api_key?.message}
