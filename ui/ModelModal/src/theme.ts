@@ -10,7 +10,9 @@ const defaultTheme = createTheme();
 
 const lightTheme = createTheme(
   {
-    cssVariables: true,
+    cssVariables: {
+      cssVarPrefix: 'modelkit',
+    },
     palette: {
       // mode: 'light',
       primary: {
