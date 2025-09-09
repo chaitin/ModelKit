@@ -149,6 +149,9 @@ export const ModelModal: React.FC<ModelModalProps> = ({
         baseUrl = baseUrl.slice(0, -1)
         return true
       }
+      if (/\/v\d+$/.test(baseUrl)){
+        return true
+      }
       return baseUrl.endsWith('volces.com/api/v3')
     }
 
