@@ -298,7 +298,6 @@ func GetHttpClientWithAPIHeaderMap(header string) *http.Client {
 }
 
 func GetQuery(req *domain.ModelListReq) (request.Query, error) {
-	log.Println("req is: ", req)
 	q := make(request.Query, 0)
 	provider := consts.ParseModelProvider(req.Provider)
 	modelType := consts.ParseModelType(req.Type)
@@ -317,6 +316,5 @@ func GetQuery(req *domain.ModelListReq) (request.Query, error) {
 	if provider == consts.ModelProviderSiliconFlow && modelType == consts.ModelTypeCoder {
 		q["sub_type"] = "chat"
 	}
-	log.Println("query ", q)
 	return q, nil
 }

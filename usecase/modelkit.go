@@ -6,6 +6,7 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"log/slog"
 	"log"
 	"maps"
 	"net/http"
@@ -33,8 +34,12 @@ import (
 	"github.com/chaitin/ModelKit/v2/utils"
 )
 
-func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelListResp, error) {
-	log.Printf("ModelList req: provider=%s, baseURL=%s", req.Provider, req.BaseURL)
+func ModelList(ctx context.Context, req *domain.ModelListReq, logger *slog.Logger) (*domain.ModelListResp, error) {
+	if logger != nil {
+		logger.Info("ModelList req: provider=%s, baseURL=%s", req.Provider, req.BaseURL)
+	} else {
+		log.Printf("ModelList req: provider=%s, baseURL=%s", req.Provider, req.BaseURL)
+	}
 	httpClient := &http.Client{
 		Timeout: time.Second * 30,
 		Transport: &http.Transport{
@@ -64,7 +69,11 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 		}
 		defer func() {
 			if closeErr := client.Close(); closeErr != nil {
-				log.Printf("Failed to close gemini client: %v", closeErr)
+				if logger != nil {
+					logger.Error("Failed to close gemini client: %v", slog.Any("error", closeErr))
+				} else {
+					log.Printf("Failed to close gemini client: %v", closeErr)
+				}
 			}
 		}()
 
@@ -168,8 +177,12 @@ func ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelList
 	}
 }
 
-func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckModelResp, error) {
-	log.Printf("CheckModel req: provider=%s, model=%s, baseURL=%s", req.Provider, req.Model, req.BaseURL)
+func CheckModel(ctx context.Context, req *domain.CheckModelReq, logger *slog.Logger) (*domain.CheckModelResp, error) {
+	if logger != nil {
+		logger.Info("CheckModel req", "provider", req.Provider, "model", req.Model, "baseURL", req.BaseURL)
+	} else {
+		log.Printf("CheckModel req: provider=%s, model=%s, baseURL=%s", req.Provider, req.Model, req.BaseURL)
+	}
 	checkResp := &domain.CheckModelResp{}
 	modelType := consts.ParseModelType(req.Type)
 
@@ -218,7 +231,11 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckMo
 		}
 		defer func() {
 			if closeErr := resp.Body.Close(); closeErr != nil {
-				log.Printf("Failed to close resp body: %v", closeErr)
+				if logger != nil {
+					logger.Error("Failed to close resp body: %v", slog.Any("error", closeErr))
+				} else {
+					log.Printf("Failed to close resp body: %v", closeErr)
+				}
 			}
 		}()
 		if resp.StatusCode != http.StatusOK {
@@ -230,7 +247,7 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckMo
 	// end
 	provider := consts.ParseModelProvider(req.Provider)
 
-	resp, err := getChatModelGenerateChat(ctx, provider, modelType, req.BaseURL, req)
+	resp, err := getChatModelGenerateChat(ctx, provider, modelType, req.BaseURL, req, nil)
 	// 可编辑url的供应商，尝试修复baseURL
 	if err != nil && (provider == consts.ModelProviderOther || provider == consts.ModelProviderOllama || provider == consts.ModelProviderAzureOpenAI) {
 		msg := generateBaseURLFixSuggestion(err.Error(), req.BaseURL, provider)
@@ -379,7 +396,7 @@ func ollamaListModel(baseURL string, httpClient *http.Client, apiHeader string) 
 	return request.Get[domain.ModelListResp](client, u.Path, request.WithHeader(h))
 }
 
-func getChatModelGenerateChat(ctx context.Context, provider consts.ModelProvider, modelType consts.ModelType, baseURL string, req *domain.CheckModelReq) (string, error) {
+func getChatModelGenerateChat(ctx context.Context, provider consts.ModelProvider, modelType consts.ModelType, baseURL string, req *domain.CheckModelReq, logger *log.Logger) (string, error) {
 	chatModel, err := GetChatModel(ctx, &domain.ModelMetadata{
 		Provider:   provider,
 		ModelName:  req.Model,
@@ -399,10 +416,18 @@ func getChatModelGenerateChat(ctx context.Context, provider consts.ModelProvider
 	})
 	// 非流式生成失败，尝试流式生成
 	if err != nil || genResp.Content == "" {
-		log.Printf("Generate chat failed, err: %v", err)
+		if logger != nil {
+			logger.Printf("Generate chat failed, err: %v", err)
+		} else {
+			log.Printf("Generate chat failed, err: %v", err)
+		}
 		streamRes, streamErr := streamCheck(ctx, &chatModel)
 		if streamErr != nil {
-			log.Printf("Stream chat failed, err: %v", streamErr)
+			if logger != nil {
+				logger.Printf("Stream chat failed, err: %v", streamErr)
+			} else {
+				log.Printf("Stream chat failed, err: %v", streamErr)
+			}
 			return "", err
 		}
 		return streamRes, nil
@@ -433,19 +458,6 @@ func streamCheck(ctx context.Context, chatModel *model.BaseChatModel) (string, e
 		res += chunk.Content
 	}
 	return res, nil
-}
-
-// baseURL添加/v1
-func baseURLAddV1(inputURL string) (string, error) {
-	rawURL, err := url.Parse(inputURL)
-	if err != nil {
-		return "", err
-	}
-	// 没有path, 则添加/v1
-	if rawURL.Path == "" {
-		rawURL.Path = "/v1"
-	}
-	return rawURL.String(), nil
 }
 
 // baseURL的host换成host.docker.internal

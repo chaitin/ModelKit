@@ -3,23 +3,28 @@ package main
 import (
 	"fmt"
 	"net/http"
+	"log/slog"
+	"os"
 
 	"github.com/labstack/echo/v4/middleware"
 
 	"github.com/chaitin/ModelKit/v2/domain"
-	"github.com/chaitin/ModelKit/v2/pkg/log"
 	"github.com/chaitin/ModelKit/v2/usecase"
 	"github.com/labstack/echo/v4"
 )
 
-type ModelKit struct{}
+type ModelKit struct{
+	logger *slog.Logger
+}
 
 func NewModelKit(
 	echo *echo.Echo,
-	logger *log.Logger,
+	logger *slog.Logger,
 	isApmEnabled bool,
 ) *ModelKit {
-	m := &ModelKit{}
+	m := &ModelKit{
+		logger: logger,
+	}
 
 	// 注册路由
 	g := echo.Group("/api/v1/modelkit")
@@ -39,7 +44,8 @@ func (p *ModelKit) GetModelList(c echo.Context) error {
 		})
 	}
 
-	resp, err := usecase.ModelList(c.Request().Context(), &req)
+
+	resp, err := usecase.ModelList(c.Request().Context(), &req, p.logger)
 	if err != nil {
 		fmt.Println("err:", err)
 		return c.JSON(http.StatusOK, domain.Response{
@@ -65,7 +71,7 @@ func (p *ModelKit) CheckModel(c echo.Context) error {
 		})
 	}
 
-	resp, err := usecase.CheckModel(c.Request().Context(), &req)
+	resp, err := usecase.CheckModel(c.Request().Context(), &req, p.logger)
 	if err != nil {
 		fmt.Println("err:", err)
 		return c.JSON(http.StatusOK, domain.Response{
@@ -100,10 +106,16 @@ func (p *ModelKit) CheckModel(c echo.Context) error {
 func main() {
 	echo := echo.New()
 
+	// 创建logger
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		AddSource: true,
+		Level:     slog.LevelInfo,
+	}))
+
 	// 添加CORS中间件
 	echo.Use(middleware.CORS())
 
-	NewModelKit(echo, nil, false)
+	NewModelKit(echo, logger, false)
 
 	err := echo.Start(":8080")
 	if err != nil {
