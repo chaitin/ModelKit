@@ -6,8 +6,8 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
-	"log/slog"
 	"log"
+	"log/slog"
 	"maps"
 	"net/http"
 	"net/url"
@@ -34,9 +34,20 @@ import (
 	"github.com/chaitin/ModelKit/v2/utils"
 )
 
-func ModelList(ctx context.Context, req *domain.ModelListReq, logger *slog.Logger) (*domain.ModelListResp, error) {
-	if logger != nil {
-		logger.Info("ModelList req: provider=%s, baseURL=%s", req.Provider, req.BaseURL)
+type ModelKit struct {
+	logger *slog.Logger
+}
+
+// NewModelKit 创建一个新的ModelKit实例
+func NewModelKit(logger *slog.Logger) *ModelKit {
+	return &ModelKit{
+		logger: logger,
+	}
+}
+
+func (m *ModelKit) ModelList(ctx context.Context, req *domain.ModelListReq) (*domain.ModelListResp, error) {
+	if m.logger != nil {
+		m.logger.Info("ModelList req:", req.Provider, req.BaseURL)
 	} else {
 		log.Printf("ModelList req: provider=%s, baseURL=%s", req.Provider, req.BaseURL)
 	}
@@ -69,8 +80,8 @@ func ModelList(ctx context.Context, req *domain.ModelListReq, logger *slog.Logge
 		}
 		defer func() {
 			if closeErr := client.Close(); closeErr != nil {
-				if logger != nil {
-					logger.Error("Failed to close gemini client: %v", slog.Any("error", closeErr))
+				if m.logger != nil {
+					m.logger.Error("Failed to close gemini client: %v", slog.Any("error", closeErr))
 				} else {
 					log.Printf("Failed to close gemini client: %v", closeErr)
 				}
@@ -177,9 +188,9 @@ func ModelList(ctx context.Context, req *domain.ModelListReq, logger *slog.Logge
 	}
 }
 
-func CheckModel(ctx context.Context, req *domain.CheckModelReq, logger *slog.Logger) (*domain.CheckModelResp, error) {
-	if logger != nil {
-		logger.Info("CheckModel req", "provider", req.Provider, "model", req.Model, "baseURL", req.BaseURL)
+func (m *ModelKit) CheckModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckModelResp, error) {
+	if m.logger != nil {
+		m.logger.Info("CheckModel req", "provider", req.Provider, "model", req.Model, "baseURL", req.BaseURL)
 	} else {
 		log.Printf("CheckModel req: provider=%s, model=%s, baseURL=%s", req.Provider, req.Model, req.BaseURL)
 	}
@@ -231,8 +242,8 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq, logger *slog.Log
 		}
 		defer func() {
 			if closeErr := resp.Body.Close(); closeErr != nil {
-				if logger != nil {
-					logger.Error("Failed to close resp body: %v", slog.Any("error", closeErr))
+				if m.logger != nil {
+					m.logger.Error("Failed to close resp body: %v", slog.Any("error", closeErr))
 				} else {
 					log.Printf("Failed to close resp body: %v", closeErr)
 				}
@@ -247,7 +258,7 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq, logger *slog.Log
 	// end
 	provider := consts.ParseModelProvider(req.Provider)
 
-	resp, err := getChatModelGenerateChat(ctx, provider, modelType, req.BaseURL, req, nil)
+	resp, err := m.getChatModelGenerateChat(ctx, provider, modelType, req.BaseURL, req)
 	// 可编辑url的供应商，尝试修复baseURL
 	if err != nil && (provider == consts.ModelProviderOther || provider == consts.ModelProviderOllama || provider == consts.ModelProviderAzureOpenAI) {
 		msg := generateBaseURLFixSuggestion(err.Error(), req.BaseURL, provider)
@@ -284,7 +295,7 @@ func CheckModel(ctx context.Context, req *domain.CheckModelReq, logger *slog.Log
 	return checkResp, nil
 }
 
-func GetChatModel(ctx context.Context, model *domain.ModelMetadata) (model.BaseChatModel, error) {
+func (m *ModelKit) GetChatModel(ctx context.Context, model *domain.ModelMetadata) (model.BaseChatModel, error) {
 	// config chat model
 	modelProvider := model.Provider
 	var temperature float32 = 0.0
@@ -396,8 +407,8 @@ func ollamaListModel(baseURL string, httpClient *http.Client, apiHeader string) 
 	return request.Get[domain.ModelListResp](client, u.Path, request.WithHeader(h))
 }
 
-func getChatModelGenerateChat(ctx context.Context, provider consts.ModelProvider, modelType consts.ModelType, baseURL string, req *domain.CheckModelReq, logger *log.Logger) (string, error) {
-	chatModel, err := GetChatModel(ctx, &domain.ModelMetadata{
+func (m *ModelKit) getChatModelGenerateChat(ctx context.Context, provider consts.ModelProvider, modelType consts.ModelType, baseURL string, req *domain.CheckModelReq) (string, error) {
+	chatModel, err := m.GetChatModel(ctx, &domain.ModelMetadata{
 		Provider:   provider,
 		ModelName:  req.Model,
 		APIKey:     req.APIKey,
@@ -416,15 +427,15 @@ func getChatModelGenerateChat(ctx context.Context, provider consts.ModelProvider
 	})
 	// 非流式生成失败，尝试流式生成
 	if err != nil || genResp.Content == "" {
-		if logger != nil {
-			logger.Printf("Generate chat failed, err: %v", err)
+		if m.logger != nil {
+			m.logger.Info("Generate chat failed", slog.Any("error", err))
 		} else {
 			log.Printf("Generate chat failed, err: %v", err)
 		}
 		streamRes, streamErr := streamCheck(ctx, &chatModel)
 		if streamErr != nil {
-			if logger != nil {
-				logger.Printf("Stream chat failed, err: %v", streamErr)
+			if m.logger != nil {
+				m.logger.Info("Stream chat failed", slog.Any("error", streamErr))
 			} else {
 				log.Printf("Stream chat failed, err: %v", streamErr)
 			}
