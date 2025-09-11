@@ -95,7 +95,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   OpenAI: {
     label: 'OpenAI',
     cn: 'OpenAI',
-    icon: 'ikun-chatgpt',
+    icon: 'ikun-chatgpt-copy',
     urlWrite: false,
     secretRequired: true,
     customHeader: false,
@@ -237,6 +237,21 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   //   modelDocumentUrl: 'https://github.com/settings/tokens',
   //   defaultBaseUrl: 'https://models.github.ai/catalog',
   // },
+  Xinference: {
+    label: 'Xinference',
+    cn: 'Xinference',
+    icon: 'ikun-Xinference',
+    urlWrite: true,
+    secretRequired: false,
+    customHeader: false,
+    chat: true,
+    code: true,
+    embedding: true,
+    rerank:true,
+    analysis: true,
+    modelDocumentUrl: 'https://inference.readthedocs.io/zh-cn/v1.2.0/getting_started/installation.html#installation',
+    defaultBaseUrl: 'http://172.17.0.1:9997',
+  },
   Yi: {
     label: 'Yi',
     cn: '零一万物',
@@ -312,7 +327,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   //   modelDocumentUrl: '',
   //   defaultBaseUrl: 'https://api.jina.ai/v1',
   // },
-  
+
   CTYun: {
     label: 'CTYun',
     cn: '天翼云息壤',
