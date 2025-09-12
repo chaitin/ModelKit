@@ -112,6 +112,8 @@ function App() {
                 <MenuItem value={'audio'}>音频模型</MenuItem>
                 <MenuItem value={'reranker'}>重排序模型</MenuItem>
                 <MenuItem value={'analysis'}>分析模型</MenuItem>
+                <MenuItem value={'monkeycode-chat'}>对话模型</MenuItem>
+                <MenuItem value={'monkeycode-code'}>代码补全模型</MenuItem>
               </Select>
             </FormControl>
           </Box>

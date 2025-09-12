@@ -161,6 +161,26 @@ func (m *ModelKit) ModelList(ctx context.Context, req *domain.ModelListReq) (*do
 		}
 		// end
 		return &modelListResp, err
+	case consts.ModelProviderGPUStack:
+		models, err := reqModelListApi(req, httpClient, &domain.GPUStackListModelResp{})
+		// gpu stack list发生错误， 尝试修复url
+		if err != nil {
+			m.logger.Error("GPUStack list model failed", "error", err, "models: ", models)
+			msg := generateBaseURLFixSuggestion(err.Error(), req.BaseURL, provider)
+			if msg == "" {
+				return &domain.ModelListResp{
+					Error: err.Error(),
+				}, nil
+			} else {
+				return &domain.ModelListResp{
+					Error: msg,
+				}, nil
+			}
+		}
+		// end
+		return &domain.ModelListResp{
+			Models: models,
+		}, nil
 		// openai 兼容模型
 	default:
 		models, err := reqModelListApi(req, httpClient, &domain.OpenAIResp{})
