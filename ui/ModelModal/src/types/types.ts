@@ -58,8 +58,6 @@ export interface ModelProviderConfig {
   embedding: boolean;
   rerank: boolean;
   analysis: boolean;
-  monkeycode_chat: boolean;
-  monkeycode_code: boolean;
   modelDocumentUrl?: string;
   defaultBaseUrl: string;
 }

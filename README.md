@@ -19,9 +19,14 @@ ModelKit 是一个强大的AI模型管理平台，支持多种AI服务提供商�
 
 | 添加模型                                 | 模型列表                                    |  
 | ------------------------------------------------ | ------------------------------------------------ |
-| <img src="./images/image-add-model.jpeg" width=370 /> | <img src="./images/image-list-model.jpg" width=370 /> |
+| <img src="./images/image_add_model.jpg" width=370 /> | <img src="./images/image_list_model.jpg" width=370 /> |
 
-## 在项目中集成ModelKit
+## 快速开始
+1. 加载modelkit前后端依赖 
+2. 后端实现ListModel,CreateModel,UpdateModel,CheckModel 4个接口， 其中ListModel, CheckModel已提供业务逻辑，在handler中调用即可
+3. 用这4个接口实现前端前端ModelService接口，传入modelkit-ui组件即可使用
+
+## Usage
 
 ### 1. 安装依赖
 

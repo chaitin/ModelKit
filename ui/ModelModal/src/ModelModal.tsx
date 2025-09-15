@@ -43,8 +43,6 @@ const titleMap: Record<string, string> = {
   ["rerank"]: '重排序模型',
   ["reranker"]: '重排序模型',
   ["analysis"]: '分析模型',
-  ["monkeycode-chat"]: '对话模型',
-  ["monkeycode-code"]: '代码补全模型',
 };
 
 export const ModelModal: React.FC<ModelModalProps> = ({
@@ -451,10 +449,6 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                         return it.rerank;
                       case 'analysis':
                         return it.analysis;
-                      case 'monkeycode-chat':
-                        return it.monkeycode_chat;
-                      case 'monkeycode-code':
-                        return it.monkeycode_code;
                       default:
                         return it.label === 'BaiZhiCloud' || it.label === 'Other';
                     }
