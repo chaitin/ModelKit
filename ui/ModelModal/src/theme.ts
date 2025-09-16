@@ -2,7 +2,7 @@
 import { createTheme, Paper } from '@mui/material';
 import type { Shadows } from '@mui/material';
 import { zhCN } from '@mui/material/locale';
-import { zhCN as CuiZhCN } from '@c-x/ui/dist/local';
+import { zhCN as CuiZhCN } from '@ctzhian/ui/dist/local';
 import onData from '@/assets/images/nodata.png';
 import { common } from '@mui/material/colors';
 
@@ -36,7 +36,7 @@ const lightTheme = createTheme(
       risk: {
         severe: '#FF6262',
         critical: '#FFA762',
-        suggest: '#FFCF62'
+        suggest: '#FFCF62',
       },
       disabled: {
         main: '#666',
