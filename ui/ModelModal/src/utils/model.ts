@@ -1,6 +1,5 @@
 import { getLowerBaseModelName } from "."
-import { CLAUDE_SUPPORTED_WEBSEARCH_CHECK, CODE_CHECK, DOUBAO_THINKING_MODEL_CHECK, EMBEDDING_CHECK, FUNCTION_CALLING_CHECK, GEMINI_SEARCH_CHECK, REASONING_CHECK, RERANKING_CHECK, TEXT_TO_IMAGE_CHECK, VISION_CHECK } from "./regex";
-import { PERPLEXITY_MODELS } from "@/constants/models";
+import { NOT_TOOL_CALL_MODELS, notVisionModels, PERPLEXITY_MODELS, TOOL_CALL_MODELS, visionModels } from "@/constants/models";
 
 // Import all model logos using barrel exports
 import {
@@ -26,7 +25,7 @@ import { YoudaoLogo, NomicLogo } from '@/assets/images/providers'
 
 export function isRerankModel(model_id: string): boolean {
   const modelId = getLowerBaseModelName(model_id)
-  return model_id ? RERANKING_CHECK.test(modelId) || false : false
+  return model_id ? /(?:rerank|re-rank|re-ranker|re-ranking|retrieval|retriever)/i.test(modelId) || false : false
 }
 
 export function isEmbeddingModel(model_id: string, provider: string): boolean {
@@ -41,10 +40,10 @@ export function isEmbeddingModel(model_id: string, provider: string): boolean {
   }
 
   if (provider === 'doubao' || modelId.includes('doubao')) {
-    return EMBEDDING_CHECK.test(modelId)
+    return /(?:^text-|embed|bge-|e5-|LLM2Vec|retrieval|uae-|gte-|jina-clip|jina-embeddings|voyage-)/i.test(modelId)
   }
 
-  return EMBEDDING_CHECK.test(modelId) || false
+  return /(?:^text-|embed|bge-|e5-|LLM2Vec|retrieval|uae-|gte-|jina-clip|jina-embeddings|voyage-)/i.test(modelId) || false
 }
 
 export function isFunctionCallingModel(model_id: string, provider: string): boolean {
@@ -59,7 +58,10 @@ export function isFunctionCallingModel(model_id: string, provider: string): bool
   }
 
   if (provider === 'doubao' || modelId.includes('doubao')) {
-    return FUNCTION_CALLING_CHECK.test(modelId) || FUNCTION_CALLING_CHECK.test(modelId)
+    return new RegExp(
+      `\\b(?!(?:${NOT_TOOL_CALL_MODELS.join('|')})\\b)(?:${TOOL_CALL_MODELS.join('|')})\\b`,
+      'i'
+    ).test(modelId)
   }
 
   if (['deepseek', 'anthropic'].includes(provider)) {
@@ -70,7 +72,10 @@ export function isFunctionCallingModel(model_id: string, provider: string): bool
     return true
   }
 
-  return FUNCTION_CALLING_CHECK.test(modelId)
+  return new RegExp(
+    `\\b(?!(?:${NOT_TOOL_CALL_MODELS.join('|')})\\b)(?:${TOOL_CALL_MODELS.join('|')})\\b`,
+    'i'
+  ).test(modelId)
 }
 
 export function isVisionModel(model_id: string, provider: string): boolean {
@@ -79,11 +84,10 @@ export function isVisionModel(model_id: string, provider: string): boolean {
   }
 
   const modelId = getLowerBaseModelName(model_id)
-  if (provider === 'doubao' || modelId.includes('doubao')) {
-    return VISION_CHECK.test(modelId) || false
-  }
-
-  return VISION_CHECK.test(modelId) || false
+  return new RegExp(
+    `\\b(?!(?:${notVisionModels.join('|')})\\b)(${visionModels.join('|')})\\b`,
+    'i'
+  ).test(modelId) || false
 }
 
 export function isCodeModel(model_id: string, provider: string): boolean {
@@ -92,7 +96,7 @@ export function isCodeModel(model_id: string, provider: string): boolean {
   }
 
   const modelId = getLowerBaseModelName(model_id)
-  return CODE_CHECK.test(modelId) || false
+  return /(?:^o3$|.*(code|claude\s+sonnet|claude\s+opus|gpt-4\.1|gpt-4o|gpt-5|gemini[\s-]+2\.5|o4-mini|kimi-k2).*)/i.test(modelId) || false
 }
 
 export function isReasoningModel(model_id: string, provider: string): boolean {
@@ -103,14 +107,14 @@ export function isReasoningModel(model_id: string, provider: string): boolean {
   const modelId = getLowerBaseModelName(model_id)
 
   // Check if it's a text-to-image model (merged from isTextToImageModel)
-  if (TEXT_TO_IMAGE_CHECK.test(modelId)) {
+  if (/flux|diffusion|stabilityai|sd-|dall|cogview|janus|midjourney|mj-|image|gpt-image/i.test(modelId)) {
     return false
   }
 
   if (provider === 'doubao' || modelId.includes('doubao')) {
     return (
-      REASONING_CHECK.test(modelId) ||
-      DOUBAO_THINKING_MODEL_CHECK.test(getLowerBaseModelName(model_id, '/')) ||
+      /^(o\d+(?:-[\w-]+)?|.*\b(?:reasoning|reasoner|thinking)\b.*|.*-[rR]\d+.*|.*\bqwq(?:-[\w-]+)?\b.*|.*\bhunyuan-t1(?:-[\w-]+)?\b.*|.*\bglm-zero-preview\b.*|.*\bgrok-(?:3-mini|4)(?:-[\w-]+)?\b.*)$/i.test(modelId) ||
+      /doubao-(?:1[.-]5-thinking-vision-pro|1[.-]5-thinking-pro-m|seed-1[.-]6(?:-flash)?(?!-(?:thinking)(?:-|$)))(?:-[\w-]+)*/i.test(getLowerBaseModelName(model_id, '/')) ||
       false
     )
   }
@@ -163,7 +167,7 @@ export function isReasoningModel(model_id: string, provider: string): boolean {
       'qwen-plus-0714', 'qwen-plus-2025-07-14', 'qwen-turbo', 'qwen-turbo-latest',
       'qwen-turbo-0428', 'qwen-turbo-2025-04-28', 'qwen-turbo-0715', 'qwen-turbo-2025-07-15'
     ].includes(qwenModelId)
-    
+
     isQwenReasoning = isSupportedThinkingTokenQwen || qwenModelId.includes('qwq') || qwenModelId.includes('qvq')
   }
 
@@ -207,7 +211,7 @@ export function isReasoningModel(model_id: string, provider: string): boolean {
     return true
   }
 
-  return REASONING_CHECK.test(modelId) || false
+  return /^(o\d+(?:-[\w-]+)?|.*\b(?:reasoning|reasoner|thinking)\b.*|.*-[rR]\d+.*|.*\bqwq(?:-[\w-]+)?\b.*|.*\bhunyuan-t1(?:-[\w-]+)?\b.*|.*\bglm-zero-preview\b.*|.*\bgrok-(?:3-mini|4)(?:-[\w-]+)?\b.*)$/i.test(modelId) || false
 }
 
 export function isWebSearchModel(model_id: string, provider: string): boolean {
@@ -219,7 +223,10 @@ export function isWebSearchModel(model_id: string, provider: string): boolean {
 
   // Anthropic model check (merged from isAnthropicModel)
   if (modelId.startsWith('claude')) {
-    return CLAUDE_SUPPORTED_WEBSEARCH_CHECK.test(modelId)
+    return new RegExp(
+      `\\b(?:claude-3(-|\\.)(7|5)-sonnet(?:-[\\w-]+)|claude-3(-|\\.)5-haiku(?:-[\\w-]+)|claude-sonnet-4(?:-[\\w-]+)?|claude-opus-4(?:-[\\w-]+)?)\\b`,
+      'i'
+    ).test(modelId)
   }
 
   if (provider === 'grok') {
@@ -232,13 +239,13 @@ export function isWebSearchModel(model_id: string, provider: string): boolean {
   }
 
   if (provider === 'gemini' || provider === 'vertexai') {
-    return GEMINI_SEARCH_CHECK.test(modelId)
+    return new RegExp('gemini-2\\..*', 'i').test(modelId)
   }
 
   if (provider === 'openai') {
     // OpenAI web search model check (merged from isOpenAIWebSearchModel)
     if (
-      GEMINI_SEARCH_CHECK.test(modelId) ||
+      new RegExp('gemini-2\\..*', 'i').test(modelId) ||
       modelId.includes('gpt-4o-search-preview') ||
       modelId.includes('gpt-4o-mini-search-preview') ||
       (modelId.includes('gpt-4.1') && !modelId.includes('gpt-4.1-nano')) ||
@@ -268,7 +275,7 @@ export function isWebSearchModel(model_id: string, provider: string): boolean {
   }
 
   if (provider === 'aihubmix') {
-    if (!modelId.endsWith('-search') && GEMINI_SEARCH_CHECK.test(modelId)) {
+    if (!modelId.endsWith('-search') && new RegExp('gemini-2\\..*', 'i').test(modelId)) {
       return true
     }
 
@@ -299,32 +306,32 @@ export function getModelLogo(modelId: string) {
   const logoMap = {
     pixtral: PixtralModelLogo,
     jina: JinaModelLogo,
-    abab:  MinimaxModelLogo ,
-    minimax:  MinimaxModelLogo ,
-    o1:  ChatGPTo1ModelLogo ,
-    o3:  ChatGPTo1ModelLogo ,
-    o4:  ChatGPTo1ModelLogo ,
+    abab: MinimaxModelLogo,
+    minimax: MinimaxModelLogo,
+    o1: ChatGPTo1ModelLogo,
+    o3: ChatGPTo1ModelLogo,
+    o4: ChatGPTo1ModelLogo,
     'gpt-image': ChatGPTImageModelLogo,
-    'gpt-3':  ChatGPT35ModelLogo ,
-    'gpt-4':  ChatGPT4ModelLogo ,
+    'gpt-3': ChatGPT35ModelLogo,
+    'gpt-4': ChatGPT4ModelLogo,
     'gpt-5-mini': GPT5MiniModelLogo,
     'gpt-5-nano': GPT5NanoModelLogo,
     'gpt-5-chat': GPT5ChatModelLogo,
     'gpt-5': GPT5ModelLogo,
-    gpts:  ChatGPT4ModelLogo ,
-    'gpt-oss(?:-[\\w-]+)':  ChatGptModelLogo ,
-    'text-moderation':  ChatGptModelLogo ,
-    'babbage-':  ChatGptModelLogo ,
-    'sora-':  ChatGptModelLogo ,
-    '(^|/)omni-':  ChatGptModelLogo ,
-    'Embedding-V1':  WenxinModelLogo ,
-    'text-embedding-v':  QwenModelLogo ,
-    'text-embedding':  ChatGptModelLogo ,
-    'davinci-':  ChatGptModelLogo ,
-    glm:  ChatGLMModelLogo ,
-    deepseek:  DeepSeekModelLogo ,
-    '(qwen|qwq|qwq-|qvq-)':  QwenModelLogo ,
-    gemma:  GemmaModelLogo ,
+    gpts: ChatGPT4ModelLogo,
+    'gpt-oss(?:-[\\w-]+)': ChatGptModelLogo,
+    'text-moderation': ChatGptModelLogo,
+    'babbage-': ChatGptModelLogo,
+    'sora-': ChatGptModelLogo,
+    '(^|/)omni-': ChatGptModelLogo,
+    'Embedding-V1': WenxinModelLogo,
+    'text-embedding-v': QwenModelLogo,
+    'text-embedding': ChatGptModelLogo,
+    'davinci-': ChatGptModelLogo,
+    glm: ChatGLMModelLogo,
+    deepseek: DeepSeekModelLogo,
+    '(qwen|qwq|qwq-|qvq-)': QwenModelLogo,
+    gemma: GemmaModelLogo,
     'yi-': YiModelLogo,
     llama: LlamaModelLogo,
     mixtral: MistralModelLogo,
