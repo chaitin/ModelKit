@@ -318,13 +318,46 @@ func (m *ModelKit) CheckModel(ctx context.Context, req *domain.CheckModelReq) (*
 func (m *ModelKit) GetChatModel(ctx context.Context, model *domain.ModelMetadata) (model.BaseChatModel, error) {
 	// config chat model
 	modelProvider := model.Provider
+	
+	// 使用高级参数中的温度值，如果没有设置则使用默认值0.0
 	var temperature float32 = 0.0
+	if model.Temperature != nil {
+		temperature = *model.Temperature
+	}
+	
 	config := &openai.ChatModelConfig{
 		APIKey:      model.APIKey,
 		BaseURL:     model.BaseURL,
 		Model:       string(model.ModelName),
 		Temperature: &temperature,
 	}
+	
+	// 添加高级参数支持
+	if model.MaxTokens != nil {
+		config.MaxTokens = model.MaxTokens
+	}
+	if model.TopP != nil {
+		config.TopP = model.TopP
+	}
+	if len(model.Stop) > 0 {
+		config.Stop = model.Stop
+	}
+	if model.PresencePenalty != nil {
+		config.PresencePenalty = model.PresencePenalty
+	}
+	if model.FrequencyPenalty != nil {
+		config.FrequencyPenalty = model.FrequencyPenalty
+	}
+	if model.ResponseFormat != nil {
+		config.ResponseFormat = model.ResponseFormat
+	}
+	if model.Seed != nil {
+		config.Seed = model.Seed
+	}
+	if model.LogitBias != nil {
+		config.LogitBias = model.LogitBias
+	}
+	
 	if modelProvider == consts.ModelProviderAzureOpenAI {
 		config.ByAzure = true
 		config.APIVersion = model.APIVersion
@@ -341,12 +374,32 @@ func (m *ModelKit) GetChatModel(ctx context.Context, model *domain.ModelMetadata
 
 	switch modelProvider {
 	case consts.ModelProviderDeepSeek:
-		chatModel, err := deepseek.NewChatModel(ctx, &deepseek.ChatModelConfig{
+		deepseekConfig := &deepseek.ChatModelConfig{
 			BaseURL:     model.BaseURL,
 			APIKey:      model.APIKey,
 			Model:       model.ModelName,
 			Temperature: temperature,
-		})
+		}
+		
+		// 添加 DeepSeek 支持的高级参数
+		if model.MaxTokens != nil {
+			deepseekConfig.MaxTokens = *model.MaxTokens
+		}
+		if model.TopP != nil {
+			deepseekConfig.TopP = *model.TopP
+		}
+		if len(model.Stop) > 0 {
+			deepseekConfig.Stop = model.Stop
+		}
+		if model.PresencePenalty != nil {
+			deepseekConfig.PresencePenalty = *model.PresencePenalty
+		}
+		if model.FrequencyPenalty != nil {
+			deepseekConfig.FrequencyPenalty = *model.FrequencyPenalty
+		}
+		// ResponseFormat, Seed, LogitBias 在 DeepSeek 配置中不支持，跳过
+		
+		chatModel, err := deepseek.NewChatModel(ctx, deepseekConfig)
 		if err != nil {
 			return nil, err
 		}
@@ -359,14 +412,26 @@ func (m *ModelKit) GetChatModel(ctx context.Context, model *domain.ModelMetadata
 			return nil, err
 		}
 
-		chatModel, err := gemini.NewChatModel(ctx, &gemini.Config{
+		geminiConfig := &gemini.Config{
 			Client: client,
 			Model:  model.ModelName,
 			ThinkingConfig: &genai.ThinkingConfig{
 				IncludeThoughts: true,
 				ThinkingBudget:  nil,
 			},
-		})
+		}
+		
+		// 添加 Gemini 支持的高级参数
+		if model.MaxTokens != nil {
+			geminiConfig.MaxTokens = model.MaxTokens
+		}
+		if model.Temperature != nil {
+			geminiConfig.Temperature = model.Temperature
+		}
+		if model.TopP != nil {
+			geminiConfig.TopP = model.TopP
+		}
+		chatModel, err := gemini.NewChatModel(ctx, geminiConfig)
 		if err != nil {
 			return nil, err
 		}
@@ -385,13 +450,32 @@ func (m *ModelKit) GetChatModel(ctx context.Context, model *domain.ModelMetadata
 				return nil, err
 			}
 
+			ollamaOptions := &api.Options{
+				Temperature: temperature,
+			}
+			
+			// 添加 Ollama 支持的高级参数
+			if model.TopP != nil {
+				ollamaOptions.TopP = *model.TopP
+			}
+			if len(model.Stop) > 0 {
+				ollamaOptions.Stop = model.Stop
+			}
+			if model.PresencePenalty != nil {
+				ollamaOptions.PresencePenalty = *model.PresencePenalty
+			}
+			if model.FrequencyPenalty != nil {
+				ollamaOptions.FrequencyPenalty = *model.FrequencyPenalty
+			}
+			if model.Seed != nil {
+				ollamaOptions.Seed = *model.Seed
+			}
+
 			chatModel, err := ollama.NewChatModel(ctx, &ollama.ChatModelConfig{
 				BaseURL: baseUrl,
 				Timeout: config.Timeout,
 				Model:   config.Model,
-				Options: &api.Options{
-					Temperature: temperature,
-				},
+				Options: ollamaOptions,
 			})
 			if err != nil {
 				return nil, err

@@ -39,9 +39,9 @@ go get github.com/go-playground/validator/v10
 
 #### 前端依赖
 ```bash
-npm install @yokowu/modelkit-ui
+npm install @ctzhian/modelkit
 # 或
-yarn add @yokowu/modelkit-ui
+yarn add @ctzhian/modelkit
 ```
 
 ### 2. 实现接口

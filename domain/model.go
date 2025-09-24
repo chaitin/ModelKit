@@ -1,18 +1,41 @@
 package domain
 
-import "github.com/chaitin/ModelKit/v2/consts"
+import (
+	"github.com/chaitin/ModelKit/v2/consts"
+	"github.com/cloudwego/eino-ext/libs/acl/openai"
+)
 
 type ModelMetadata struct {
+	// 基础参数
 	ModelName string               `json:"id"`         // 模型的名字
 	Object    string               `json:"object"`     // 总是model
 	Created   int                  `json:"created"`    // 创建时间
 	Provider  consts.ModelProvider `json:"provider"`   // 提供商
 	ModelType consts.ModelType     `json:"model_type"` // 模型类型
-
+	// api 调用相关参数
 	BaseURL    string `json:"base_url"`
 	APIKey     string `json:"api_key"`
 	APIHeader  string `json:"api_header"`
 	APIVersion string `json:"api_version"` // for azure openai
+	// 高级参数
+	// 限制生成的最大token数量,可选,默认为模型最大值, Ollama不支持
+	MaxTokens *int `json:"max_tokens"`
+	// 采样温度参数,建议与TopP二选一,范围0-2,值越大输出越随机,可选,默认1.0
+	Temperature *float32 `json:"temperature"`
+	// 控制采样多样性,建议与Temperature二选一,范围0-1,值越小输出越聚焦,可选,默认1.0
+	TopP *float32 `json:"top_p"`
+	// API停止生成的序列标记,可选,例如:[]string{"\n", "User:"}
+	Stop []string `json:"stop"`
+	// 基于存在惩罚重复,范围-2到2,正值增加新主题可能性,可选,默认0, Gemini不支持
+	PresencePenalty *float32 `json:"presence_penalty"`
+	// 指定模型响应的格式,可选,用于结构化输出, DS,Gemini,Ollama不支持
+	ResponseFormat *openai.ChatCompletionResponseFormat `json:"response_format"`
+	// 启用确定性采样以获得一致输出,可选,用于可重现结果,  DS,Gemini不支持
+	Seed *int `json:"seed"`
+	// 基于频率惩罚重复,范围-2到2,正值降低重复可能性,可选,默认0, Gemini不支持
+	FrequencyPenalty *float32 `json:"frequency_penalty"`
+	// 修改特定token在补全中出现的可能性,可选,token ID到偏置值(-100到100)的映射, DS,Gemini,Ollama不支持
+	LogitBias map[string]int `json:"logit_bias"`
 }
 
 var Models []ModelMetadata
