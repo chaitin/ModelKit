@@ -5,14 +5,9 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
-	"io"
 	"log"
 	"log/slog"
-	"maps"
 	"net/http"
-	"net/url"
-	"path"
-	"runtime"
 	"slices"
 	"strings"
 	"time"
@@ -22,7 +17,6 @@ import (
 	"github.com/cloudwego/eino-ext/components/model/ollama"
 	"github.com/cloudwego/eino-ext/components/model/openai"
 	"github.com/cloudwego/eino/components/model"
-	"github.com/cloudwego/eino/schema"
 	generativeGenai "github.com/google/generative-ai-go/genai"
 	"github.com/ollama/ollama/api"
 	"google.golang.org/api/option"
@@ -30,7 +24,6 @@ import (
 
 	"github.com/chaitin/ModelKit/v2/consts"
 	"github.com/chaitin/ModelKit/v2/domain"
-	"github.com/chaitin/ModelKit/v2/pkg/request"
 	"github.com/chaitin/ModelKit/v2/utils"
 )
 
@@ -66,7 +59,6 @@ func (m *ModelKit) ModelList(ctx context.Context, req *domain.ModelListReq) (*do
 	switch provider {
 	// 人工返回模型列表
 	case consts.ModelProviderAzureOpenAI,
-		consts.ModelProviderZhiPu,
 		consts.ModelProviderVolcengine:
 		return &domain.ModelListResp{
 			Models: domain.From(domain.ModelProviders[provider]),
@@ -279,6 +271,7 @@ func (m *ModelKit) CheckModel(ctx context.Context, req *domain.CheckModelReq) (*
 	provider := consts.ParseModelProvider(req.Provider)
 
 	resp, err := m.getChatModelGenerateChat(ctx, provider, modelType, req.BaseURL, req)
+
 	// 可编辑url的供应商，尝试修复baseURL
 	if err != nil && (provider == consts.ModelProviderOther || provider == consts.ModelProviderOllama || provider == consts.ModelProviderAzureOpenAI) {
 		msg := generateBaseURLFixSuggestion(err.Error(), req.BaseURL, provider)
@@ -290,8 +283,8 @@ func (m *ModelKit) CheckModel(ctx context.Context, req *domain.CheckModelReq) (*
 		return checkResp, nil
 	}
 	// end
+	// 检查错误信息中是否包含余额相关关键词
 	if err != nil && provider != consts.ModelProviderOther {
-		// 检查错误信息中是否包含余额相关关键词
 		errorMsg := strings.ToLower(err.Error())
 		for _, keyword := range consts.ApiKeyBalanceKeyWords {
 			if strings.Contains(errorMsg, keyword) {
@@ -302,6 +295,7 @@ func (m *ModelKit) CheckModel(ctx context.Context, req *domain.CheckModelReq) (*
 		checkResp.Error = err.Error()
 		return checkResp, nil
 	}
+	// end
 	if err != nil {
 		checkResp.Error = err.Error()
 		return checkResp, nil
@@ -318,20 +312,20 @@ func (m *ModelKit) CheckModel(ctx context.Context, req *domain.CheckModelReq) (*
 func (m *ModelKit) GetChatModel(ctx context.Context, model *domain.ModelMetadata) (model.BaseChatModel, error) {
 	// config chat model
 	modelProvider := model.Provider
-	
+
 	// 使用高级参数中的温度值，如果没有设置则使用默认值0.0
 	var temperature float32 = 0.0
 	if model.Temperature != nil {
 		temperature = *model.Temperature
 	}
-	
+
 	config := &openai.ChatModelConfig{
 		APIKey:      model.APIKey,
 		BaseURL:     model.BaseURL,
 		Model:       string(model.ModelName),
 		Temperature: &temperature,
 	}
-	
+
 	// 添加高级参数支持
 	if model.MaxTokens != nil {
 		config.MaxTokens = model.MaxTokens
@@ -357,7 +351,7 @@ func (m *ModelKit) GetChatModel(ctx context.Context, model *domain.ModelMetadata
 	if model.LogitBias != nil {
 		config.LogitBias = model.LogitBias
 	}
-	
+
 	if modelProvider == consts.ModelProviderAzureOpenAI {
 		config.ByAzure = true
 		config.APIVersion = model.APIVersion
@@ -380,7 +374,7 @@ func (m *ModelKit) GetChatModel(ctx context.Context, model *domain.ModelMetadata
 			Model:       model.ModelName,
 			Temperature: temperature,
 		}
-		
+
 		// 添加 DeepSeek 支持的高级参数
 		if model.MaxTokens != nil {
 			deepseekConfig.MaxTokens = *model.MaxTokens
@@ -398,7 +392,7 @@ func (m *ModelKit) GetChatModel(ctx context.Context, model *domain.ModelMetadata
 			deepseekConfig.FrequencyPenalty = *model.FrequencyPenalty
 		}
 		// ResponseFormat, Seed, LogitBias 在 DeepSeek 配置中不支持，跳过
-		
+
 		chatModel, err := deepseek.NewChatModel(ctx, deepseekConfig)
 		if err != nil {
 			return nil, err
@@ -420,7 +414,7 @@ func (m *ModelKit) GetChatModel(ctx context.Context, model *domain.ModelMetadata
 				ThinkingBudget:  nil,
 			},
 		}
-		
+
 		// 添加 Gemini 支持的高级参数
 		if model.MaxTokens != nil {
 			geminiConfig.MaxTokens = model.MaxTokens
@@ -453,7 +447,7 @@ func (m *ModelKit) GetChatModel(ctx context.Context, model *domain.ModelMetadata
 			ollamaOptions := &api.Options{
 				Temperature: temperature,
 			}
-			
+
 			// 添加 Ollama 支持的高级参数
 			if model.TopP != nil {
 				ollamaOptions.TopP = *model.TopP
@@ -490,206 +484,5 @@ func (m *ModelKit) GetChatModel(ctx context.Context, model *domain.ModelMetadata
 			return nil, err
 		}
 		return chatModel, nil
-	}
-}
-
-// 以下是辅助函数，用于处理模型列表和检查相关的功能
-func ollamaListModel(baseURL string, httpClient *http.Client, apiHeader string) (*domain.ModelListResp, error) {
-	// get from ollama http://10.10.16.24:11434/api/tags
-	u, err := url.Parse(baseURL)
-	if err != nil {
-		return nil, err
-	}
-	u.Path = "/api/tags"
-	client := request.NewClient(u.Scheme, u.Host, httpClient.Timeout, request.WithClient(httpClient))
-
-	h := request.Header{}
-	if apiHeader != "" {
-		headers := request.GetHeaderMap(apiHeader)
-		maps.Copy(h, headers)
-	}
-	return request.Get[domain.ModelListResp](client, u.Path, request.WithHeader(h))
-}
-
-func (m *ModelKit) getChatModelGenerateChat(ctx context.Context, provider consts.ModelProvider, modelType consts.ModelType, baseURL string, req *domain.CheckModelReq) (string, error) {
-	chatModel, err := m.GetChatModel(ctx, &domain.ModelMetadata{
-		Provider:   provider,
-		ModelName:  req.Model,
-		APIKey:     req.APIKey,
-		APIHeader:  req.APIHeader,
-		BaseURL:    baseURL,
-		APIVersion: req.APIVersion,
-		ModelType:  modelType,
-	})
-	if err != nil {
-		return "", err
-	}
-
-	genResp, err := chatModel.Generate(ctx, []*schema.Message{
-		schema.SystemMessage("You are a helpful assistant."),
-		schema.UserMessage("hi"),
-	})
-	// 非流式生成失败，尝试流式生成
-	if err != nil || genResp.Content == "" {
-		if m.logger != nil {
-			m.logger.Info("Generate chat failed", slog.Any("error", err))
-		} else {
-			log.Printf("Generate chat failed, err: %v", err)
-		}
-		streamRes, streamErr := streamCheck(ctx, &chatModel)
-		if streamErr != nil {
-			if m.logger != nil {
-				m.logger.Info("Stream chat failed", slog.Any("error", streamErr))
-			} else {
-				log.Printf("Stream chat failed, err: %v", streamErr)
-			}
-			return "", err
-		}
-		return streamRes, nil
-	}
-
-	return genResp.Content, nil
-}
-
-func streamCheck(ctx context.Context, chatModel *model.BaseChatModel) (string, error) {
-	var res string
-	streamResult, err := (*chatModel).Stream(ctx, []*schema.Message{
-		schema.SystemMessage("You are a helpful assistant."),
-		schema.UserMessage("hi"),
-	})
-	if err != nil {
-		return "", err
-	}
-
-	for {
-		chunk, err := streamResult.Recv()
-		if err == io.EOF {
-			break
-		}
-		if err != nil {
-			return "", err
-		}
-		// 响应片段处理
-		res += chunk.Content
-	}
-	return res, nil
-}
-
-// baseURL的host换成host.docker.internal
-func baseURLReplaceHost(inputURL string) (string, error) {
-	rawURL, err := url.Parse(inputURL)
-	if err != nil {
-		return "", err
-	}
-
-	var hostAddress string
-	if runtime.GOOS == "linux" {
-		hostAddress = consts.LinuxHost
-	} else {
-		hostAddress = consts.MacWinHost
-	}
-
-	if rawURL.Hostname() != hostAddress {
-		if rawURL.Port() != "" {
-			rawURL.Host = hostAddress + ":" + rawURL.Port()
-		} else {
-			rawURL.Host = hostAddress
-		}
-	}
-	return rawURL.String(), nil
-}
-
-func baseURLReplaceSlash(inputURL string) (string, error) {
-	rawURL, err := url.Parse(inputURL)
-	if err != nil {
-		return "", err
-	}
-	// 去掉末尾的/
-	rawURL.Path = strings.TrimSuffix(rawURL.Path, "/")
-	return rawURL.String(), nil
-}
-
-// reqModelListApi 获取OpenAI兼容API的模型列表
-// 使用泛型和接口抽象来支持不同供应商的响应格式
-func reqModelListApi[T domain.ModelResponseParser](req *domain.ModelListReq, httpClient *http.Client, responseType T) ([]domain.ModelListItem, error) {
-	u, err := url.Parse(req.BaseURL)
-	if err != nil {
-		return nil, err
-	}
-	u.Path = path.Join(u.Path, "/models")
-
-	client := request.NewClient(u.Scheme, u.Host, httpClient.Timeout, request.WithClient(httpClient))
-	query, err := utils.GetQuery(req)
-	if err != nil {
-		return nil, err
-	}
-	resp, err := request.Get[T](
-		client, u.Path,
-		request.WithHeader(
-			request.Header{
-				"Authorization": fmt.Sprintf("Bearer %s", req.APIKey),
-			},
-		),
-		request.WithQuery(query),
-	)
-	if err != nil {
-		return nil, err
-	}
-
-	return (*resp).ParseModels(), nil
-}
-
-func generateBaseURLFixSuggestion(errContent string, baseURL string, provider consts.ModelProvider) string {
-	var is404, isLocal, hasPath, isOther, isEndWithSlash bool
-	parsedURL, err := url.Parse(baseURL)
-	if err != nil {
-		return ""
-	}
-
-	if strings.HasSuffix(baseURL, "/") {
-		isEndWithSlash = true
-	}
-	if strings.Contains(errContent, "404") || strings.Contains(errContent, "connection refused") {
-		is404 = true
-	}
-	if strings.Contains(parsedURL.Host, consts.LocalHost) || strings.Contains(parsedURL.Host, consts.LocalIP) {
-		isLocal = true
-	}
-	if parsedURL.Path != "" {
-		hasPath = true
-	}
-	isOther = provider == consts.ModelProviderOther
-
-	var errType consts.AddModelBaseURLErrType
-	if strings.Contains(baseURL, "chat/completions") {
-		errType = consts.AddModelBaseURLErrTypeChatCompletions
-	} else if isEndWithSlash {
-		errType = consts.AddModelBaseURLErrTypeSlash
-	} else if is404 && isLocal { // 404 且是本地地址，建议使用宿主机主机名
-		errType = consts.AddModelBaseURLErrTypeHost
-	} else if !isLocal && !hasPath && isOther {
-		// 不是本地地址，且没有path，建议在API地址末尾添加/v1
-		errType = consts.AddModelBaseURLErrTypeV1Path
-	} else {
-		return ""
-	}
-
-	switch errType {
-	case consts.AddModelBaseURLErrTypeHost:
-		fixedURL, err := baseURLReplaceHost(baseURL)
-		if err != nil {
-			return ""
-		}
-		return "建议在API地址使用宿主机主机名: " + fixedURL
-	case consts.AddModelBaseURLErrTypeSlash:
-		fixedURL, err := baseURLReplaceSlash(baseURL)
-		if err != nil {
-			return ""
-		}
-		return "请去掉API地址末尾的/: " + fixedURL
-	case consts.AddModelBaseURLErrTypeChatCompletions:
-		return "请去掉/chat/completions路径"
-	default:
-		return ""
 	}
 }

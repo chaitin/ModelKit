@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/json"
 	"fmt"
 	"log/slog"
 	"net/http"
@@ -65,11 +66,54 @@ func (p *ModelKitHandler) GetModelList(c echo.Context) error {
 }
 
 func (p *ModelKitHandler) CheckModel(c echo.Context) error {
+	// 手动绑定参数，避免 param 字段的 JSON 解析问题
 	var req domain.CheckModelReq
-	if err := c.Bind(&req); err != nil {
+
+	// 绑定基本字段
+	req.Provider = c.QueryParam("provider")
+	req.Model = c.QueryParam("model_name")
+	req.BaseURL = c.QueryParam("base_url")
+	req.APIKey = c.QueryParam("api_key")
+	req.APIHeader = c.QueryParam("api_header")
+	req.APIVersion = c.QueryParam("api_version")
+	req.Type = c.QueryParam("model_type")
+
+	// 单独处理 param 字段
+	paramStr := c.QueryParam("param")
+	if paramStr != "" {
+		var param domain.ModelParam
+		if err := json.Unmarshal([]byte(paramStr), &param); err != nil {
+			return c.JSON(http.StatusBadRequest, domain.Response{
+				Success: false,
+				Message: "param 参数解析失败: " + err.Error(),
+			})
+		}
+		req.Param = &param
+	}
+
+	// 验证必需参数
+	if req.Provider == "" {
 		return c.JSON(http.StatusBadRequest, domain.Response{
 			Success: false,
-			Message: "参数绑定失败: " + err.Error(),
+			Message: "provider 参数是必需的",
+		})
+	}
+	if req.Model == "" {
+		return c.JSON(http.StatusBadRequest, domain.Response{
+			Success: false,
+			Message: "model_name 参数是必需的",
+		})
+	}
+	if req.BaseURL == "" {
+		return c.JSON(http.StatusBadRequest, domain.Response{
+			Success: false,
+			Message: "base_url 参数是必需的",
+		})
+	}
+	if req.Type == "" {
+		return c.JSON(http.StatusBadRequest, domain.Response{
+			Success: false,
+			Message: "model_type 参数是必需的",
 		})
 	}
 
