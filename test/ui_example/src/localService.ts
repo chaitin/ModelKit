@@ -90,20 +90,22 @@ export class LocalModelService implements ModelService {
       return { models: response.models, error: response.error };
   }
 
-  async checkModel(data: CheckModelReq): Promise<{ model: Model; error?: string }> {
-      const queryParams = new URLSearchParams();
-      if (data.provider) queryParams.append('provider', data.provider);
-      if (data.model_name) queryParams.append('model_name', data.model_name);
-      if (data.base_url) queryParams.append('base_url', data.base_url);
-      if (data.api_key) queryParams.append('api_key', data.api_key);
-      if (data.api_header) queryParams.append('api_header', data.api_header);
-      if (data.model_type) queryParams.append('model_type', data.model_type);
-      const url = `/checkmodel${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
-      const response = await this.request<CheckModelResponse>(url, {
-        method: 'GET',
-      });
-      return { model: response.model, error: response.error };
-  }
+async checkModel(data: CheckModelReq): Promise<{ model: Model; error?: string }> {
+    const queryParams = new URLSearchParams();
+    if (data.provider) queryParams.append('provider', data.provider);
+    if (data.model_name) queryParams.append('model_name', data.model_name);
+    if (data.base_url) queryParams.append('base_url', data.base_url);
+    if (data.api_key) queryParams.append('api_key', data.api_key);
+    if (data.api_header) queryParams.append('api_header', data.api_header);
+    if (data.model_type) queryParams.append('model_type', data.model_type);
+    if (data.param) queryParams.append('param', JSON.stringify(data.param));
+
+    const url = `/checkmodel${queryParams.toString() ? '?' + queryParams.toString() : ''}`;
+    const response = await this.request<CheckModelResponse>(url, {
+      method: 'GET',
+    });
+    return { model: response.model, error: response.error };
+}
 
   async updateModel(data: UpdateModelReq): Promise<{ model: Model }> {
     const requestData = {

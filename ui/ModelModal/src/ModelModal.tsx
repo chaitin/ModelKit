@@ -219,6 +219,14 @@ export const ModelModal: React.FC<ModelModalProps> = ({
         api_version: value.api_version,
         provider: value.provider,
         api_header: value.api_header || header,
+        param: {
+          context_window: value.context_window_size,
+          max_tokens: value.max_output_tokens,
+          r1_enabled: value.enable_r1_params,
+          support_images: value.support_image,
+          support_computer_use: value.support_compute,
+          support_prompt_cache: value.support_prompt_caching,
+        },
       })
       .then((res) => {
         // 错误处理
@@ -1047,7 +1055,6 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                       },
                       '& .MuiAccordionDetails-root': {
                         padding: 0,
-                        paddingTop: 1.5,
                       },
                     }}
                     expanded={expandAdvanced}
@@ -1070,7 +1077,77 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                       高级设置
                     </AccordionSummary>
                     <AccordionDetails>
-                      <Stack spacing={2}>
+                      <Stack spacing={0}>
+                        {/* 复选框组 - 使用更紧凑的布局 */}
+                        <Stack spacing={0} sx={{ ml: -1.2 }}>
+                            <Controller
+                            control={control}
+                            name='support_image'
+                            render={({ field }) => (
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    checked={field.value}
+                                    onChange={(e) =>
+                                      field.onChange(e.target.checked)
+                                    }
+                                    size='small'
+                                  />
+                                }
+                                label={
+                                  <Box sx={{ fontSize: 12 }}>
+                                    启用图片
+                                    <Box
+                                      component='span'
+                                      sx={{
+                                        ml: 1,
+                                        color: 'text.secondary',
+                                        fontSize: 11,
+                                      }}
+                                    >
+                                      (支持图片输入的模型可以启用此选项)
+                                    </Box>
+                                  </Box>
+                                }
+                                sx={{ margin: 0 }}
+                              />
+                            )}
+                          />
+                          <Controller
+                            control={control}
+                            name='enable_r1_params'
+                            render={({ field }) => (
+                              <FormControlLabel
+                                control={
+                                  <Checkbox
+                                    checked={field.value}
+                                    onChange={(e) =>
+                                      field.onChange(e.target.checked)
+                                    }
+                                    size='small'
+                                  />
+                                }
+                                label={
+                                  <Box sx={{ fontSize: 12 }}>
+                                    启用 R1 模型参数
+                                    <Box
+                                      component='span'
+                                      sx={{
+                                        ml: 1,
+                                        color: 'text.secondary',
+                                        fontSize: 11,
+                                      }}
+                                    >
+                                      (使用 QWQ 等 R1
+                                      系列模型时必须启用，避免出现 400 错误)
+                                    </Box>
+                                  </Box>
+                                }
+                                sx={{ margin: 0 }}
+                              />
+                            )}
+                          />
+                        </Stack>
                         <Box>
                           <Box sx={{ fontSize: 14, lineHeight: '32px' }}>
                             上下文窗口大小
@@ -1150,76 +1227,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                           />
                         </Box>
 
-                        {/* 复选框组 - 使用更紧凑的布局 */}
-                        <Stack spacing={0}>
-                          <Controller
-                            control={control}
-                            name='enable_r1_params'
-                            render={({ field }) => (
-                              <FormControlLabel
-                                control={
-                                  <Checkbox
-                                    checked={field.value}
-                                    onChange={(e) =>
-                                      field.onChange(e.target.checked)
-                                    }
-                                    size='small'
-                                  />
-                                }
-                                label={
-                                  <Box sx={{ fontSize: 12 }}>
-                                    启用 R1 模型参数
-                                    <Box
-                                      component='span'
-                                      sx={{
-                                        ml: 1,
-                                        color: 'text.secondary',
-                                        fontSize: 11,
-                                      }}
-                                    >
-                                      (使用 QWQ 等 R1
-                                      系列模型时必须启用，避免出现 400 错误)
-                                    </Box>
-                                  </Box>
-                                }
-                                sx={{ margin: 0 }}
-                              />
-                            )}
-                          />
-                          <Controller
-                            control={control}
-                            name='support_image'
-                            render={({ field }) => (
-                              <FormControlLabel
-                                control={
-                                  <Checkbox
-                                    checked={field.value}
-                                    onChange={(e) =>
-                                      field.onChange(e.target.checked)
-                                    }
-                                    size='small'
-                                  />
-                                }
-                                label={
-                                  <Box sx={{ fontSize: 12 }}>
-                                    启用图片
-                                    <Box
-                                      component='span'
-                                      sx={{
-                                        ml: 1,
-                                        color: 'text.secondary',
-                                        fontSize: 11,
-                                      }}
-                                    >
-                                      (支持图片输入的模型可以启用此选项)
-                                    </Box>
-                                  </Box>
-                                }
-                                sx={{ margin: 0 }}
-                              />
-                            )}
-                          />
-                        </Stack>
+
                       </Stack>
                     </AccordionDetails>
                   </Accordion>

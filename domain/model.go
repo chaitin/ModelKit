@@ -5,6 +5,16 @@ import (
 	"github.com/cloudwego/eino-ext/libs/acl/openai"
 )
 
+type ModelParam struct {
+	ContextWindow      int      `json:"context_window"`
+	MaxTokens          int      `json:"max_tokens"`
+	R1Enabled          bool     `json:"r1_enabled"`
+	SupportComputerUse bool     `json:"support_computer_use"`
+	SupportImages      bool     `json:"support_images"`
+	SupportPromptCache bool     `json:"support_prompt_cache"`
+	Temperature        *float32 `json:"temperature"`
+}
+
 type ModelMetadata struct {
 	// 基础参数
 	ModelName string               `json:"id"`         // 模型的名字

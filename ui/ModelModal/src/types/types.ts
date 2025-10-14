@@ -96,6 +96,7 @@ export interface CheckModelReq {
   model_name?: string;
   provider?: string;
   model_type?: string;
+  param?: ModelParam;
 }
 
 // 更新模型数据
