@@ -82,7 +82,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       context_window_size: 64000,
       max_output_tokens: 8192,
       enable_r1_params: false,
-      support_image: false,
+      support_image: model_type === 'analysis-vl' ? true : false,
       support_compute: false,
       support_prompt_caching: false,
     },
@@ -119,7 +119,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       context_window_size: 64000,
       max_output_tokens: 8192,
       enable_r1_params: false,
-      support_image: false,
+      support_image: model_type === 'analysis-vl' ? true : false,
       support_compute: false,
       support_prompt_caching: false,
     });
@@ -358,7 +358,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       context_window_size: value.param?.context_window || 64000,
       max_output_tokens: value.param?.max_tokens || 8192,
       enable_r1_params: value.param?.r1_enabled || false,
-      support_image: value.param?.support_images || false,
+      support_image: model_type === 'analysis-vl' ? true : (value.param?.support_images || false),
       support_compute: value.param?.support_computer_use || false,
       support_prompt_caching: value.param?.support_prompt_cache || false,
     });
@@ -383,7 +383,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
           context_window_size: 64000,
           max_output_tokens: 8192,
           enable_r1_params: false,
-          support_image: false,
+          support_image: model_type === 'analysis-vl' ? true : false,
           support_compute: false,
           support_prompt_caching: false,
         });
@@ -537,7 +537,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                             context_window_size: 64000,
                             max_output_tokens: 8192,
                             enable_r1_params: false,
-                            support_image: false,
+                            support_image: model_type === 'analysis-vl' ? true : false,
                             support_compute: false,
                             support_prompt_caching: false,
                           });
@@ -1038,9 +1038,9 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                 )}
               </>
             )}
-            {/* 高级设置部分 - 在选择了模型或者是其它供应商时显示，但不包括embedding、rerank、reranker、analysis-vl 类型 */}
+            {/* 高级设置部分 - 在选择了模型或者是其它供应商时显示，但不包括embedding、rerank、reranker类型 */}
             {(modelUserList.length !== 0 || providerBrand === 'Other') &&
-              !['embedding', 'rerank', 'reranker', 'analysis-vl'].includes(model_type) && (
+              !['embedding', 'rerank', 'reranker'].includes(model_type) && (
                 <Box sx={{ mt: 2 }}>
                   <Accordion
                     sx={{
@@ -1086,35 +1086,46 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                             <Controller
                             control={control}
                             name='support_image'
-                            render={({ field }) => (
-                              <FormControlLabel
-                                control={
-                                  <Checkbox
-                                    checked={field.value}
-                                    onChange={(e) =>
-                                      field.onChange(e.target.checked)
-                                    }
-                                    size='small'
-                                  />
-                                }
-                                label={
-                                  <Box sx={{ fontSize: 12 }}>
-                                    启用图片
-                                    <Box
-                                      component='span'
-                                      sx={{
-                                        ml: 1,
-                                        color: 'text.secondary',
-                                        fontSize: 11,
+                            render={({ field }) => {
+                              const isAnalysisVl = model_type === 'analysis-vl';
+                              const isChecked = isAnalysisVl ? true : field.value;
+                              
+                              return (
+                                <FormControlLabel
+                                  control={
+                                    <Checkbox
+                                      checked={isChecked}
+                                      onChange={(e) => {
+                                        if (!isAnalysisVl) {
+                                          field.onChange(e.target.checked);
+                                        }
                                       }}
-                                    >
-                                      (支持图片输入的模型可以启用此选项)
+                                      disabled={isAnalysisVl}
+                                      size='small'
+                                    />
+                                  }
+                                  label={
+                                    <Box sx={{ fontSize: 12 }}>
+                                      启用图片
+                                      <Box
+                                        component='span'
+                                        sx={{
+                                          ml: 1,
+                                          color: 'text.secondary',
+                                          fontSize: 11,
+                                        }}
+                                      >
+                                        {isAnalysisVl 
+                                          ? '(图像分析模型默认启用图片功能)'
+                                          : '(支持图片输入的模型可以启用此选项)'
+                                        }
+                                      </Box>
                                     </Box>
-                                  </Box>
-                                }
-                                sx={{ margin: 0 }}
-                              />
-                            )}
+                                  }
+                                  sx={{ margin: 0 }}
+                                />
+                              );
+                            }}
                           />
                           <Controller
                             control={control}
