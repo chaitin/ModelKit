@@ -58,6 +58,7 @@ export interface ModelProviderConfig {
   embedding: boolean;
   rerank: boolean;
   analysis: boolean;
+  analysis_vl: boolean;
   modelDocumentUrl?: string;
   defaultBaseUrl: string;
 }

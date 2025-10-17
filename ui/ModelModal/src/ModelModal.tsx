@@ -39,6 +39,7 @@ const titleMap: Record<string, string> = {
   ['rerank']: '重排序模型',
   ['reranker']: '重排序模型',
   ['analysis']: '分析模型',
+  ['analysis-vl']: '图像分析模型',
 };
 
 export const ModelModal: React.FC<ModelModalProps> = ({
@@ -477,6 +478,8 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                         return it.rerank;
                       case 'analysis':
                         return it.analysis;
+                      case 'analysis-vl':
+                        return it.analysis_vl;
                       default:
                         return (
                           it.label === 'BaiZhiCloud' || it.label === 'Other'
@@ -1035,9 +1038,9 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                 )}
               </>
             )}
-            {/* 高级设置部分 - 在选择了模型或者是其它供应商时显示，但不包括embedding、rerank、reranker、analysis类型 */}
+            {/* 高级设置部分 - 在选择了模型或者是其它供应商时显示，但不包括embedding、rerank、reranker、analysis-vl 类型 */}
             {(modelUserList.length !== 0 || providerBrand === 'Other') &&
-              !['embedding', 'rerank', 'reranker'].includes(model_type) && (
+              !['embedding', 'rerank', 'reranker', 'analysis-vl'].includes(model_type) && (
                 <Box sx={{ mt: 2 }}>
                   <Accordion
                     sx={{
