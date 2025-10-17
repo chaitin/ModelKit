@@ -24,7 +24,7 @@ const (
 
 func ParseModelType(s string) ModelType {
 	switch s {
-	case "llm", "chat", "analysis":
+	case "llm", "chat", "analysis", "analysis-vl":
 		return ModelTypeChat
 	case "coder", "code":
 		return ModelTypeCoder
