@@ -115,6 +115,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       api_version: '',
       api_header_key: '',
       api_header_value: '',
+      resource_name: '',
       // 重置高级设置
       context_window_size: 64000,
       max_output_tokens: 8192,
@@ -155,6 +156,14 @@ export const ModelModal: React.FC<ModelModalProps> = ({
     };
 
     return forceUseOriginalHost() ? baseUrl : `${baseUrl}/v1`;
+  };
+
+  // 从Azure OpenAI base_url中提取resource_name
+  const extractResourceNameFromUrl = (baseUrl: string): string => {
+    if (!baseUrl) return '';
+    // 匹配 https://<resource_name>.openai.azure.com 格式
+    const match = baseUrl.match(/https:\/\/([^.]+)\.openai\.azure\.com/);
+    return match ? match[1] : '';
   };
 
   const getModel = (value: AddModelForm) => {
@@ -337,6 +346,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
         api_header_value: value.api_header?.split('=')[1] || '',
         model_type,
         show_name: value.show_name || '',
+        resource_name: value.provider === 'AzureOpenAI' ? extractResourceNameFromUrl(value.base_url || '') : '',
         context_window_size: 64000,
         max_output_tokens: 8192,
         enable_r1_params: false,
@@ -355,6 +365,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       api_header_key: value.api_header?.split('=')[0] || '',
       api_header_value: value.api_header?.split('=')[1] || '',
       show_name: value.show_name || '',
+      resource_name: value.provider === 'AzureOpenAI' ? extractResourceNameFromUrl(value.base_url || '') : '',
       context_window_size: value.param?.context_window || 64000,
       max_output_tokens: value.param?.max_tokens || 8192,
       enable_r1_params: value.param?.r1_enabled || false,
@@ -379,6 +390,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
           api_header_key: '',
           api_header_value: '',
           show_name: '',
+          resource_name: '',
           // 高级设置默认值
           context_window_size: 64000,
           max_output_tokens: 8192,
@@ -533,6 +545,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                             api_header_key: '',
                             api_header_value: '',
                             show_name: '',
+                            resource_name: '',
                             // 重置高级设置
                             context_window_size: 64000,
                             max_output_tokens: 8192,
@@ -571,12 +584,38 @@ export const ModelModal: React.FC<ModelModalProps> = ({
               },
             }}
           >
-            <Box sx={{ fontSize: 14, lineHeight: '32px' }}>
-              API 地址{' '}
-              <Box component={'span'} sx={{ color: 'red' }}>
-                *
+            <Stack
+              direction={'row'}
+              alignItems={'center'}
+              justifyContent={'space-between'}
+              sx={{ fontSize: 14, lineHeight: '32px' }}
+            >
+              <Box>
+                API 地址{' '}
+                <Box component={'span'} sx={{ color: 'red' }}>
+                  *
+                </Box>
               </Box>
-            </Box>
+              {providers[providerBrand].addingModelTutorial && (
+                <Box
+                  component={'span'}
+                  sx={{
+                    color: 'info.main',
+                    cursor: 'pointer',
+                    ml: 1,
+                    textAlign: 'right',
+                  }}
+                  onClick={() =>
+                    window.open(
+                      providers[providerBrand].addingModelTutorial,
+                      '_blank'
+                    )
+                  }
+                >
+                  添加模型教程
+                </Box>
+              )}
+            </Stack>
             <Controller
               control={control}
               name='base_url'
@@ -765,6 +804,45 @@ export const ModelModal: React.FC<ModelModalProps> = ({
               )}
             {providerBrand === 'AzureOpenAI' && (
               <>
+                <Box sx={{ fontSize: 14, lineHeight: '32px', mt: 2 }}>
+                  Resource Name
+                  <Box component={'span'} sx={{ color: 'red' }}>
+                    *
+                  </Box>
+                </Box>
+                <Controller
+                  control={control}
+                  name='resource_name'
+                  rules={{
+                    required: {
+                      value: true,
+                      message: 'Resource Name 不能为空',
+                    },
+                  }}
+                  render={({ field }) => (
+                    <TextField
+                      {...field}
+                      fullWidth
+                      size='small'
+                      error={!!errors.resource_name}
+                      helperText={errors.resource_name?.message}
+                      onChange={(e) => {
+                        field.onChange(e.target.value);
+                        // 动态更新base_url
+                        const resourceName = e.target.value;
+                        if (resourceName) {
+                          setValue('base_url', `https://${resourceName}.openai.azure.com`);
+                        } else {
+                          setValue('base_url', '');
+                        }
+                        setModelUserList([]);
+                        setValue('model_name', '');
+                        setSuccess(false);
+                        setAddModelError('');
+                      }}
+                    />
+                  )}
+                />
                 <Box sx={{ fontSize: 14, lineHeight: '32px', mt: 2 }}>
                   API Version
                 </Box>
