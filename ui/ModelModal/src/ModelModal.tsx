@@ -647,7 +647,10 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                   onChange={(e) => {
                     field.onChange(e.target.value);
                     setModelUserList([]);
-                    setValue('model_name', '');
+                    // 只有当供应商不是"Other"时才清空模型名称
+                    if (providerBrand !== 'Other') {
+                      setValue('model_name', '');
+                    }
                     setSuccess(false);
                     setAddModelError('');
                   }}
@@ -764,7 +767,10 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                   onChange={(e) => {
                     field.onChange(e.target.value);
                     setModelUserList([]);
-                    setValue('model_name', '');
+                    // 只有当供应商不是"Other"时才清空模型名称
+                    if (providerBrand !== 'Other') {
+                      setValue('model_name', '');
+                    }
                     setSuccess(false);
                     setAddModelError('');
                   }}
