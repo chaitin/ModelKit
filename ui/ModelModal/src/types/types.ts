@@ -147,6 +147,7 @@ export interface AddModelForm {
   model_type: string;
   show_name: string;
   api_header: string;
+  resource_name: string; // Azure OpenAI resource name
   // 高级设置字段
   context_window_size: number;
   max_output_tokens: number;

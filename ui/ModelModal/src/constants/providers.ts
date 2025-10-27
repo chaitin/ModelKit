@@ -166,7 +166,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     label: 'AzureOpenAI',
     cn: 'Azure OpenAI',
     icon: 'ikun-azure',
-    urlWrite: true,
+    urlWrite: false,
     secretRequired: true,
     customHeader: false,
     chat: true,
