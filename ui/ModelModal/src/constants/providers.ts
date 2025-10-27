@@ -128,6 +128,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     analysis: true,
     analysis_vl: true,
     modelDocumentUrl: 'https://github.com/ollama/ollama/tree/main/docs',
+    addingModelTutorial: 'https://pandawiki.docs.baizhi.cloud/node/019a160d-0528-736a-b88e-32a2d1207f3e',
     defaultBaseUrl: 'http://172.17.0.1:11434',
   },
   SiliconFlow: {
@@ -264,6 +265,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     analysis: true,
     analysis_vl: true,
     modelDocumentUrl: 'https://inference.readthedocs.io/zh-cn/v1.2.0/getting_started/installation.html#installation',
+    addingModelTutorial: 'https://pandawiki.docs.baizhi.cloud/node/019a160d-0528-736a-b88e-32a2d1207f3e',
     defaultBaseUrl: 'http://172.17.0.1:9997',
   },
   gpustack: {
@@ -280,6 +282,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     analysis: true,
     analysis_vl: true,
     modelDocumentUrl: 'https://docs.gpustack.ai/latest/quickstart/',
+    addingModelTutorial: 'https://pandawiki.docs.baizhi.cloud/node/019a160d-0528-736a-b88e-32a2d1207f3e',
     defaultBaseUrl: 'http://172.17.0.1',
   },
   Yi: {
@@ -755,6 +758,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     analysis: true,
     analysis_vl: true,
     modelDocumentUrl: '',
+    addingModelTutorial: 'https://pandawiki.docs.baizhi.cloud/node/019a160d-0528-736a-b88e-32a2d1207f3e',
     defaultBaseUrl: '',
   },
 };

@@ -584,12 +584,38 @@ export const ModelModal: React.FC<ModelModalProps> = ({
               },
             }}
           >
-            <Box sx={{ fontSize: 14, lineHeight: '32px' }}>
-              API 地址{' '}
-              <Box component={'span'} sx={{ color: 'red' }}>
-                *
+            <Stack
+              direction={'row'}
+              alignItems={'center'}
+              justifyContent={'space-between'}
+              sx={{ fontSize: 14, lineHeight: '32px' }}
+            >
+              <Box>
+                API 地址{' '}
+                <Box component={'span'} sx={{ color: 'red' }}>
+                  *
+                </Box>
               </Box>
-            </Box>
+              {providers[providerBrand].addingModelTutorial && (
+                <Box
+                  component={'span'}
+                  sx={{
+                    color: 'info.main',
+                    cursor: 'pointer',
+                    ml: 1,
+                    textAlign: 'right',
+                  }}
+                  onClick={() =>
+                    window.open(
+                      providers[providerBrand].addingModelTutorial,
+                      '_blank'
+                    )
+                  }
+                >
+                  添加模型教程
+                </Box>
+              )}
+            </Stack>
             <Controller
               control={control}
               name='base_url'

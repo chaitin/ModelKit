@@ -60,6 +60,7 @@ export interface ModelProviderConfig {
   analysis: boolean;
   analysis_vl: boolean;
   modelDocumentUrl?: string;
+  addingModelTutorial?: string;
   defaultBaseUrl: string;
 }
 
