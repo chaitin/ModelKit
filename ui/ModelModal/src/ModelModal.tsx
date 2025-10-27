@@ -52,6 +52,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
   language = 'zh-CN',
   messageComponent,
   is_close_model_remark = false,
+  addingModelTutorialURL = 'https://github.com/chaitin/ModelKit/blob/main/docs/AddinModelTutorial.md',
 }: ModelModalProps) => {
   const theme = useTheme();
 
@@ -607,7 +608,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                   }}
                   onClick={() =>
                     window.open(
-                      providers[providerBrand].addingModelTutorial,
+                      addingModelTutorialURL ,
                       '_blank'
                     )
                   }

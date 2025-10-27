@@ -176,4 +176,5 @@ export interface ModelModalProps {
   language?: 'zh-CN' | 'en-US';
   messageComponent?: MessageComponent;
   is_close_model_remark?: boolean;
+  addingModelTutorialURL?: string;
 }
