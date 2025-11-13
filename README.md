@@ -62,11 +62,11 @@ package v1
 import (
     "net/http"
     "github.com/chaitin/ModelKit/v2/domain"
-    "github.com/chaitin/ModelKit/v2/usecase"
+    modelkit "github.com/chaitin/ModelKit/v2/usecase"
     "github.com/labstack/echo/v4"
 )
 
-type ModelKit struct{}
+modelkit := modelkit.NewModelKit(logger.Logger)
 
 // GetModelList 获取模型列表
 func (m *ModelKit) GetModelList(c echo.Context) error {
@@ -79,7 +79,7 @@ func (m *ModelKit) GetModelList(c echo.Context) error {
     }
 
     // 调用ModelKit提供的业务逻辑
-    resp, err := usecase.ModelList(c.Request().Context(), &req)
+    resp, err := modelkit.ModelList(c.Request().Context(), &req)
     if err != nil {
         return c.JSON(http.StatusInternalServerError, domain.Response{
             Success: false,
@@ -105,7 +105,7 @@ func (m *ModelKit) CheckModel(c echo.Context) error {
     }
 
     // 调用ModelKit提供的业务逻辑
-    resp, err := usecase.CheckModel(c.Request().Context(), &req)
+    resp, err := modelkit.CheckModel(c.Request().Context(), &req)
     if err != nil {
         return c.JSON(http.StatusInternalServerError, domain.Response{
             Success: false,
