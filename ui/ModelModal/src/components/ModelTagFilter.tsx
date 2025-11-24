@@ -8,7 +8,8 @@ import {
   isFunctionCallingModel,
   isCodeModel,
   isEmbeddingModel,
-  isRerankModel
+  isRerankModel,
+  isAnalysisModel
 } from '../utils/model';
 
 interface ModelTagFilterProps {
@@ -42,7 +43,8 @@ const ModelTagFilter: React.FC<ModelTagFilterProps> = ({
     { key: 'function_calling', label: '工具调用', color: 'success' as const },
     { key: 'vision', label: '视觉', color: 'secondary' as const },
     { key: 'embedding', label: '向量', color: 'error' as const },
-    { key: 'rerank', label: '重排', color: 'default' as const }
+    { key: 'rerank', label: '重排', color: 'default' as const },
+    { key: 'analysis', label: '分析', color: 'info' as const }
   ];
 
   // 根据模型计算每个标签的可用性
@@ -71,6 +73,8 @@ const ModelTagFilter: React.FC<ModelTagFilterProps> = ({
             return isEmbeddingModel(model.model, model.provider);
           case 'rerank':
             return isRerankModel(model.model);
+          case 'analysis':
+            return isAnalysisModel(model.model, model.provider);
           default:
             return false;
         }
@@ -105,6 +109,8 @@ const ModelTagFilter: React.FC<ModelTagFilterProps> = ({
             return isEmbeddingModel(model.model, model.provider);
           case 'rerank':
             return isRerankModel(model.model);
+          case 'analysis':
+            return isAnalysisModel(model.model, model.provider);
           default:
             return false;
         }

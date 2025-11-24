@@ -18,7 +18,6 @@ import (
 	"github.com/JohannesKaufmann/html-to-markdown/v2/converter"
 	"github.com/JohannesKaufmann/html-to-markdown/v2/plugin/base"
 	"github.com/JohannesKaufmann/html-to-markdown/v2/plugin/commonmark"
-	"github.com/chaitin/ModelKit/v2/consts"
 	"github.com/chaitin/ModelKit/v2/domain"
 	"github.com/chaitin/ModelKit/v2/pkg/request"
 	"github.com/yuin/goldmark"
@@ -299,22 +298,5 @@ func GetHttpClientWithAPIHeaderMap(header string) *http.Client {
 
 func GetQuery(req *domain.ModelListReq) (request.Query, error) {
 	q := make(request.Query, 0)
-	provider := consts.ParseModelProvider(req.Provider)
-	modelType := consts.ParseModelType(req.Type)
-
-	// 只有硅基流动和百智云支持sub_type
-	if provider != consts.ModelProviderBaiZhiCloud && provider != consts.ModelProviderSiliconFlow {
-		return q, nil
-	}
-	q["type"] = "text"
-	q["sub_type"] = string(req.Type)
-	// 不区分chat 还是 code
-	if modelType == consts.ModelTypeChat || modelType == consts.ModelTypeCoder {
-		q["sub_type"] = ""
-	}
-	// 硅基流动不支持coder sub_type
-	if provider == consts.ModelProviderSiliconFlow && modelType == consts.ModelTypeCoder {
-		q["sub_type"] = "chat"
-	}
 	return q, nil
 }
