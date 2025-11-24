@@ -60,9 +60,9 @@ func (m *ModelKit) ModelList(ctx context.Context, req *domain.ModelListReq) (*do
 	// 人工返回模型列表
 	case consts.ModelProviderAzureOpenAI,
 		consts.ModelProviderVolcengine:
-		return &domain.ModelListResp{
-			Models: domain.From(domain.ModelProviders[provider]),
-		}, nil
+		models := domain.From(domain.ModelProviders[provider])
+		filtered := filterModelsByType(models, req)
+		return &domain.ModelListResp{Models: filtered}, nil
 	case consts.ModelProviderGemini:
 		client, err := generativeGenai.NewClient(ctx, option.WithAPIKey(req.APIKey))
 		if err != nil {
@@ -108,9 +108,8 @@ func (m *ModelKit) ModelList(ctx context.Context, req *domain.ModelListReq) (*do
 			}, nil
 		}
 
-		return &domain.ModelListResp{
-			Models: modelsList,
-		}, nil
+		filtered := filterModelsByType(modelsList, req)
+		return &domain.ModelListResp{Models: filtered}, nil
 	case consts.ModelProviderGithub:
 		models, err := reqModelListApi(req, httpClient, &domain.GithubResp{})
 		if err != nil {
@@ -118,9 +117,8 @@ func (m *ModelKit) ModelList(ctx context.Context, req *domain.ModelListReq) (*do
 				Error: err.Error(),
 			}, nil
 		}
-		return &domain.ModelListResp{
-			Models: models,
-		}, nil
+		filtered := filterModelsByType(models, req)
+		return &domain.ModelListResp{Models: filtered}, nil
 	case consts.ModelProviderOllama:
 		var modelListResp domain.ModelListResp
 		var err error
@@ -129,13 +127,14 @@ func (m *ModelKit) ModelList(ctx context.Context, req *domain.ModelListReq) (*do
 			var models []domain.ModelListItem
 			models, err = reqModelListApi(req, httpClient, &domain.OpenAIResp{})
 			if err == nil {
-				modelListResp.Models = models
+				modelListResp.Models = filterModelsByType(models, req)
 			}
 		} else {
 			var resp *domain.ModelListResp
 			resp, err = ollamaListModel(req.BaseURL, httpClient, req.APIHeader)
 			if err == nil {
 				modelListResp = *resp
+				modelListResp.Models = filterModelsByType(modelListResp.Models, req)
 			}
 		}
 		// ollama list发生错误， 尝试修复url
@@ -170,9 +169,8 @@ func (m *ModelKit) ModelList(ctx context.Context, req *domain.ModelListReq) (*do
 			}
 		}
 		// end
-		return &domain.ModelListResp{
-			Models: models,
-		}, nil
+		filtered := filterModelsByType(models, req)
+		return &domain.ModelListResp{Models: filtered}, nil
 		// openai 兼容模型
 	default:
 		models, err := reqModelListApi(req, httpClient, &domain.OpenAIResp{})
@@ -194,9 +192,8 @@ func (m *ModelKit) ModelList(ctx context.Context, req *domain.ModelListReq) (*do
 				Error: err.Error(),
 			}, nil
 		}
-		return &domain.ModelListResp{
-			Models: models,
-		}, nil
+		filtered := filterModelsByType(models, req)
+		return &domain.ModelListResp{Models: filtered}, nil
 	}
 }
 

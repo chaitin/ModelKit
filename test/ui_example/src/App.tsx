@@ -110,7 +110,7 @@ function App() {
                 <MenuItem value={'coder'}>代码补全模型</MenuItem>
                 <MenuItem value={'embedding'}>向量模型</MenuItem>
                 <MenuItem value={'audio'}>音频模型</MenuItem>
-                <MenuItem value={'reranker'}>重排序模型</MenuItem>
+                <MenuItem value={'rerank'}>重排序模型</MenuItem>
                 <MenuItem value={'analysis'}>分析模型</MenuItem>
                 <MenuItem value={'analysis-vl'}>图像分析模型</MenuItem>
               </Select>

@@ -6,6 +6,7 @@ import {
   isRerankModel,
   isVisionModel,
   isWebSearchModel,
+  isAnalysisModel,
 } from '../utils/model';
 import { FC, memo, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import { styled } from '@mui/material';
@@ -18,6 +19,7 @@ import {
   ToolsCallingTag,
   VisionTag,
   WebSearchTag,
+  AnalysisTag,
 } from './Tags/ModelCapabilities';
 
 interface ModelTagsProps {
@@ -106,6 +108,13 @@ const ModelTagsWithLabel: FC<ModelTagsProps> = ({
       )}
       {isCodeModel(model_id, provider) && (
         <CodeTag
+          size={size}
+          showTooltip={showTooltip}
+          showLabel={shouldShowLabel}
+        />
+      )}
+      {isAnalysisModel(model_id, provider) && (
+        <AnalysisTag
           size={size}
           showTooltip={showTooltip}
           showLabel={shouldShowLabel}

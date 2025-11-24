@@ -12,6 +12,7 @@ import (
 	"os"
 	"path"
 	"path/filepath"
+	"regexp"
 	"runtime"
 	"strings"
 
@@ -313,4 +314,184 @@ func (m *ModelKit) geminiImageCheck(ctx context.Context, req *domain.CheckModelR
 		return "", err
 	}
 	return result.Text(), nil
+}
+
+func filterModelsByType(models []domain.ModelListItem, req *domain.ModelListReq) []domain.ModelListItem {
+	raw := strings.ToLower(req.Type)
+	p := strings.ToLower(req.Provider)
+	switch raw {
+	// 分析模型 排除 嵌入模型和重排模型
+	case "analysis":
+		filtered := make([]domain.ModelListItem, 0, len(models))
+		for _, it := range models {
+			if !isEmbeddingModel(it.Model, p) && !isRerankModel(it.Model) {
+				filtered = append(filtered, it)
+			}
+		}
+		return filtered
+	// 分析模型-视觉模型 仅包含 视觉模型
+	case "analysis-vl":
+		filtered := make([]domain.ModelListItem, 0, len(models))
+		for _, it := range models {
+			if isVisionModel(it.Model, p) {
+				filtered = append(filtered, it)
+			}
+		}
+		return filtered
+	// 聊天模型 排除 嵌入模型和重排模型
+	case "chat", "llm":
+		filtered := make([]domain.ModelListItem, 0, len(models))
+		for _, it := range models {
+			if !isEmbeddingModel(it.Model, p) && !isRerankModel(it.Model) {
+				filtered = append(filtered, it)
+			}
+		}
+		return filtered
+	// 嵌入模型 仅包含 嵌入模型
+	case "embedding":
+		filtered := make([]domain.ModelListItem, 0, len(models))
+		for _, it := range models {
+			if isEmbeddingModel(it.Model, p) {
+				filtered = append(filtered, it)
+			}
+		}
+		return filtered
+	// 重排模型 仅包含 重排模型
+	case "reranker", "rerank":
+		filtered := make([]domain.ModelListItem, 0, len(models))
+		for _, it := range models {
+			if isRerankModel(it.Model) {
+				filtered = append(filtered, it)
+			}
+		}
+		return filtered
+	case "code", "coder":
+		filtered := make([]domain.ModelListItem, 0, len(models))
+		for _, it := range models {
+			if isCodeModel(it.Model, p) {
+				filtered = append(filtered, it)
+			}
+		}
+		return filtered
+	default:
+		return models
+	}
+}
+
+func getLowerBaseModelName(id string) string {
+	parts := strings.Split(id, "/")
+	return strings.ToLower(parts[len(parts)-1])
+}
+
+func isRerankModel(modelID string) bool {
+	if modelID == "" {
+		return false
+	}
+	mid := getLowerBaseModelName(modelID)
+	re := regexp.MustCompile(`(?i)(?:rerank|re-rank|re-ranker|re-ranking|retrieval|retriever)`)
+	return re.MatchString(mid)
+}
+
+func isEmbeddingModel(modelID, provider string) bool {
+	if modelID == "" {
+		return false
+	}
+	if isRerankModel(modelID) {
+		return false
+	}
+	mid := getLowerBaseModelName(modelID)
+	if provider == "anthropic" {
+		return false
+	}
+	if provider == "doubao" || strings.Contains(mid, "doubao") {
+		re := regexp.MustCompile(`(?i)(?:^text-|embed|bge-|e5-|LLM2Vec|retrieval|uae-|gte-|jina-clip|jina-embeddings|voyage-)`)
+		return re.MatchString(mid)
+	}
+	re := regexp.MustCompile(`(?i)(?:^text-|embed|bge-|e5-|LLM2Vec|retrieval|uae-|gte-|jina-clip|jina-embeddings|voyage-)`)
+	return re.MatchString(mid)
+}
+
+func isCodeModel(modelID, provider string) bool {
+	if modelID == "" {
+		return false
+	}
+	if isEmbeddingModel(modelID, provider) || isRerankModel(modelID) {
+		return false
+	}
+	mid := getLowerBaseModelName(modelID)
+	re := regexp.MustCompile(`(?i)(?:^o3$|.*(code|claude\s+sonnet|claude\s+opus|gpt-4\.1|gpt-4o|gpt-5|gemini[\s-]+2\.5|o4-mini|kimi-k2).*)`)
+	return re.MatchString(mid)
+}
+
+var visionModels = []string{
+	`chatgpt-4o(?:-[\w-]+)?`,
+	`claude-3`,
+	`claude-opus-4`,
+	`claude-sonnet-4`,
+	`deepseek-vl(?:[\w-]+)?`,
+	`doubao-seed-1[.-]6(?:-[\w-]+)?`,
+	`gemini-1\.5`,
+	`gemini-2\.0`,
+	`gemini-2\.5`,
+	`gemini-exp`,
+	`gemma-3(?:-[\w-]+)`,
+	`gemma3(?:[-:\w]+)?`,
+	`glm-4(?:\.\d+)?v(?:-[\w-]+)?`,
+	`gpt-4(?:-[\w-]+)`,
+	`gpt-4.1(?:-[\w-]+)?`,
+	`gpt-4.5(?:-[\w-]+)`,
+	`gpt-4o(?:-[\w-]+)?`,
+	`gpt-5(?:-[\w-]+)?`,
+	`grok-4(?:-[\w-]+)?`,
+	`grok-vision-beta`,
+	`internvl2`,
+	`kimi-latest`,
+	`kimi-thinking-preview`,
+	`kimi-vl-a3b-thinking(?:-[\w-]+)?`,
+	`llama-4(?:-[\w-]+)?`,
+	`llama-guard-4(?:-[\w-]+)?`,
+	`llava`,
+	`minicpm`,
+	`moondream`,
+	`o1(?:-[\w-]+)?`,
+	`o3(?:-[\w-]+)?`,
+	`o4(?:-[\w-]+)?`,
+	`pixtral`,
+	`qvq`,
+	`qwen-vl`,
+	`qwen2-vl`,
+	`qwen2.5-omni`,
+	`qwen2.5-vl`,
+	`step-1o(?:.*vision)?`,
+	`step-1v(?:-[\w-]+)?`,
+	`vision`,
+}
+
+var notVisionModels = []string{
+	`AIDC-AI/Marco-o1`,
+	`gpt-4-\d+-preview`,
+	`gpt-4-turbo-preview`,
+	`gpt-4-32k`,
+	`gpt-4-\d+`,
+	`o1-mini`,
+	`o3-mini`,
+	`o1-preview`,
+}
+
+func isVisionModel(modelID, provider string) bool {
+	if modelID == "" {
+		return false
+	}
+	if isEmbeddingModel(modelID, provider) || isRerankModel(modelID) {
+		return false
+	}
+	mid := getLowerBaseModelName(modelID)
+	not := strings.Join(notVisionModels, "|")
+	yes := strings.Join(visionModels, "|")
+	yesRe := regexp.MustCompile(`(?i)\b(?:` + yes + `)\b`)
+	if !yesRe.MatchString(mid) {
+		return false
+	}
+	notRe := regexp.MustCompile(`(?i)\b(?:` + not + `)\b`)
+	return !notRe.MatchString(mid)
 }

@@ -298,6 +298,33 @@ export function isWebSearchModel(model_id: string, provider: string): boolean {
   return false
 }
 
+export function isAnalysisModel(model_id: string, provider: string): boolean {
+  if (!model_id || isEmbeddingModel(model_id, provider) || isRerankModel(model_id)) {
+    return false
+  }
+
+  const modelId = getLowerBaseModelName(model_id, '/')
+
+  const bMatch = modelId.match(/(\d+(?:\.\d+)?)\s*(?:b|bn)\b/i)
+  if (bMatch) {
+    const n = parseFloat(bMatch[1])
+    if (!isNaN(n) && n <= 7) {
+      return true
+    }
+    return false
+  }
+
+  const mMatch = modelId.match(/(\d+(?:\.\d+)?)\s*m\b/i)
+  if (mMatch) {
+    const n = parseFloat(mMatch[1])
+    if (!isNaN(n) && n > 0 && n <= 7000) {
+      return true
+    }
+  }
+
+  return false
+}
+
 export function getModelLogo(modelId: string) {
   if (!modelId) {
     return undefined
