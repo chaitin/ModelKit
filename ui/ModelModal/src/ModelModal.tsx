@@ -143,7 +143,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       return baseUrl;
     }
     if (baseUrl.endsWith('#')) {
-      return baseUrl.replace('#', '');
+      return baseUrl;
     }
     const forceUseOriginalHost = () => {
       if (baseUrl.endsWith('/')) {

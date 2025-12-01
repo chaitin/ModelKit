@@ -1,7 +1,9 @@
 package usecase
 
 import (
+	"bytes"
 	"context"
+	"encoding/json"
 	"fmt"
 	"io"
 	"log"
@@ -200,7 +202,12 @@ func reqModelListApi[T domain.ModelResponseParser](req *domain.ModelListReq, htt
 	if err != nil {
 		return nil, err
 	}
-	u.Path = path.Join(u.Path, "/models")
+	if strings.HasSuffix(req.BaseURL, "#") {
+		u.Fragment = ""
+		// 使用原始路径（去掉结尾#），不再追加 /models
+	} else {
+		u.Path = path.Join(u.Path, "/models")
+	}
 
 	client := request.NewClient(u.Scheme, u.Host, httpClient.Timeout, request.WithClient(httpClient))
 	query, err := utils.GetQuery(req)
@@ -494,4 +501,165 @@ func isVisionModel(modelID, provider string) bool {
 	}
 	notRe := regexp.MustCompile(`(?i)\b(?:` + not + `)\b`)
 	return !notRe.MatchString(mid)
+}
+
+func (m *ModelKit) checkChatModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckModelResp, error) {
+	checkResp := &domain.CheckModelResp{}
+	req.BaseURL = strings.TrimSuffix(req.BaseURL, "#")
+	provider := consts.ParseModelProvider(req.Provider)
+	modelType := consts.ParseModelType(req.Type)
+
+	resp, err := m.getChatModelGenerateChat(ctx, provider, modelType, req.BaseURL, req)
+	if err != nil && (provider == consts.ModelProviderOther || provider == consts.ModelProviderOllama || provider == consts.ModelProviderAzureOpenAI) {
+		msg := generateBaseURLFixSuggestion(err.Error(), req.BaseURL, provider)
+		if msg == "" {
+			checkResp.Error = err.Error()
+		} else {
+			checkResp.Error = msg
+		}
+		return checkResp, nil
+	}
+	if err != nil && provider != consts.ModelProviderOther {
+		errorMsg := strings.ToLower(err.Error())
+		for _, keyword := range consts.ApiKeyBalanceKeyWords {
+			if strings.Contains(errorMsg, keyword) {
+				checkResp.Error = "API Key余额不足"
+				return checkResp, nil
+			}
+		}
+		checkResp.Error = err.Error()
+		return checkResp, nil
+	}
+	if err != nil {
+		checkResp.Error = err.Error()
+		return checkResp, nil
+	}
+	if resp == "" {
+		checkResp.Error = "生成内容失败"
+		return checkResp, nil
+	}
+	checkResp.Content = resp
+	return checkResp, nil
+}
+
+func (m *ModelKit) checkEmbeddingModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckModelResp, error) {
+    checkResp := &domain.CheckModelResp{}
+    var url string
+    reqBody := map[string]any{
+        "model":           req.Model,
+        "input":           "ModelKit 一个轻量级工具库，提供 AI 模型发现与 API 密钥验证功能，助你快速集成各大模型供应商能力。",
+        "encoding_format": "float",
+    }
+	if strings.HasSuffix(req.BaseURL, "#") {
+		url = strings.TrimSuffix(req.BaseURL, "#")
+	} else {
+		url = req.BaseURL + "/embeddings"
+	}
+
+	body, err := json.Marshal(reqBody)
+	if err != nil {
+		checkResp.Error = err.Error()
+		return checkResp, nil
+	}
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewBuffer(body))
+	if err != nil {
+		checkResp.Error = err.Error()
+		return checkResp, nil
+	}
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", req.APIKey))
+	request.Header.Set("Content-Type", "application/json")
+	client := &http.Client{Transport: http.DefaultTransport}
+	resp, err := client.Do(request)
+	if err != nil {
+		checkResp.Error = err.Error()
+		return checkResp, nil
+	}
+	defer func() {
+		if closeErr := resp.Body.Close(); closeErr != nil {
+			if m.logger != nil {
+				m.logger.Error("Failed to close resp body: %v", slog.Any("error", closeErr))
+			} else {
+				log.Printf("Failed to close resp body: %v", closeErr)
+			}
+		}
+	}()
+	if resp.StatusCode != http.StatusOK {
+		checkResp.Error = resp.Status
+		return checkResp, nil
+	}
+	return checkResp, nil
+}
+
+func (m *ModelKit) checkRerankModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckModelResp, error) {
+    checkResp := &domain.CheckModelResp{}
+    var url string
+    var reqBody map[string]any
+    if strings.HasSuffix(req.BaseURL, "#") {
+        url = strings.TrimSuffix(req.BaseURL, "#")
+    } else {
+        url = req.BaseURL + "/rerank"
+    }
+
+	if url == "https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank" {
+		reqBody = map[string]any{
+			"model": req.Model,
+			"input": map[string]any{
+				"query": "ModelKit",
+				"documents": []string{
+					"ModelKit 是一个轻量级工具库，提供 AI 模型发现与 API 密钥验证功能，助你快速集成各大模型供应商能力。",
+					"ModelKit 是一个轻量级工具库，提供 AI 模型发现与 API 密钥验证功能，助你快速集成各大模型供应商能力。",
+					"ModelKit 是一个轻量级工具库，提供 AI 模型发现与 API 密钥验证功能，助你快速集成各大模型供应商能力。",
+				},
+			},
+			"parameters": map[string]any{
+				"return_documents": true,
+				"top_n":            2,
+				"instruct":         "Given a web search query, retrieve relevant passages that answer the query.",
+			},
+		}
+	} else {
+		reqBody = map[string]any{
+			"model": req.Model,
+			"documents": []string{
+				"ModelKit 是一个轻量级工具库，提供 AI 模型发现与 API 密钥验证功能，助你快速集成各大模型供应商能力。",
+				"ModelKit 是一个轻量级工具库，提供 AI 模型发现与 API 密钥验证功能，助你快速集成各大模型供应商能力。",
+				"ModelKit 是一个轻量级工具库，提供 AI 模型发现与 API 密钥验证功能，助你快速集成各大模型供应商能力。",
+			},
+			"query": "ModelKit",
+		}
+	}
+
+	body, err := json.Marshal(reqBody)
+	if err != nil {
+		checkResp.Error = err.Error()
+		return checkResp, nil
+	}
+	request, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewBuffer(body))
+	if err != nil {
+		checkResp.Error = err.Error()
+		return checkResp, nil
+	}
+	request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", req.APIKey))
+	request.Header.Set("Content-Type", "application/json")
+	client := http.DefaultClient
+	client.Transport = http.DefaultTransport
+	resp, err := client.Do(request)
+	if err != nil {
+		checkResp.Error = err.Error()
+		return checkResp, nil
+	}
+	defer func() {
+		if closeErr := resp.Body.Close(); closeErr != nil {
+			if m.logger != nil {
+				m.logger.Error("Failed to close resp body: %v", slog.Any("error", closeErr))
+			} else {
+				log.Printf("Failed to close resp body: %v", closeErr)
+			}
+		}
+	}()
+	if resp.StatusCode != http.StatusOK {
+		checkResp.Error = resp.Status
+		return checkResp, nil
+	}
+	return checkResp, nil
 }

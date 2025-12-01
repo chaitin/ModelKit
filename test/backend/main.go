@@ -71,14 +71,14 @@ func (p *ModelKitHandler) CheckModel(c echo.Context) error {
 
 	// 绑定基本字段
 	req.Provider = c.QueryParam("provider")
-	req.Model = c.QueryParam("model")
+	req.Model = c.QueryParam("model_name")
 	req.BaseURL = c.QueryParam("base_url")
 	req.APIKey = c.QueryParam("api_key")
 	req.APIHeader = c.QueryParam("api_header")
 	req.APIVersion = c.QueryParam("api_version")
-	req.Type = c.QueryParam("type")
+	req.Type = c.QueryParam("model_type")
 
-	p.logger.Info("CheckModel req:", req)
+	p.logger.Info("CheckModel req", slog.Any("req", req))
 
 	// 单独处理 param 字段
 	paramStr := c.QueryParam("param")
