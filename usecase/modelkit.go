@@ -1,9 +1,7 @@
 package usecase
 
 import (
-	"bytes"
 	"context"
-	"encoding/json"
 	"fmt"
 	"log"
 	"log/slog"
@@ -203,107 +201,15 @@ func (m *ModelKit) CheckModel(ctx context.Context, req *domain.CheckModelReq) (*
 	} else {
 		log.Printf("CheckModel req: provider=%s, model=%s, baseURL=%s", req.Provider, req.Model, req.BaseURL)
 	}
-	checkResp := &domain.CheckModelResp{}
 	modelType := consts.ParseModelType(req.Type)
-
-	// embedding 与 rerank 模型检查
-	if modelType == consts.ModelTypeEmbedding || modelType == consts.ModelTypeRerank {
-		url := req.BaseURL
-		reqBody := map[string]any{}
-		if modelType == consts.ModelTypeEmbedding {
-			reqBody = map[string]any{
-				"model":           req.Model,
-				"input":           "ModelKit 一个轻量级工具库，提供 AI 模型发现与 API 密钥验证功能，助你快速集成各大模型供应商能力。",
-				"encoding_format": "float",
-			}
-			url = req.BaseURL + "/embeddings"
-		}
-		if modelType == consts.ModelTypeRerank {
-			reqBody = map[string]any{
-				"model": req.Model,
-				"documents": []string{
-					"ModelKit 是一个轻量级工具库，提供 AI 模型发现与 API 密钥验证功能，助你快速集成各大模型供应商能力。",
-					"ModelKit 是一个轻量级工具库，提供 AI 模型发现与 API 密钥验证功能，助你快速集成各大模型供应商能力。",
-					"ModelKit 是一个轻量级工具库，提供 AI 模型发现与 API 密钥验证功能，助你快速集成各大模型供应商能力。",
-				},
-				"query": "ModelKit",
-			}
-			url = req.BaseURL + "/rerank"
-		}
-		body, err := json.Marshal(reqBody)
-		if err != nil {
-			checkResp.Error = err.Error()
-			return checkResp, nil
-		}
-		request, err := http.NewRequestWithContext(ctx, http.MethodPost, url, bytes.NewBuffer(body))
-		if err != nil {
-			checkResp.Error = err.Error()
-			return checkResp, nil
-		}
-		request.Header.Set("Authorization", fmt.Sprintf("Bearer %s", req.APIKey))
-		request.Header.Set("Content-Type", "application/json")
-		client := http.DefaultClient
-		client.Transport = http.DefaultTransport
-		resp, err := client.Do(request)
-		if err != nil {
-			checkResp.Error = err.Error()
-			return checkResp, nil
-		}
-		defer func() {
-			if closeErr := resp.Body.Close(); closeErr != nil {
-				if m.logger != nil {
-					m.logger.Error("Failed to close resp body: %v", slog.Any("error", closeErr))
-				} else {
-					log.Printf("Failed to close resp body: %v", closeErr)
-				}
-			}
-		}()
-		if resp.StatusCode != http.StatusOK {
-			checkResp.Error = resp.Status
-			return checkResp, nil
-		}
-		return checkResp, nil
+	switch modelType {
+	case consts.ModelTypeEmbedding:
+		return m.checkEmbeddingModel(ctx, req)
+	case consts.ModelTypeRerank:
+		return m.checkRerankModel(ctx, req)
+	default:
+		return m.checkChatModel(ctx, req)
 	}
-	// end
-	provider := consts.ParseModelProvider(req.Provider)
-
-	resp, err := m.getChatModelGenerateChat(ctx, provider, modelType, req.BaseURL, req)
-
-	// 可编辑url的供应商，尝试修复baseURL
-	if err != nil && (provider == consts.ModelProviderOther || provider == consts.ModelProviderOllama || provider == consts.ModelProviderAzureOpenAI) {
-		msg := generateBaseURLFixSuggestion(err.Error(), req.BaseURL, provider)
-		if msg == "" {
-			checkResp.Error = err.Error()
-		} else {
-			checkResp.Error = msg
-		}
-		return checkResp, nil
-	}
-	// end
-	// 检查错误信息中是否包含余额相关关键词
-	if err != nil && provider != consts.ModelProviderOther {
-		errorMsg := strings.ToLower(err.Error())
-		for _, keyword := range consts.ApiKeyBalanceKeyWords {
-			if strings.Contains(errorMsg, keyword) {
-				checkResp.Error = "API Key余额不足"
-				return checkResp, nil
-			}
-		}
-		checkResp.Error = err.Error()
-		return checkResp, nil
-	}
-	// end
-	if err != nil {
-		checkResp.Error = err.Error()
-		return checkResp, nil
-	}
-
-	if resp == "" {
-		checkResp.Error = "生成内容失败"
-		return checkResp, nil
-	}
-	checkResp.Content = resp
-	return checkResp, nil
 }
 
 func (m *ModelKit) GetChatModel(ctx context.Context, model *domain.ModelMetadata) (model.BaseChatModel, error) {
