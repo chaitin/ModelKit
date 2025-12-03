@@ -46,6 +46,17 @@ type ModelMetadata struct {
 	FrequencyPenalty *float32 `json:"frequency_penalty"`
 	// 修改特定token在补全中出现的可能性,可选,token ID到偏置值(-100到100)的映射, DS,Gemini,Ollama不支持
 	LogitBias map[string]int `json:"logit_bias"`
+	// Embeddng高级参数
+	// 向量维度，可选：2048(仅v4)、1536(仅v4)、1024、768、512、256、128、64
+	Dimension *int
+	// 文本类型，检索任务建议区分：query 与 document，默认 document
+	TextType *string
+	// 输出类型，仅 v3/v4 支持：dense、sparse、dense&sparse，默认 dense
+	OutputType *string
+	// 输出编码格式，默认 float
+	EncodingFormat *string
+	// 检索指令，仅在 text-embedding-v4 且 TextType=query 时生效
+	Instruct *string
 }
 
 var Models []ModelMetadata

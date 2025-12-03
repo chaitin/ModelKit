@@ -543,17 +543,36 @@ func (m *ModelKit) checkChatModel(ctx context.Context, req *domain.CheckModelReq
 }
 
 func (m *ModelKit) checkEmbeddingModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckModelResp, error) {
-    checkResp := &domain.CheckModelResp{}
-    var url string
-    reqBody := map[string]any{
-        "model":           req.Model,
-        "input":           "ModelKit 一个轻量级工具库，提供 AI 模型发现与 API 密钥验证功能，助你快速集成各大模型供应商能力。",
-        "encoding_format": "float",
-    }
+	checkResp := &domain.CheckModelResp{}
+	var url string
+	var reqBody map[string]any
 	if strings.HasSuffix(req.BaseURL, "#") {
 		url = strings.TrimSuffix(req.BaseURL, "#")
+	} else if strings.Contains(req.BaseURL, "/api/v1/services/embeddings/text-embedding/text-embedding") {
+		url = req.BaseURL
 	} else {
 		url = req.BaseURL + "/embeddings"
+	}
+
+	if strings.Contains(url, "/api/v1/services/embeddings/text-embedding/text-embedding") {
+		reqBody = map[string]any{
+			"model": req.Model,
+			"input": map[string]any{
+				"texts": []string{
+					"ModelKit 一个轻量级工具库，提供 AI 模型发现与 API 密钥验证功能，助你快速集成各大模型供应商能力。",
+				},
+			},
+			"parameters": map[string]any{
+				"encoding_format": "float",
+				"text_type":       "document",
+			},
+		}
+	} else {
+		reqBody = map[string]any{
+			"model":           req.Model,
+			"input":           "ModelKit 一个轻量级工具库，提供 AI 模型发现与 API 密钥验证功能，助你快速集成各大模型供应商能力。",
+			"encoding_format": "float",
+		}
 	}
 
 	body, err := json.Marshal(reqBody)
@@ -591,14 +610,14 @@ func (m *ModelKit) checkEmbeddingModel(ctx context.Context, req *domain.CheckMod
 }
 
 func (m *ModelKit) checkRerankModel(ctx context.Context, req *domain.CheckModelReq) (*domain.CheckModelResp, error) {
-    checkResp := &domain.CheckModelResp{}
-    var url string
-    var reqBody map[string]any
-    if strings.HasSuffix(req.BaseURL, "#") {
-        url = strings.TrimSuffix(req.BaseURL, "#")
-    } else {
-        url = req.BaseURL + "/rerank"
-    }
+	checkResp := &domain.CheckModelResp{}
+	var url string
+	var reqBody map[string]any
+	if strings.HasSuffix(req.BaseURL, "#") {
+		url = strings.TrimSuffix(req.BaseURL, "#")
+	} else {
+		url = req.BaseURL + "/rerank"
+	}
 
 	if url == "https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank" {
 		reqBody = map[string]any{

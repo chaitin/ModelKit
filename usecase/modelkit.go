@@ -24,8 +24,9 @@ import (
 	"google.golang.org/api/option"
 	"google.golang.org/genai"
 
-	bailianReranker "github.com/chaitin/ModelKit/v2/components/reranker/bailian"
+	bailianEmb "github.com/chaitin/ModelKit/v2/components/embedder/bailian"
 	baaiReranker "github.com/chaitin/ModelKit/v2/components/reranker/baai"
+	bailianReranker "github.com/chaitin/ModelKit/v2/components/reranker/bailian"
 	"github.com/chaitin/ModelKit/v2/consts"
 	"github.com/chaitin/ModelKit/v2/domain"
 	"github.com/chaitin/ModelKit/v2/utils"
@@ -406,6 +407,17 @@ func (m *ModelKit) GetEmbedder(ctx context.Context, model *domain.ModelMetadata)
 	}
 
 	switch model.Provider {
+	case consts.ModelProviderBaiLian:
+		return bailianEmb.NewEmbedder(ctx, &bailianEmb.EmbeddingConfig{
+			APIKey:         model.APIKey,
+			Model:          model.ModelName,
+			BaseURL:        model.BaseURL,
+			Dimension:      model.Dimension,
+			TextType:       model.TextType,
+			OutputType:     model.OutputType,
+			EncodingFormat: model.EncodingFormat,
+			Instruct:       model.Instruct,
+		})
 	case consts.ModelProviderAzureOpenAI:
 		cfg.ByAzure = true
 		cfg.APIVersion = model.APIVersion
