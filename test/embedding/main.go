@@ -31,7 +31,8 @@ func main() {
 		}
 		f.Close()
 	}
-	bailianTest()
+	// bailianTest()
+	openaiTest()
 }
 
 func bailianTest() {
@@ -57,12 +58,12 @@ func bailianDefaultTest(ctx context.Context, modelkit *usecase.ModelKit) {
 		log.Fatalf("NewEmbedder failed: %v", err)
 	}
 	texts := []string{"火鸡面", "测试文本", "向量模型"}
-	embs, err := embedder.EmbedStrings(ctx, texts)
+	res, err := modelkit.UseEmbedder(ctx, embedder, texts)
 	if err != nil {
-		log.Fatalf("EmbedStrings failed: %v", err)
+		log.Fatalf("UseEmbedder failed: %v", err)
 	}
-	fmt.Printf("[bailian default] texts=%d dim=%d\n", len(texts), len(embs[0]))
-	printHead(embs[0])
+	fmt.Printf("[bailian default] texts=%d dim=%d\n", len(texts), len(res.Output.Embeddings[0].Embedding))
+	printHead(res.Output.Embeddings[0].Embedding)
 }
 
 func bailianDimensionTest(ctx context.Context, modelkit *usecase.ModelKit) {
@@ -92,6 +93,31 @@ func bailianInstructTest(ctx context.Context, modelkit *usecase.ModelKit) {
 	bailianInstructOption(ctx, modelkit, "query", "检索：返回和动物相关的内容")
 }
 
+func openaiTest() {
+	ctx := context.Background()
+	modelkit := usecase.NewModelKit(nil)
+	openaiDefaultTest(ctx, modelkit)
+}
+
+func openaiDefaultTest(ctx context.Context, modelkit *usecase.ModelKit) {
+	embedder, err := modelkit.GetEmbedder(ctx, &domain.ModelMetadata{
+		Provider:  consts.ModelProviderOpenAI,
+		ModelName: "bge-m3",
+		BaseURL:   "https://model-square.app.baizhi.cloud/v1",
+		APIKey:    os.Getenv("baizhiapikey"),
+	})
+	if err != nil {
+		log.Fatalf("NewEmbedder failed: %v", err)
+	}
+	texts := []string{"风哀", "渚回"}
+	res, err := modelkit.UseEmbedder(ctx, embedder, texts)
+	if err != nil {
+		log.Fatalf("UseEmbedder failed: %v", err)
+	}
+	fmt.Printf("[openai default] texts=%d dim=%d\n", len(texts), len(res.Output.Embeddings[0].Embedding))
+	printHead(res.Output.Embeddings[0].Embedding)
+}
+
 func bailianDimensionOption(ctx context.Context, modelkit *usecase.ModelKit, dim int) {
 	embedder, err := modelkit.GetEmbedder(ctx, &domain.ModelMetadata{
 		Provider:  consts.ModelProviderBaiLian,
@@ -105,13 +131,13 @@ func bailianDimensionOption(ctx context.Context, modelkit *usecase.ModelKit, dim
 		return
 	}
 	texts := []string{"火鸡面"}
-	embs, err := embedder.EmbedStrings(ctx, texts)
+	res, err := modelkit.UseEmbedder(ctx, embedder, texts)
 	if err != nil {
-		log.Printf("EmbedStrings failed: %v", err)
+		log.Printf("UseEmbedder failed: %v", err)
 		return
 	}
-	fmt.Printf("[bailian dimension=%d] dim=%d\n", dim, len(embs[0]))
-	printHead(embs[0])
+	fmt.Printf("[bailian dimension=%d] dim=%d\n", dim, len(res.Output.Embeddings[0].Embedding))
+	printHead(res.Output.Embeddings[0].Embedding)
 }
 
 func bailianTextTypeOption(ctx context.Context, modelkit *usecase.ModelKit, tt string) {
@@ -127,13 +153,13 @@ func bailianTextTypeOption(ctx context.Context, modelkit *usecase.ModelKit, tt s
 		return
 	}
 	texts := []string{"火鸡面"}
-	embs, err := embedder.EmbedStrings(ctx, texts)
+	res, err := modelkit.UseEmbedder(ctx, embedder, texts)
 	if err != nil {
-		log.Printf("EmbedStrings failed: %v", err)
+		log.Printf("UseEmbedder failed: %v", err)
 		return
 	}
-	fmt.Printf("[bailian text_type=%s] dim=%d\n", tt, len(embs[0]))
-	printHead(embs[0])
+	fmt.Printf("[bailian text_type=%s] dim=%d\n", tt, len(res.Output.Embeddings[0].Embedding))
+	printHead(res.Output.Embeddings[0].Embedding)
 }
 
 func bailianOutputTypeOption(ctx context.Context, modelkit *usecase.ModelKit, ot string) {
@@ -149,22 +175,17 @@ func bailianOutputTypeOption(ctx context.Context, modelkit *usecase.ModelKit, ot
 		return
 	}
 	texts := []string{"火鸡面"}
-	embs, err := embedder.EmbedStrings(ctx, texts)
+	res, err := modelkit.UseEmbedder(ctx, embedder, texts)
 	if err != nil {
-		log.Printf("EmbedStrings failed: %v", err)
+		log.Printf("UseEmbedder failed: %v", err)
 		return
 	}
-	fmt.Printf("[bailian output_type=%s] dim=%d\n", ot, len(embs[0]))
-	printHead(embs[0])
-
+	fmt.Printf("[bailian output_type=%s] dim=%d\n", ot, len(res.Output.Embeddings[0].Embedding))
+	printHead(res.Output.Embeddings[0].Embedding)
 	if ot != "dense" {
-		idx, vals, err := bailianFetchSparse(ctx, ot)
-		if err != nil {
-			log.Printf("Fetch sparse failed: %v", err)
-			return
-		}
-		fmt.Printf("[bailian output_type=%s] sparse_nnz=%d\n", ot, len(vals))
-		printSparseHead(idx, vals)
+		se := res.Output.Embeddings[0].SparseEmbedding
+		fmt.Printf("[bailian output_type=%s] sparse_nnz=%d\n", ot, len(se))
+		printSparseEntriesHead(se)
 	}
 }
 
@@ -181,13 +202,13 @@ func bailianEncodingFormatOption(ctx context.Context, modelkit *usecase.ModelKit
 		return
 	}
 	texts := []string{"火鸡面"}
-	embs, err := embedder.EmbedStrings(ctx, texts)
+	res, err := modelkit.UseEmbedder(ctx, embedder, texts)
 	if err != nil {
-		log.Printf("EmbedStrings failed: %v", err)
+		log.Printf("UseEmbedder failed: %v", err)
 		return
 	}
-	fmt.Printf("[bailian encoding_format=%s] dim=%d\n", ef, len(embs[0]))
-	printHead(embs[0])
+	fmt.Printf("[bailian encoding_format=%s] dim=%d\n", ef, len(res.Output.Embeddings[0].Embedding))
+	printHead(res.Output.Embeddings[0].Embedding)
 }
 
 func bailianInstructOption(ctx context.Context, modelkit *usecase.ModelKit, tt, instr string) {
@@ -204,13 +225,13 @@ func bailianInstructOption(ctx context.Context, modelkit *usecase.ModelKit, tt, 
 		return
 	}
 	texts := []string{"火鸡面"}
-	embs, err := embedder.EmbedStrings(ctx, texts)
+	res, err := modelkit.UseEmbedder(ctx, embedder, texts)
 	if err != nil {
-		log.Printf("EmbedStrings failed: %v", err)
+		log.Printf("UseEmbedder failed: %v", err)
 		return
 	}
-	fmt.Printf("[bailian instruct=%s text_type=%s] dim=%d\n", instr, tt, len(embs[0]))
-	printHead(embs[0])
+	fmt.Printf("[bailian instruct=%s text_type=%s] dim=%d\n", instr, tt, len(res.Output.Embeddings[0].Embedding))
+	printHead(res.Output.Embeddings[0].Embedding)
 }
 
 func printHead(v []float64) {
@@ -221,6 +242,18 @@ func printHead(v []float64) {
 	fmt.Printf("head: ")
 	for i := 0; i < n; i++ {
 		fmt.Printf("%.4f ", v[i])
+	}
+	fmt.Println()
+}
+
+func printSparseEntriesHead(se []domain.SparseEntry) {
+	n := 8
+	if len(se) < n {
+		n = len(se)
+	}
+	fmt.Printf("sparse_head: ")
+	for i := 0; i < n; i++ {
+		fmt.Printf("%d:%.4f:%s ", se[i].Index, se[i].Value, se[i].Token)
 	}
 	fmt.Println()
 }

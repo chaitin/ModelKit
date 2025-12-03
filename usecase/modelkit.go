@@ -466,3 +466,29 @@ func (m *ModelKit) GetReranker(ctx context.Context, model *domain.ModelMetadata)
 		}), nil
 	}
 }
+
+func (m *ModelKit) UseEmbedder(ctx context.Context, e embedding.Embedder, texts []string) (*domain.EmbeddingsResponse, error) {
+
+	if de, ok := e.(interface {
+		EmbedStringsExt(context.Context, []string, ...embedding.Option) (*domain.EmbeddingsResponse, error)
+	}); ok {
+		return de.EmbedStringsExt(ctx, texts)
+	}
+
+	dense, err := e.EmbedStrings(ctx, texts)
+	if err != nil {
+		return nil, err
+	}
+
+	out := &domain.EmbeddingsResponse{
+		Output: domain.EmbeddingsOutput{Embeddings: make([]domain.EmbeddingItem, 0, len(dense))},
+		Usage:  domain.EmbeddingUsage{TotalTokens: 0},
+	}
+	for i := range dense {
+		out.Output.Embeddings = append(out.Output.Embeddings, domain.EmbeddingItem{
+			Embedding: dense[i],
+			TextIndex: i,
+		})
+	}
+	return out, nil
+}
