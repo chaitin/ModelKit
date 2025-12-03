@@ -5,3 +5,4 @@ ui/ModelModal/dist
 .DS_Store
 test/ui_example/dist
 books
+test/rerank/.env
