@@ -6,20 +6,16 @@ import (
 	"github.com/cloudwego/eino/components/embedding"
 )
 
-type SparseEntry struct {
+type SparseEmbedding struct {
 	Index int     `json:"index"`
 	Value float64 `json:"value"`
 	Token string  `json:"token"`
 }
 
 type EmbeddingItem struct {
-	SparseEmbedding []SparseEntry `json:"sparse_embedding,omitempty"`
-	Embedding       []float64     `json:"embedding"`
-	TextIndex       int           `json:"text_index"`
-}
-
-type EmbeddingsOutput struct {
-	Embeddings []EmbeddingItem `json:"embeddings"`
+	SparseEmbedding []SparseEmbedding `json:"sparse_embedding,omitempty"`
+	Embedding       []float64         `json:"embedding"`
+	TextIndex       int               `json:"text_index"`
 }
 
 type EmbeddingUsage struct {
@@ -27,7 +23,7 @@ type EmbeddingUsage struct {
 }
 
 type EmbeddingsResponse struct {
-	Output EmbeddingsOutput `json:"output"`
+	Embeddings []EmbeddingItem `json:"embeddings"`
 	Usage  EmbeddingUsage   `json:"usage"`
 }
 

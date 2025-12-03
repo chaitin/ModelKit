@@ -31,7 +31,7 @@ func main() {
 		}
 		f.Close()
 	}
-	// bailianTest()
+	bailianTest()
 	openaiTest()
 }
 
@@ -62,8 +62,8 @@ func bailianDefaultTest(ctx context.Context, modelkit *usecase.ModelKit) {
 	if err != nil {
 		log.Fatalf("UseEmbedder failed: %v", err)
 	}
-	fmt.Printf("[bailian default] texts=%d dim=%d\n", len(texts), len(res.Output.Embeddings[0].Embedding))
-	printHead(res.Output.Embeddings[0].Embedding)
+	fmt.Printf("[bailian default] texts=%d dim=%d\n", len(texts), len(res.Embeddings[0].Embedding))
+	printHead(res.Embeddings[0].Embedding)
 }
 
 func bailianDimensionTest(ctx context.Context, modelkit *usecase.ModelKit) {
@@ -114,8 +114,8 @@ func openaiDefaultTest(ctx context.Context, modelkit *usecase.ModelKit) {
 	if err != nil {
 		log.Fatalf("UseEmbedder failed: %v", err)
 	}
-	fmt.Printf("[openai default] texts=%d dim=%d\n", len(texts), len(res.Output.Embeddings[0].Embedding))
-	printHead(res.Output.Embeddings[0].Embedding)
+	fmt.Printf("[openai default] texts=%d dim=%d\n", len(texts), len(res.Embeddings[0].Embedding))
+	printHead(res.Embeddings[0].Embedding)
 }
 
 func bailianDimensionOption(ctx context.Context, modelkit *usecase.ModelKit, dim int) {
@@ -136,8 +136,8 @@ func bailianDimensionOption(ctx context.Context, modelkit *usecase.ModelKit, dim
 		log.Printf("UseEmbedder failed: %v", err)
 		return
 	}
-	fmt.Printf("[bailian dimension=%d] dim=%d\n", dim, len(res.Output.Embeddings[0].Embedding))
-	printHead(res.Output.Embeddings[0].Embedding)
+	fmt.Printf("[bailian dimension=%d] dim=%d\n", dim, len(res.Embeddings[0].Embedding))
+	printHead(res.Embeddings[0].Embedding)
 }
 
 func bailianTextTypeOption(ctx context.Context, modelkit *usecase.ModelKit, tt string) {
@@ -158,8 +158,8 @@ func bailianTextTypeOption(ctx context.Context, modelkit *usecase.ModelKit, tt s
 		log.Printf("UseEmbedder failed: %v", err)
 		return
 	}
-	fmt.Printf("[bailian text_type=%s] dim=%d\n", tt, len(res.Output.Embeddings[0].Embedding))
-	printHead(res.Output.Embeddings[0].Embedding)
+	fmt.Printf("[bailian text_type=%s] dim=%d\n", tt, len(res.Embeddings[0].Embedding))
+	printHead(res.Embeddings[0].Embedding)
 }
 
 func bailianOutputTypeOption(ctx context.Context, modelkit *usecase.ModelKit, ot string) {
@@ -180,10 +180,10 @@ func bailianOutputTypeOption(ctx context.Context, modelkit *usecase.ModelKit, ot
 		log.Printf("UseEmbedder failed: %v", err)
 		return
 	}
-	fmt.Printf("[bailian output_type=%s] dim=%d\n", ot, len(res.Output.Embeddings[0].Embedding))
-	printHead(res.Output.Embeddings[0].Embedding)
+	fmt.Printf("[bailian output_type=%s] dim=%d\n", ot, len(res.Embeddings[0].Embedding))
+	printHead(res.Embeddings[0].Embedding)
 	if ot != "dense" {
-		se := res.Output.Embeddings[0].SparseEmbedding
+		se := res.Embeddings[0].SparseEmbedding
 		fmt.Printf("[bailian output_type=%s] sparse_nnz=%d\n", ot, len(se))
 		printSparseEntriesHead(se)
 	}
@@ -207,8 +207,8 @@ func bailianEncodingFormatOption(ctx context.Context, modelkit *usecase.ModelKit
 		log.Printf("UseEmbedder failed: %v", err)
 		return
 	}
-	fmt.Printf("[bailian encoding_format=%s] dim=%d\n", ef, len(res.Output.Embeddings[0].Embedding))
-	printHead(res.Output.Embeddings[0].Embedding)
+	fmt.Printf("[bailian encoding_format=%s] dim=%d\n", ef, len(res.Embeddings[0].Embedding))
+	printHead(res.Embeddings[0].Embedding)
 }
 
 func bailianInstructOption(ctx context.Context, modelkit *usecase.ModelKit, tt, instr string) {
@@ -230,8 +230,8 @@ func bailianInstructOption(ctx context.Context, modelkit *usecase.ModelKit, tt, 
 		log.Printf("UseEmbedder failed: %v", err)
 		return
 	}
-	fmt.Printf("[bailian instruct=%s text_type=%s] dim=%d\n", instr, tt, len(res.Output.Embeddings[0].Embedding))
-	printHead(res.Output.Embeddings[0].Embedding)
+	fmt.Printf("[bailian instruct=%s text_type=%s] dim=%d\n", instr, tt, len(res.Embeddings[0].Embedding))
+	printHead(res.Embeddings[0].Embedding)
 }
 
 func printHead(v []float64) {
@@ -246,7 +246,7 @@ func printHead(v []float64) {
 	fmt.Println()
 }
 
-func printSparseEntriesHead(se []domain.SparseEntry) {
+func printSparseEntriesHead(se []domain.SparseEmbedding) {
 	n := 8
 	if len(se) < n {
 		n = len(se)

@@ -249,20 +249,18 @@ func (e *Embedder) EmbedStringsExt(ctx context.Context, texts []string, opts ...
 	}
 
 	out := domain.EmbeddingsResponse{
-		Output: domain.EmbeddingsOutput{
-			Embeddings: make([]domain.EmbeddingItem, 0, len(ar.Output.Embeddings)),
-		},
+		Embeddings: make([]domain.EmbeddingItem, 0, len(ar.Output.Embeddings)),
 		Usage: domain.EmbeddingUsage{
 			TotalTokens: ar.Usage.TotalTokens,
 		},
 	}
 
 	for _, item := range ar.Output.Embeddings {
-		se := make([]domain.SparseEntry, 0, len(item.SparseEmbedding))
+		se := make([]domain.SparseEmbedding, 0, len(item.SparseEmbedding))
 		for _, s := range item.SparseEmbedding {
-			se = append(se, domain.SparseEntry{Index: s.Index, Value: s.Value, Token: s.Token})
+			se = append(se, domain.SparseEmbedding{Index: s.Index, Value: s.Value, Token: s.Token})
 		}
-		out.Output.Embeddings = append(out.Output.Embeddings, domain.EmbeddingItem{
+		out.Embeddings = append(out.Embeddings, domain.EmbeddingItem{
 			SparseEmbedding: se,
 			Embedding:       item.Embedding,
 			TextIndex:       item.TextIndex,

@@ -481,11 +481,11 @@ func (m *ModelKit) UseEmbedder(ctx context.Context, e embedding.Embedder, texts 
 	}
 
 	out := &domain.EmbeddingsResponse{
-		Output: domain.EmbeddingsOutput{Embeddings: make([]domain.EmbeddingItem, 0, len(dense))},
-		Usage:  domain.EmbeddingUsage{TotalTokens: 0},
+		Embeddings: make([]domain.EmbeddingItem, 0, len(dense)),
+		Usage:      domain.EmbeddingUsage{TotalTokens: 0},
 	}
 	for i := range dense {
-		out.Output.Embeddings = append(out.Output.Embeddings, domain.EmbeddingItem{
+		out.Embeddings = append(out.Embeddings, domain.EmbeddingItem{
 			Embedding: dense[i],
 			TextIndex: i,
 		})
