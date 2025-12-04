@@ -400,9 +400,10 @@ func (m *ModelKit) GetChatModel(ctx context.Context, model *domain.ModelMetadata
 func (m *ModelKit) GetEmbedder(ctx context.Context, model *domain.ModelMetadata) (embedding.Embedder, error) {
 	// dimensions := consts.DefaultDimensions
 	cfg := &openaiEmb.EmbeddingConfig{
-		APIKey:  model.APIKey,
-		Model:   model.ModelName,
-		BaseURL: model.BaseURL,
+		APIKey:     model.APIKey,
+		Model:      model.ModelName,
+		BaseURL:    model.BaseURL,
+		Dimensions: model.EmbedderParam.Dimension,
 		// Dimensions: &dimensions,
 	}
 
@@ -412,11 +413,11 @@ func (m *ModelKit) GetEmbedder(ctx context.Context, model *domain.ModelMetadata)
 			APIKey:         model.APIKey,
 			Model:          model.ModelName,
 			BaseURL:        model.BaseURL,
-			Dimension:      model.Dimension,
-			TextType:       model.TextType,
-			OutputType:     model.OutputType,
-			EncodingFormat: model.EncodingFormat,
-			Instruct:       model.Instruct,
+			Dimension:      model.EmbedderParam.Dimension,
+			TextType:       model.EmbedderParam.TextType,
+			OutputType:     model.EmbedderParam.OutputType,
+			EncodingFormat: model.EmbedderParam.EncodingFormat,
+			Instruct:       model.EmbedderParam.Instruct,
 		})
 	case consts.ModelProviderAzureOpenAI:
 		cfg.ByAzure = true

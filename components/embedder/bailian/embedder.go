@@ -72,16 +72,12 @@ type apiParameters struct {
 	Instruct       string `json:"instruct,omitempty"`
 }
 
-type apiResponse struct {
-	Output struct {
-		Embeddings []struct {
-			Embedding []float64 `json:"embedding"`
-		} `json:"embeddings"`
-	} `json:"output"`
-}
-
-type apiResponseFull struct {
-	Output struct {
+type apiResponseCommon struct {
+	StatusCode int    `json:"status_code"`
+	RequestID  string `json:"request_id"`
+	Code       string `json:"code"`
+	Message    string `json:"message"`
+	Output     struct {
 		Embeddings []struct {
 			SparseEmbedding []struct {
 				Index int     `json:"index"`
@@ -97,18 +93,55 @@ type apiResponseFull struct {
 	} `json:"usage"`
 }
 
-func (e *Embedder) EmbedStrings(ctx context.Context, texts []string, opts ...embedding.Option) ([][]float64, error) {
-	if len(texts) == 0 {
-		return nil, errors.New("texts is empty")
-	}
+// func (e *Embedder) validateRequest(texts []string) error {
+// 	if len(texts) == 0 {
+// 		return errors.New("texts is empty")
+// 	}
+// 	if strings.Contains(e.cfg.Model, "text-embedding-v3") || strings.Contains(e.cfg.Model, "text-embedding-v4") {
+// 		if len(texts) > 10 {
+// 			return errors.New("too many input texts for v3/v4 (<=10)")
+// 		}
+// 	} else if len(texts) > 25 {
+// 		return errors.New("too many input texts (<=25)")
+// 	}
+// 	if e.cfg.TextType != nil && *e.cfg.TextType != "" {
+// 		v := strings.ToLower(*e.cfg.TextType)
+// 		if v != "query" && v != "document" {
+// 			return fmt.Errorf("invalid text_type: %s; allowed: query, document", *e.cfg.TextType)
+// 		}
+// 	}
+// 	if e.cfg.OutputType != nil && *e.cfg.OutputType != "" {
+// 		ot := strings.ToLower(*e.cfg.OutputType)
+// 		if ot != "dense" && ot != "sparse" && ot != "dense&sparse" {
+// 			return fmt.Errorf("invalid output_type: %s; allowed: dense, sparse, dense&sparse", *e.cfg.OutputType)
+// 		}
+// 		if !(strings.Contains(e.cfg.Model, "text-embedding-v3") || strings.Contains(e.cfg.Model, "text-embedding-v4")) {
+// 			return errors.New("output_type is only supported by text-embedding-v3/v4")
+// 		}
+// 	}
+// 	if e.cfg.Dimension != nil {
+// 		d := *e.cfg.Dimension
+// 		switch d {
+// 		case 64, 128, 256, 512, 768, 1024, 1536, 2048:
+// 			if (d == 1536 || d == 2048) && !strings.Contains(e.cfg.Model, "text-embedding-v4") {
+// 				return fmt.Errorf("dimension %d is only valid for text-embedding-v4", d)
+// 			}
+// 		default:
+// 			return fmt.Errorf("invalid dimension: %d; allowed: 64,128,256,512,768,1024,1536(v4 only),2048(v4 only)", d)
+// 		}
+// 	}
+// 	if e.cfg.Instruct != nil && *e.cfg.Instruct != "" {
+// 		if !(strings.Contains(e.cfg.Model, "text-embedding-v4")) || e.cfg.TextType == nil || strings.ToLower(*e.cfg.TextType) != "query" {
+// 			return errors.New("instruct is effective only for text-embedding-v4 with text_type=query")
+// 		}
+// 	}
+// 	return nil
+// }
 
-	if strings.Contains(e.cfg.Model, "text-embedding-v3") || strings.Contains(e.cfg.Model, "text-embedding-v4") {
-		if len(texts) > 10 {
-			return nil, errors.New("too many input texts for v3/v4 (<=10)")
-		}
-	} else if len(texts) > 25 {
-		return nil, errors.New("too many input texts (<=25)")
-	}
+func (e *Embedder) EmbedStrings(ctx context.Context, texts []string, opts ...embedding.Option) ([][]float64, error) {
+	// if err := e.validateRequest(texts); err != nil {
+	// 	return nil, err
+	// }
 
 	textType := "document"
 	if e.cfg.TextType != nil && *e.cfg.TextType != "" {
@@ -156,13 +189,26 @@ func (e *Embedder) EmbedStrings(ctx context.Context, texts []string, opts ...emb
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New(resp.Status)
-	}
-
-	var ar apiResponse
+	var ar apiResponseCommon
 	if err := json.NewDecoder(resp.Body).Decode(&ar); err != nil {
 		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		if ar.Message != "" {
+			return nil, errors.New(resp.Status + ": " + ar.Message)
+		}
+		return nil, errors.New(resp.Status)
+	}
+	if (ar.StatusCode != 0 && ar.StatusCode != http.StatusOK) || ar.Code != "" {
+		msg := ar.Message
+		if msg == "" {
+			msg = "request failed"
+		}
+		if ar.Code != "" {
+			return nil, errors.New(ar.Code + ": " + msg)
+		}
+		return nil, errors.New(msg)
 	}
 
 	if len(ar.Output.Embeddings) == 0 {
@@ -171,23 +217,18 @@ func (e *Embedder) EmbedStrings(ctx context.Context, texts []string, opts ...emb
 
 	out := make([][]float64, 0, len(ar.Output.Embeddings))
 	for _, item := range ar.Output.Embeddings {
+		if len(item.Embedding) == 0 {
+			return nil, errors.New("dense embedding not present; set output_type=dense or use EmbedStringsExt")
+		}
 		out = append(out, item.Embedding)
 	}
 	return out, nil
 }
 
 func (e *Embedder) EmbedStringsExt(ctx context.Context, texts []string, opts ...embedding.Option) (*domain.EmbeddingsResponse, error) {
-	if len(texts) == 0 {
-		return nil, errors.New("texts is empty")
-	}
-
-	if strings.Contains(e.cfg.Model, "text-embedding-v3") || strings.Contains(e.cfg.Model, "text-embedding-v4") {
-		if len(texts) > 10 {
-			return nil, errors.New("too many input texts for v3/v4 (<=10)")
-		}
-	} else if len(texts) > 25 {
-		return nil, errors.New("too many input texts (<=25)")
-	}
+	// if err := e.validateRequest(texts); err != nil {
+	// 	return nil, err
+	// }
 
 	textType := "document"
 	if e.cfg.TextType != nil && *e.cfg.TextType != "" {
@@ -235,13 +276,26 @@ func (e *Embedder) EmbedStringsExt(ctx context.Context, texts []string, opts ...
 	}
 	defer resp.Body.Close()
 
-	if resp.StatusCode != http.StatusOK {
-		return nil, errors.New(resp.Status)
-	}
-
-	var ar apiResponseFull
+	var ar apiResponseCommon
 	if err := json.NewDecoder(resp.Body).Decode(&ar); err != nil {
 		return nil, err
+	}
+
+	if resp.StatusCode != http.StatusOK {
+		if ar.Message != "" {
+			return nil, errors.New(resp.Status + ": " + ar.Message)
+		}
+		return nil, errors.New(resp.Status)
+	}
+	if (ar.StatusCode != 0 && ar.StatusCode != http.StatusOK) || ar.Code != "" {
+		msg := ar.Message
+		if msg == "" {
+			msg = "request failed"
+		}
+		if ar.Code != "" {
+			return nil, errors.New(ar.Code + ": " + msg)
+		}
+		return nil, errors.New(msg)
 	}
 
 	if len(ar.Output.Embeddings) == 0 {

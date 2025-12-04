@@ -546,11 +546,13 @@ func (m *ModelKit) checkEmbeddingModel(ctx context.Context, req *domain.CheckMod
 	encodingFormat := "float"
 
 	embedder, err := m.GetEmbedder(ctx, &domain.ModelMetadata{
-		Provider:       provider,
-		ModelName:      req.Model,
-		BaseURL:        req.BaseURL,
-		APIKey:         req.APIKey,
-		EncodingFormat: &encodingFormat,
+		Provider:  provider,
+		ModelName: req.Model,
+		BaseURL:   req.BaseURL,
+		APIKey:    req.APIKey,
+		EmbedderParam: domain.EmbedderParam{
+			EncodingFormat: &encodingFormat,
+		},
 	})
 	if err != nil {
 		checkResp.Error = err.Error()

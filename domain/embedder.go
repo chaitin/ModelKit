@@ -14,7 +14,7 @@ type SparseEmbedding struct {
 
 type EmbeddingItem struct {
 	SparseEmbedding []SparseEmbedding `json:"sparse_embedding,omitempty"`
-	Embedding       []float64         `json:"embedding"`
+	Embedding       []float64         `json:"embedding,omitempty"`
 	TextIndex       int               `json:"text_index"`
 }
 
@@ -24,7 +24,7 @@ type EmbeddingUsage struct {
 
 type EmbeddingsResponse struct {
 	Embeddings []EmbeddingItem `json:"embeddings"`
-	Usage  EmbeddingUsage   `json:"usage"`
+	Usage      EmbeddingUsage  `json:"usage"`
 }
 
 type EmbedderExt interface {

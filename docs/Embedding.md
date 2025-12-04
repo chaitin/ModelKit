@@ -1,3 +1,19 @@
+# ModelKit Embedder 介绍
+
+技术
+
+- 封装 CloudWeGo Eino 组件（`embedding/openai`、`embedding/ollama`），提供统一 Embedder 接口
+- 内置 DashScope 支持（`components/embedder/bailian`），兼容 `text-embedding-v3/v4`
+- 集成火山引擎 Ark Embedding（`eino-ext/components/embedding/ark`）
+
+功能
+
+- 支持 `OpenAI API` 与 `DashScope API`
+- 支持生成 `稠密向量`、`稀疏向量`、`稠密+稀疏`
+- 支持的供应商：
+  - OpenAI API 兼容：`OpenAI`、`AzureOpenAI`（兼容模式）、`Ollama`（`/v1` 兼容模式）
+  - 原生：`BaiLian (DashScope)`、`Ollama`（原生）、`Volcengine (Ark)`
+
 # 创建embedder
 
 ```go
@@ -13,135 +29,173 @@ import (
 
 func main() {
     ctx := context.Background()
-    mk := usecase.NewModelKit(nil)
+    // 创建logger
+	logger := slog.New(slog.NewTextHandler(os.Stdout, &slog.HandlerOptions{
+		AddSource: true,
+		Level:     slog.LevelInfo,
+	}))
+    mk := usecase.NewModelKit(logger)
 
-    // 阿里云百炼（DashScope）
-    emb1, _ := mk.GetEmbedder(ctx, &domain.ModelMetadata{
+    embdder,err := mk.GetEmbedder(ctx, &domain.ModelMetadata{
         Provider:  consts.ModelProviderBaiLian,
         ModelName: "text-embedding-v4",
         BaseURL:   "https://dashscope.aliyuncs.com/api/v1/services/embeddings/text-embedding/text-embedding#",
-        APIKey:    os.Getenv("bailianapikey"),
+        APIKey:    "sk-xxxxxx",
     })
 
-    // OpenAI 兼容（例如百智云 ModelSquare）
-    emb2, _ := mk.GetEmbedder(ctx, &domain.ModelMetadata{
-        Provider:  consts.ModelProviderOpenAI,
-        ModelName: "bge-m3",
-        BaseURL:   "https://model-square.app.baizhi.cloud/v1",
-        APIKey:    os.Getenv("baizhiapikey"),
-    })
+    if err != nil {
+        logger.Error("get embedder failed", "err", err)
+    }
 
-    _ = emb1
-    _ = emb2
+
 }
+
 ```
+
+字段说明（ModelMetadata）：
+
+- `provider`：模型提供商，取值如 `BaiLian`、`OpenAI`、`AzureOpenAI`、`Ollama`、`Volcengine`。
+- `model_name`：向量模型 ID，例如 `text-embedding-v4`、`bge-m3`。
+- `base_url`：Modelkit会自动添加 `/embeddings` 路径, 如果base_url以`#`结尾, 可以强制使用输入的base_url。
+- `api_key`：鉴权密钥，作为 `Authorization: Bearer <API_KEY>` 使用。
+- `api_version`：仅 `AzureOpenAI` 需要，未设置将默认 `2024-10-21`。
+- `api_header`：可选的自定义请求头（`key=value` 按行拼接），用于兼容某些平台的鉴权方式。
+- `dimension`：向量维度，可选值：`2048(仅v4)`、`1536(仅v4)`、`1024`、`768`、`512`、`256`、`128`、`64`。
+- `text_type`：`document` 或 `query`；检索任务建议区分 `query/document`。
+- `output_type`：`dense`、`sparse`、`dense&sparse`（v3/v4 支持）。
+- `encoding_format`：`float` 
+- `instruct`：检索指令，仅在 `text-embedding-v4` 且 `text_type=query` 时生效。
 
 # 使用embedder
 
 ```go
-ctx := context.Background()
-mk := usecase.NewModelKit(nil)
+texts := []string{"示例文本一", "示例文本二"}
+res, _ := mk.UseEmbedder(ctx, embdder, texts)
+```
 
-emb, _ := mk.GetEmbedder(ctx, &domain.ModelMetadata{
+## 生成稠密向量
+
+```go
+ot := "dense"
+embdder, _ := mk.GetEmbedder(ctx, &domain.ModelMetadata{
     Provider:  consts.ModelProviderBaiLian,
     ModelName: "text-embedding-v4",
     BaseURL:   "https://dashscope.aliyuncs.com/api/v1/services/embeddings/text-embedding/text-embedding#",
-    APIKey:    os.Getenv("bailianapikey"),
+    APIKey:    "sk-xxxxxx",
+    EmbedderParam: domain.EmbedderParam{
+        OutputType: &ot,
+    },
 })
-
 texts := []string{"示例文本一", "示例文本二"}
-res, _ := mk.UseEmbedder(ctx, emb, texts)
-
-// res.Embeddings[i].Embedding 为 dense 向量
-// res.Embeddings[i].SparseEmbedding（如返回）为 sparse 向量条目
+res, _ := mk.UseEmbedder(ctx, embdder, texts)
 ```
 
-## 支持的供应商
 
-- `BaiLian`（阿里云百炼 DashScope）
-- `OpenAI` 兼容（原生 OpenAI 及兼容平台）
-- `AzureOpenAI`
-- `Ollama`（本地或远端，支持 OpenAI 兼容与原生两种 URL）
-- `Volcengine`（火山引擎方舟 Ark）
 
-## 请求体与响应体
-
-- 请求体：
-
-```json
-{
-  "model": "text-embedding-v4",
-  "input": {
-    "texts": ["文本1", "文本2"]
-  },
-  "parameters": {
-    "dimension": 1536,
-    "text_type": "document",
-    "encoding_format": "float",
-    "output_type": "dense",
-    "instruct": "检索指令"
-  }
-}
-```
-
-- 响应体：
+示例结果
 
 ```json
 {
   "embeddings": [
     {
-      "embedding": [0.01, 0.02],
-      "sparse_embedding": [
-        { "index": 12, "value": 0.45, "token": "示例" }
-      ],
-      "text_index": 0
+      "text_index": 0,
+      "embedding": [0.0123, -0.0456, 0.0789, 0.0042, -0.0178, 0.0321, -0.0567, 0.0890]
+    },
+    {
+      "text_index": 1,
+      "embedding": [0.0234, -0.0567, 0.0890, 0.0055, -0.0201, 0.0288, -0.0602, 0.0813]
     }
   ],
-  "usage": { "total_tokens": 0 }
+  "usage": { "total_tokens": 48 }
 }
 ```
 
-## 每个参数的使用方法
-
-- `model_name`：向量模型 ID，例如 `text-embedding-v4`、`bge-m3`。
-- `base_url`：服务地址。百炼默认可使用 `https://dashscope.aliyuncs.com/.../text-embedding#`。
-- `api_key`：鉴权密钥，使用 `Authorization: Bearer <API_KEY>`。
-- `dimension`：支持 `2048(仅v4)`、`1536(仅v4)`、`1024`、`768`、`512`、`256`、`128`、`64`。
-- `text_type`：`document` 或 `query`。检索任务建议区分 query/document。
-- `output_type`：`dense`、`sparse`、`dense&sparse`（v3/v4 支持）。
-- `encoding_format`：`float` 或 `base64`。当前 SDK 解析为浮点数组。
-- `instruct`：仅在 `text-embedding-v4` 且 `text_type=query` 时生效，用于检索指令对齐。
-
-示例（设置参数）：
+## 生成稀疏向量
 
 ```go
-emb, _ := mk.GetEmbedder(ctx, &domain.ModelMetadata{
-    Provider:       consts.ModelProviderBaiLian,
-    ModelName:      "text-embedding-v4",
-    BaseURL:        "https://dashscope.aliyuncs.com/api/v1/services/embeddings/text-embedding/text-embedding#",
-    APIKey:         os.Getenv("bailianapikey"),
-    Dimension:      ptr(1536),
-    TextType:       ptrs("query"),
-    OutputType:     ptrs("dense&sparse"),
-    EncodingFormat: ptrs("float"),
-    Instruct:       ptrs("检索：返回和食物相关的内容"),
+ot := "sparse"
+embdder, _ := mk.GetEmbedder(ctx, &domain.ModelMetadata{
+    Provider:  consts.ModelProviderBaiLian,
+    ModelName: "text-embedding-v4",
+    BaseURL:   "https://dashscope.aliyuncs.com/api/v1/services/embeddings/text-embedding/text-embedding#",
+    APIKey:    "sk-xxxxxx",
+    EmbedderParam: domain.EmbedderParam{
+        OutputType: &ot,
+    },
 })
-
-texts := []string{"火鸡面"}
-res, _ := mk.UseEmbedder(ctx, emb, texts)
-_ = res
+texts := []string{"示例文本一", "示例文本二"}
+res, _ := mk.UseEmbedder(ctx, embdder, texts)
 ```
 
-## 其它的注意事项
+使用条件
 
-- v3/v4 模型单次 `texts` 最多 10 条；其它模型最多 25 条。
-- `base_url` 允许以 `#` 结尾，SDK 会自动裁剪；如包含 `compatible-mode` 或为空，将回退至默认 DashScope 路径。
-- 国际站点可使用 `dashscope-intl.aliyuncs.com`，会自动选择正确默认路径。
-- `output_type=sparse` 的原始响应可能存在不同结构，SDK 已兼容多种格式并统一为条目列表。
-- 使用 `AzureOpenAI` 时需指定 `api_version`，未指定将默认 `2024-10-21`。
-- `Ollama` 当 `base_url` 以 `/v1` 结尾时走 OpenAI 兼容；否则使用原生 BaseURL（自动移除路径）。
+- 仅 `text-embedding-v3`/`text-embedding-v4` 支持设置 `output_type` 生成稀疏向量
+- 将 `output_type` 设为 `sparse` 或 `dense&sparse` 才会返回 `sparse_embedding`
+
+示例结果
+
+```json
+{
+  "embeddings": [
+    {
+      "text_index": 0,
+      "sparse_embedding": [
+        {"index": 123, "value": 0.0321, "token": "示例"},
+        {"index": 456, "value": 0.0289, "token": "文本"},
+        {"index": 789, "value": 0.0203, "token": "一"}
+      ]
+    },
+    {
+      "text_index": 1,
+      "sparse_embedding": [
+        {"index": 111, "value": 0.0400, "token": "示例"},
+        {"index": 222, "value": 0.0312, "token": "文本"}
+      ]
+    }
+  ],
+  "usage": { "total_tokens": 52 }
+}
+```
+
+## 生成稠密+稀疏向量
 
 ```go
-func ptr(v int) *int { return &v }
-func ptrs(v string) *string { return &v }
+ot := "dense&sparse"
+embdder, _ := mk.GetEmbedder(ctx, &domain.ModelMetadata{
+    Provider:  consts.ModelProviderBaiLian,
+    ModelName: "text-embedding-v4",
+    BaseURL:   "https://dashscope.aliyuncs.com/api/v1/services/embeddings/text-embedding/text-embedding#",
+    APIKey:    "sk-xxxxxx",
+    EmbedderParam: domain.EmbedderParam{
+        OutputType: &ot,
+    },
+})
+texts := []string{"示例文本一", "示例文本二"}
+res, _ := mk.UseEmbedder(ctx, embdder, texts)
+```
+
+示例结果
+
+```json
+{
+  "embeddings": [
+    {
+      "text_index": 0,
+      "embedding": [0.0123, -0.0456, 0.0789, 0.0042, -0.0178, 0.0321, -0.0567, 0.0890],
+      "sparse_embedding": [
+        {"index": 120, "value": 0.0310, "token": "示例"},
+        {"index": 451, "value": 0.0275, "token": "文本"}
+      ]
+    },
+    {
+      "text_index": 1,
+      "embedding": [0.0234, -0.0567, 0.0890, 0.0055, -0.0201, 0.0288, -0.0602, 0.0813],
+      "sparse_embedding": [
+        {"index": 210, "value": 0.0399, "token": "示例"},
+        {"index": 325, "value": 0.0305, "token": "文本"}
+      ]
+    }
+  ],
+  "usage": { "total_tokens": 50 }
+}
 ```
