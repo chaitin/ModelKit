@@ -61,7 +61,7 @@ type EmbedderParam struct {
 	EncodingFormat *string `json:"encoding_format"`
 	// 检索指令，仅在 text-embedding-v4 且 TextType=query 时生效
 	Instruct *string `json:"instruct"`
-} 
+}
 
 var Models []ModelMetadata
 

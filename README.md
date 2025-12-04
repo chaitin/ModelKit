@@ -1,12 +1,9 @@
-# ModelKit
-
-[![Go Version](https://img.shields.io/badge/Go-1.24.0+-blue.svg)](https://golang.org)
-[![React Version](https://img.shields.io/badge/React-19.0.0+-blue.svg)](https://reactjs.org)
-[![License](https://img.shields.io/badge/License-MIT-green.svg)](LICENSE)
-
-ModelKit 是一个强大的AI模型管理平台，支持多种AI服务提供商，提供统一的模型管理、配置验证服务。
+# ModelKit: 大模型API SDK
+ModelKit是一个大模型API SDK, 支持Chat、Embedding、Rerank模型, 支持OpenAI Api, DashScope Api, Ollama Api.
 
 ## 教程
+[使用Chat模型](docs/Chat.md) 
+
 [使用Embedding模型](docs/Embedding.md) 
 
 [使用Rerank模型](docs/Rerank.md)
