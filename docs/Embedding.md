@@ -36,7 +36,7 @@ func main() {
 	}))
     mk := usecase.NewModelKit(logger)
 
-    embdder,err := mk.GetEmbedder(ctx, &domain.ModelMetadata{
+    embedder,err := mk.GetEmbedder(ctx, &domain.ModelMetadata{
         Provider:  consts.ModelProviderBaiLian,
         ModelName: "text-embedding-v4",
         BaseURL:   "https://dashscope.aliyuncs.com/api/v1/services/embeddings/text-embedding/text-embedding#",
@@ -70,14 +70,14 @@ func main() {
 
 ```go
 texts := []string{"示例文本一", "示例文本二"}
-res, _ := mk.UseEmbedder(ctx, embdder, texts)
+res, _ := mk.UseEmbedder(ctx, embedder, texts)
 ```
 
 ## 生成稠密向量
 
 ```go
 ot := "dense"
-embdder, _ := mk.GetEmbedder(ctx, &domain.ModelMetadata{
+embedder, _ := mk.GetEmbedder(ctx, &domain.ModelMetadata{
     Provider:  consts.ModelProviderBaiLian,
     ModelName: "text-embedding-v4",
     BaseURL:   "https://dashscope.aliyuncs.com/api/v1/services/embeddings/text-embedding/text-embedding#",
@@ -87,7 +87,7 @@ embdder, _ := mk.GetEmbedder(ctx, &domain.ModelMetadata{
     },
 })
 texts := []string{"示例文本一", "示例文本二"}
-res, _ := mk.UseEmbedder(ctx, embdder, texts)
+res, _ := mk.UseEmbedder(ctx, embedder, texts)
 ```
 
 
@@ -114,7 +114,7 @@ res, _ := mk.UseEmbedder(ctx, embdder, texts)
 
 ```go
 ot := "sparse"
-embdder, _ := mk.GetEmbedder(ctx, &domain.ModelMetadata{
+embedder, _ := mk.GetEmbedder(ctx, &domain.ModelMetadata{
     Provider:  consts.ModelProviderBaiLian,
     ModelName: "text-embedding-v4",
     BaseURL:   "https://dashscope.aliyuncs.com/api/v1/services/embeddings/text-embedding/text-embedding#",
@@ -124,13 +124,14 @@ embdder, _ := mk.GetEmbedder(ctx, &domain.ModelMetadata{
     },
 })
 texts := []string{"示例文本一", "示例文本二"}
-res, _ := mk.UseEmbedder(ctx, embdder, texts)
+res, _ := mk.UseEmbedder(ctx, embedder, texts)
 ```
 
 使用条件
 
 - 仅 `text-embedding-v3`/`text-embedding-v4` 支持设置 `output_type` 生成稀疏向量
 - 将 `output_type` 设为 `sparse` 或 `dense&sparse` 才会返回 `sparse_embedding`
+- `text_type` 设 `query` , 同时设置 `instruct` 时 无法生成稀疏向量
 
 示例结果
 
@@ -161,7 +162,7 @@ res, _ := mk.UseEmbedder(ctx, embdder, texts)
 
 ```go
 ot := "dense&sparse"
-embdder, _ := mk.GetEmbedder(ctx, &domain.ModelMetadata{
+embedder, _ := mk.GetEmbedder(ctx, &domain.ModelMetadata{
     Provider:  consts.ModelProviderBaiLian,
     ModelName: "text-embedding-v4",
     BaseURL:   "https://dashscope.aliyuncs.com/api/v1/services/embeddings/text-embedding/text-embedding#",
@@ -171,7 +172,7 @@ embdder, _ := mk.GetEmbedder(ctx, &domain.ModelMetadata{
     },
 })
 texts := []string{"示例文本一", "示例文本二"}
-res, _ := mk.UseEmbedder(ctx, embdder, texts)
+res, _ := mk.UseEmbedder(ctx, embedder, texts)
 ```
 
 示例结果

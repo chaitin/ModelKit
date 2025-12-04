@@ -187,7 +187,7 @@ func (e *Embedder) EmbedStrings(ctx context.Context, texts []string, opts ...emb
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var ar apiResponseCommon
 	if err := json.NewDecoder(resp.Body).Decode(&ar); err != nil {
@@ -274,7 +274,7 @@ func (e *Embedder) EmbedStringsExt(ctx context.Context, texts []string, opts ...
 	if err != nil {
 		return nil, err
 	}
-	defer resp.Body.Close()
+	defer func() { _ = resp.Body.Close() }()
 
 	var ar apiResponseCommon
 	if err := json.NewDecoder(resp.Body).Decode(&ar); err != nil {

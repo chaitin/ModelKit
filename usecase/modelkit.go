@@ -452,6 +452,10 @@ func (m *ModelKit) GetEmbedder(ctx context.Context, model *domain.ModelMetadata)
 }
 
 func (m *ModelKit) GetReranker(ctx context.Context, model *domain.ModelMetadata) (domain.Reranker, error) {
+	if model.BaseURL == "https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank#" {
+		model.Provider = consts.ModelProviderBaiLian
+	}
+
 	switch model.Provider {
 	case consts.ModelProviderBaiLian:
 		return bailianReranker.NewReranker(ctx, bailianReranker.RerankerConfig{

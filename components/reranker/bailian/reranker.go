@@ -131,7 +131,7 @@ func (r *Reranker) Rerank(ctx context.Context, req domain.RerankRequest) (domain
 	if err != nil {
 		return domain.RerankResponse{}, err
 	}
-	defer rawResp.Body.Close()
+	defer func() { _ = rawResp.Body.Close() }()
 
 	if rawResp.StatusCode != http.StatusOK {
 		return domain.RerankResponse{}, errors.New("request failed, status code: " + strconv.Itoa(rawResp.StatusCode))
