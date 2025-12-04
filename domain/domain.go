@@ -32,13 +32,13 @@ type ModelListItem struct {
 }
 
 type CheckModelReq struct {
-	Provider   string     `json:"provider" query:"provider" validate:"required,oneof=OpenAI Ollama DeepSeek SiliconFlow Moonshot Other AzureOpenAI BaiZhiCloud Hunyuan BaiLian Volcengine Gemini ZhiPu AiHubMix"`
-	Model      string     `json:"model" query:"model_name" validate:"required"`
-	BaseURL    string     `json:"base_url" query:"base_url" validate:"required"`
-	APIKey     string     `json:"api_key" query:"api_key"`
-	APIHeader  string     `json:"api_header" query:"api_header"`
-	APIVersion string     `json:"api_version" query:"api_version"` // for azure openai
-	Type       string     `json:"type" query:"model_type" validate:"required,oneof=chat embedding rerank llm"`
+	Provider   string      `json:"provider" query:"provider" validate:"required,oneof=OpenAI Ollama DeepSeek SiliconFlow Moonshot Other AzureOpenAI BaiZhiCloud Hunyuan BaiLian Volcengine Gemini ZhiPu AiHubMix"`
+	Model      string      `json:"model" query:"model_name" validate:"required"`
+	BaseURL    string      `json:"base_url" query:"base_url" validate:"required"`
+	APIKey     string      `json:"api_key" query:"api_key"`
+	APIHeader  string      `json:"api_header" query:"api_header"`
+	APIVersion string      `json:"api_version" query:"api_version"` // for azure openai
+	Type       string      `json:"type" query:"model_type" validate:"required,oneof=chat embedding rerank llm"`
 	Param      *ModelParam `json:"param" query:"param"`
 }
 
