@@ -73,6 +73,39 @@ texts := []string{"示例文本一", "示例文本二"}
 res, _ := mk.UseEmbedder(ctx, embedder, texts)
 ```
 
+## 返回结构（EmbeddingsResponse）
+
+- 结果类型为 `EmbeddingsResponse`：
+
+```go
+type SparseEmbedding struct {
+    Index int     `json:"index"`
+    Value float64 `json:"value"`
+    Token string  `json:"token"`
+}
+
+type EmbeddingItem struct {
+    SparseEmbedding []SparseEmbedding `json:"sparse_embedding,omitempty"`
+    Embedding       []float64         `json:"embedding,omitempty"`
+    TextIndex       int               `json:"text_index"`
+}
+
+type EmbeddingUsage struct {
+    TotalTokens int `json:"total_tokens"`
+}
+
+type EmbeddingsResponse struct {
+    Embeddings []EmbeddingItem `json:"embeddings"`
+    Usage      EmbeddingUsage  `json:"usage"`
+}
+```
+- 字段说明：
+  - `embeddings`：`EmbeddingItem[]`，每个元素对应一条输入文本。
+    - `text_index`：输入文本在 `texts` 中的下标。
+    - `embedding`：稠密向量 `[]float64`（当 `output_type` 包含 `dense` 时返回）。
+    - `sparse_embedding`：稀疏向量 `[{index,value,token}]`（当 `output_type` 为 `sparse` 或 `dense&sparse` 时返回）。
+  - `usage`：调用统计信息，当前包含 `total_tokens`。
+
 ## 生成稠密向量
 
 ```go
@@ -129,7 +162,8 @@ res, _ := mk.UseEmbedder(ctx, embedder, texts)
 
 使用条件
 
-- 仅 `text-embedding-v3`/`text-embedding-v4` 支持设置 `output_type` 生成稀疏向量
+- 仅 `text-embedding-v3`/`text-embedding-v4` 支持设置 `output_type` 生成稀疏向量 
+- 仅使用DashScope API支持生成稀疏向量, 请将base_url设置为`https://dashscope.aliyuncs.com/api/v1/services/embeddings/text-embedding/text-embedding#`
 - 将 `output_type` 设为 `sparse` 或 `dense&sparse` 才会返回 `sparse_embedding`
 - `text_type` 设 `query` , 同时设置 `instruct` 时 无法生成稀疏向量
 

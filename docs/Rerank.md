@@ -59,6 +59,32 @@ res, _ := rk.Rerank(ctx, domain.RerankRequest{
 })
 ```
 
+## 返回结构（RerankResponse）
+
+```go
+type Result struct {
+    Index          int     `json:"index"`
+    RelevanceScore float64 `json:"relevance_score"`
+    Document       string  `json:"document,omitempty"`
+}
+
+type Usage struct {
+    PromptTokens int `json:"prompt_tokens"`
+    TotalTokens  int `json:"total_tokens"`
+    InputTokens  int `json:"input_tokens"`
+    OutputTokens int `json:"output_tokens"`
+}
+
+type RerankResponse struct {
+    Results []Result `json:"results"`
+    Usage   *Usage   `json:"usage,omitempty"`
+}
+```
+
+字段说明：
+- `results`：`Result[]`，按相关性从高到低的重排结果；包含原始 `index`、`relevance_score`，在 `return_documents=true` 时包含 `document` 文本。
+- `usage`：可选计费/令牌使用信息，包含 `prompt_tokens`、`input_tokens`、`output_tokens`、`total_tokens`。
+
 示例结果：
 
 ```json
