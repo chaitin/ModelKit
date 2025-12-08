@@ -14,6 +14,7 @@ import (
     "github.com/chaitin/ModelKit/v2/consts"
     "github.com/chaitin/ModelKit/v2/domain"
     "github.com/chaitin/ModelKit/v2/usecase"
+	"github.com/cloudwego/eino/schema"
 )
 
 func main() {
