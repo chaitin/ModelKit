@@ -1,5 +1,5 @@
 # ModelKit: 大模型API SDK
-ModelKit是一个大模型API SDK, 支持Chat、Embedding、Rerank模型, 支持OpenAI Api, DashScope Api, Ollama Api.
+ModelKit是一个大模型API SDK, 支持Chat、Embedding(支持稠密与稀疏向量)、Rerank模型, 支持OpenAI API, DashScope API, Ollama API.
 
 ## 教程
 [使用Chat模型](docs/Chat.md) 
