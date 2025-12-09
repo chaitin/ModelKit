@@ -115,16 +115,16 @@ func getInputMsg(req *domain.CheckModelReq) []*schema.Message {
 		inputMsg = []*schema.Message{
 			schema.UserMessage(""),
 		}
-		inputMsg[0].MultiContent = []schema.ChatMessagePart{
+		inputMsg[0].UserInputMultiContent = []schema.MessageInputPart{
 			{
 				Type: schema.ChatMessagePartTypeText,
 				Text: "What's in the picture? Only answer me a word.",
 			},
 			{
 				Type: schema.ChatMessagePartTypeImageURL,
-				ImageURL: &schema.ChatMessageImageURL{
-					URL:    imageURL,
-					Detail: schema.ImageURLDetailAuto,
+				Image: &schema.MessageInputImage{
+					MessagePartCommon: schema.MessagePartCommon{URL: &imageURL},
+					Detail:            schema.ImageURLDetailAuto,
 				},
 			},
 		}

@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"os"
-	"strings"
 	"testing"
 
 	"github.com/chaitin/ModelKit/v2/consts"
@@ -91,16 +90,4 @@ func TestRerankerCombinations(t *testing.T) {
 			}
 		}
 	})
-}
-
-func logResultsHead(t *testing.T, v []domain.Result) {
-	n := 5
-	if len(v) < n {
-		n = len(v)
-	}
-	s := make([]string, 0, n)
-	for i := 0; i < n; i++ {
-		s = append(s, fmt.Sprintf("%d:%.4f", v[i].Index, v[i].RelevanceScore))
-	}
-	t.Logf("head: %s", strings.Join(s, " "))
 }
