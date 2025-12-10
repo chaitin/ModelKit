@@ -435,7 +435,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
             sx={{
               width: 200,
               flexShrink: 0,
-              bgcolor: 'background.paper2',
+              bgcolor: 'rgb(248, 249, 250)',
               borderRadius: '10px',
               p: 1,
               height: '100%',
