@@ -1,0 +1,18 @@
+version: "2"
+
+linters:
+  default: none
+  enable:
+    - gocognit # 检查函数 Cognitive Complexity 复杂度
+    - gofmt
+    - errcheck
+    - staticcheck
+
+  settings:
+    errcheck:
+      exclude-functions:
+        - (io.Closer).Close
+run:
+  tests: false
+  skip-dirs:
+    - '(^|/)test($|/)'
