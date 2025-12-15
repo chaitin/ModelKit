@@ -53,11 +53,6 @@ func (c *Client) SetTransport(tr *http.Transport) {
 }
 
 func sendRequest[T any](c *Client, method, path string, opts ...Opt) (*T, error) {
-	u := url.URL{
-		Scheme: c.scheme,
-		Host:   c.host,
-		Path:   path,
-	}
 	ctx := &Ctx{}
 	rid := uuid.NewString()
 
@@ -65,78 +60,36 @@ func sendRequest[T any](c *Client, method, path string, opts ...Opt) (*T, error)
 		opt(ctx)
 	}
 
-	if len(ctx.query) > 0 {
-		values := u.Query()
-		for k, v := range ctx.query {
-			values.Add(k, v)
-		}
-		u.RawQuery = values.Encode()
-	}
-
+	urlStr := buildURL(c, path, ctx.query)
 	if c.debug {
-		log.Printf("[REQ:%s] url: %s", rid, u.String())
+		log.Printf("[REQ:%s] url: %s", rid, urlStr)
 	}
 
-	var body io.Reader
-	var writer *multipart.Writer
-	if ctx.body != nil {
-		bs, err := json.Marshal(ctx.body)
-		if err != nil {
-			return nil, err
-		}
-		switch ctx.contentType {
-		case "multipart/form-data":
-			m := make(map[string]string)
-			if err := json.Unmarshal(bs, &m); err != nil {
-				return nil, err
-			}
-			buf := &bytes.Buffer{}
-			writer = multipart.NewWriter(buf)
-			for k, v := range m {
-				if err := writer.WriteField(k, v); err != nil {
-					return nil, err
-				}
-			}
-			if err := writer.Close(); err != nil {
-				return nil, err
-			}
-			body = buf
-		case "application/x-www-form-urlencoded":
-			m := make(map[string]string)
-			if err := json.Unmarshal(bs, &m); err != nil {
-				return nil, err
-			}
-			data := url.Values{}
-			for k, v := range m {
-				data.Add(k, v)
-			}
-			body = strings.NewReader(data.Encode())
-		default:
-			body = bytes.NewBuffer(bs)
-		}
+	body, contentType, err := buildBodyAndType(ctx)
+	if err != nil {
+		return nil, err
+	}
 
-		if c.debug {
-			buf := &bytes.Buffer{}
-			if err := json.Indent(buf, bs, "", "  "); err != nil {
-				log.Printf("[REQ:%s] body: %s", rid, string(bs))
-			} else {
-				log.Printf("[REQ:%s] body: %s", rid, buf.String())
-			}
+	if c.debug && ctx.body != nil {
+		bs, _ := json.Marshal(ctx.body)
+		buf := &bytes.Buffer{}
+		if err := json.Indent(buf, bs, "", "  "); err != nil {
+			log.Printf("[REQ:%s] body: %s", rid, string(bs))
+		} else {
+			log.Printf("[REQ:%s] body: %s", rid, buf.String())
 		}
 	}
-	req, err := http.NewRequest(method, u.String(), body)
+
+	req, err := http.NewRequest(method, urlStr, body)
 	if err != nil {
 		return nil, err
 	}
 	for k, v := range ctx.header {
 		req.Header.Add(k, v)
 	}
-	switch ctx.contentType {
-	case "multipart/form-data":
-		req.Header.Set("Content-Type", writer.FormDataContentType())
-	case "application/x-www-form-urlencoded":
-		req.Header.Set("Content-Type", "application/x-www-form-urlencoded")
-	default:
+	if contentType != "" {
+		req.Header.Set("Content-Type", contentType)
+	} else {
 		req.Header.Set("Content-Type", "application/json")
 	}
 	if c.debug {
@@ -175,6 +128,58 @@ func sendRequest[T any](c *Client, method, path string, opts ...Opt) (*T, error)
 		return nil, err
 	}
 	return &rr, nil
+}
+
+func buildURL(c *Client, path string, q Query) string {
+	u := url.URL{Scheme: c.scheme, Host: c.host, Path: path}
+	if len(q) > 0 {
+		values := u.Query()
+		for k, v := range q {
+			values.Add(k, v)
+		}
+		u.RawQuery = values.Encode()
+	}
+	return u.String()
+}
+
+func buildBodyAndType(ctx *Ctx) (io.Reader, string, error) {
+	if ctx.body == nil {
+		return nil, "", nil
+	}
+	bs, err := json.Marshal(ctx.body)
+	if err != nil {
+		return nil, "", err
+	}
+	switch ctx.contentType {
+	case "multipart/form-data":
+		m := make(map[string]string)
+		if err := json.Unmarshal(bs, &m); err != nil {
+			return nil, "", err
+		}
+		buf := &bytes.Buffer{}
+		w := multipart.NewWriter(buf)
+		for k, v := range m {
+			if err := w.WriteField(k, v); err != nil {
+				return nil, "", err
+			}
+		}
+		if err := w.Close(); err != nil {
+			return nil, "", err
+		}
+		return buf, w.FormDataContentType(), nil
+	case "application/x-www-form-urlencoded":
+		m := make(map[string]string)
+		if err := json.Unmarshal(bs, &m); err != nil {
+			return nil, "", err
+		}
+		data := url.Values{}
+		for k, v := range m {
+			data.Add(k, v)
+		}
+		return strings.NewReader(data.Encode()), "application/x-www-form-urlencoded", nil
+	default:
+		return bytes.NewBuffer(bs), "application/json", nil
+	}
 }
 
 func Get[T any](c *Client, path string, opts ...Opt) (*T, error) {

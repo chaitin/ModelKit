@@ -252,30 +252,6 @@ func TestEmbedderCombinations(t *testing.T) {
 	})
 }
 
-func logHeadFloat(t *testing.T, v []float64) {
-	n := 8
-	if len(v) < n {
-		n = len(v)
-	}
-	s := make([]string, 0, n)
-	for i := 0; i < n; i++ {
-		s = append(s, fmt.Sprintf("%.4f", v[i]))
-	}
-	t.Logf("head: %s", strings.Join(s, " "))
-}
-
-func logSparseEntriesHead(t *testing.T, se []domain.SparseEmbedding) {
-	n := 8
-	if len(se) < n {
-		n = len(se)
-	}
-	parts := make([]string, 0, n)
-	for i := 0; i < n; i++ {
-		parts = append(parts, fmt.Sprintf("%d:%.4f:%s", se[i].Index, se[i].Value, se[i].Token))
-	}
-	t.Logf("sparse_head: %s", strings.Join(parts, " "))
-}
-
 func logFullFloat(t *testing.T, v []float64) {
 	s := make([]string, 0, len(v))
 	for i := 0; i < len(v); i++ {

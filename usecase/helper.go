@@ -14,10 +14,18 @@ import (
 	"path/filepath"
 	"regexp"
 	"runtime"
+	"slices"
 	"strings"
 
+	"github.com/cloudwego/eino-ext/components/model/deepseek"
+	"github.com/cloudwego/eino-ext/components/model/gemini"
+	"github.com/cloudwego/eino-ext/components/model/ollama"
+	"github.com/cloudwego/eino-ext/components/model/openai"
 	"github.com/cloudwego/eino/components/model"
 	"github.com/cloudwego/eino/schema"
+	generativeGenai "github.com/google/generative-ai-go/genai"
+	"github.com/ollama/ollama/api"
+	"google.golang.org/api/option"
 	"google.golang.org/genai"
 
 	"github.com/chaitin/ModelKit/v2/consts"
@@ -115,16 +123,16 @@ func getInputMsg(req *domain.CheckModelReq) []*schema.Message {
 		inputMsg = []*schema.Message{
 			schema.UserMessage(""),
 		}
-		inputMsg[0].MultiContent = []schema.ChatMessagePart{
+		inputMsg[0].UserInputMultiContent = []schema.MessageInputPart{
 			{
 				Type: schema.ChatMessagePartTypeText,
 				Text: "What's in the picture? Only answer me a word.",
 			},
 			{
 				Type: schema.ChatMessagePartTypeImageURL,
-				ImageURL: &schema.ChatMessageImageURL{
-					URL:    imageURL,
-					Detail: schema.ImageURLDetailAuto,
+				Image: &schema.MessageInputImage{
+					MessagePartCommon: schema.MessagePartCommon{URL: &imageURL},
+					Detail:            schema.ImageURLDetailAuto,
 				},
 			},
 		}
@@ -321,65 +329,51 @@ func (m *ModelKit) geminiImageCheck(ctx context.Context, req *domain.CheckModelR
 	return result.Text(), nil
 }
 
-func filterModelsByType(models []domain.ModelListItem, req *domain.ModelListReq) []domain.ModelListItem {
-	raw := strings.ToLower(req.Type)
+func FilterModelsByType(models []domain.ModelListItem, req *domain.ModelListReq) []domain.ModelListItem {
 	p := strings.ToLower(req.Provider)
-	switch raw {
-	// 分析模型 排除 嵌入模型和重排模型
-	case "analysis":
-		filtered := make([]domain.ModelListItem, 0, len(models))
-		for _, it := range models {
-			if !isEmbeddingModel(it.Model, p) && !isRerankModel(it.Model) {
-				filtered = append(filtered, it)
-			}
-		}
-		return filtered
-	// 分析模型-视觉模型 仅包含 视觉模型
-	case "analysis-vl":
-		filtered := make([]domain.ModelListItem, 0, len(models))
-		for _, it := range models {
-			if isVisionModel(it.Model, p) {
-				filtered = append(filtered, it)
-			}
-		}
-		return filtered
-	// 聊天模型 排除 嵌入模型和重排模型
-	case "chat", "llm":
-		filtered := make([]domain.ModelListItem, 0, len(models))
-		for _, it := range models {
-			if !isEmbeddingModel(it.Model, p) && !isRerankModel(it.Model) {
-				filtered = append(filtered, it)
-			}
-		}
-		return filtered
-	// 嵌入模型 仅包含 嵌入模型
-	case "embedding":
-		filtered := make([]domain.ModelListItem, 0, len(models))
-		for _, it := range models {
-			if isEmbeddingModel(it.Model, p) {
-				filtered = append(filtered, it)
-			}
-		}
-		return filtered
-	// 重排模型 仅包含 重排模型
-	case "reranker", "rerank":
-		filtered := make([]domain.ModelListItem, 0, len(models))
-		for _, it := range models {
-			if isRerankModel(it.Model) {
-				filtered = append(filtered, it)
-			}
-		}
-		return filtered
-	case "code", "coder":
-		filtered := make([]domain.ModelListItem, 0, len(models))
-		for _, it := range models {
-			if isCodeModel(it.Model, p) {
-				filtered = append(filtered, it)
-			}
-		}
-		return filtered
-	default:
+	t := normalizeType(strings.ToLower(req.Type))
+	pred := modelPredicate(t, p)
+	if pred == nil {
 		return models
+	}
+	filtered := make([]domain.ModelListItem, 0, len(models))
+	for _, it := range models {
+		if pred(it.Model) {
+			filtered = append(filtered, it)
+		}
+	}
+	return filtered
+}
+
+func normalizeType(t string) string {
+	switch t {
+	case "chat", "llm":
+		return "chat"
+	case "reranker", "rerank":
+		return "rerank"
+	case "code", "coder":
+		return "code"
+	default:
+		return t
+	}
+}
+
+func modelPredicate(t, provider string) func(string) bool {
+	switch t {
+	case "analysis":
+		return func(m string) bool { return !isEmbeddingModel(m, provider) && !isRerankModel(m) }
+	case "analysis-vl":
+		return func(m string) bool { return isVisionModel(m, provider) }
+	case "chat":
+		return func(m string) bool { return !isEmbeddingModel(m, provider) && !isRerankModel(m) }
+	case "embedding":
+		return func(m string) bool { return isEmbeddingModel(m, provider) }
+	case "rerank":
+		return func(m string) bool { return isRerankModel(m) }
+	case "code":
+		return func(m string) bool { return isCodeModel(m, provider) }
+	default:
+		return nil
 	}
 }
 
@@ -606,4 +600,255 @@ func (m *ModelKit) checkRerankModel(ctx context.Context, req *domain.CheckModelR
 	}
 	checkResp.Content = strings.Join(docs, "\n")
 	return checkResp, nil
+}
+
+func (m *ModelKit) listStaticProvider(req *domain.ModelListReq, provider consts.ModelProvider) (*domain.ModelListResp, error) {
+	models := domain.From(domain.ModelProviders[provider])
+	filtered := FilterModelsByType(models, req)
+	return &domain.ModelListResp{Models: filtered}, nil
+}
+
+func (m *ModelKit) listGemini(ctx context.Context, req *domain.ModelListReq) (*domain.ModelListResp, error) {
+	client, err := generativeGenai.NewClient(ctx, option.WithAPIKey(req.APIKey))
+	if err != nil {
+		return &domain.ModelListResp{Error: err.Error()}, nil
+	}
+	defer func() {
+		if closeErr := client.Close(); closeErr != nil {
+			if m.logger != nil {
+				m.logger.Error("Failed to close gemini client: %v", slog.Any("error", closeErr))
+			} else {
+				log.Printf("Failed to close gemini client: %v", closeErr)
+			}
+		}
+	}()
+
+	modelsList := make([]domain.ModelListItem, 0)
+	modelsIter := client.ListModels(ctx)
+	for {
+		model, err := modelsIter.Next()
+		if err != nil {
+			break
+		}
+		if !slices.Contains(model.SupportedGenerationMethods, "generateContent") {
+			continue
+		}
+		if !strings.Contains(model.Name, "gemini") {
+			continue
+		}
+		name, _ := strings.CutPrefix(model.Name, "models/")
+		modelsList = append(modelsList, domain.ModelListItem{Model: name})
+	}
+	if len(modelsList) == 0 {
+		return &domain.ModelListResp{Error: fmt.Errorf("获取Gemini模型列表失败: 未找到可用模型").Error()}, nil
+	}
+	filtered := FilterModelsByType(modelsList, req)
+	return &domain.ModelListResp{Models: filtered}, nil
+}
+
+func (m *ModelKit) listGithub(req *domain.ModelListReq, httpClient *http.Client) (*domain.ModelListResp, error) {
+	models, err := reqModelListApi(req, httpClient, &domain.GithubResp{})
+	if err != nil {
+		return &domain.ModelListResp{Error: err.Error()}, nil
+	}
+	filtered := FilterModelsByType(models, req)
+	return &domain.ModelListResp{Models: filtered}, nil
+}
+
+func (m *ModelKit) listOllama(req *domain.ModelListReq, httpClient *http.Client) (*domain.ModelListResp, error) {
+	var modelListResp domain.ModelListResp
+	var err error
+	if strings.HasSuffix(req.BaseURL, "/v1") {
+		var models []domain.ModelListItem
+		models, err = reqModelListApi(req, httpClient, &domain.OpenAIResp{})
+		if err == nil {
+			modelListResp.Models = FilterModelsByType(models, req)
+		}
+	} else {
+		var resp *domain.ModelListResp
+		resp, err = ollamaListModel(req.BaseURL, httpClient, req.APIHeader)
+		if err == nil {
+			modelListResp = *resp
+			modelListResp.Models = FilterModelsByType(modelListResp.Models, req)
+		}
+	}
+	if err != nil {
+		provider := consts.ParseModelProvider(req.Provider)
+		msg := generateBaseURLFixSuggestion(err.Error(), req.BaseURL, provider)
+		if msg == "" {
+			return &domain.ModelListResp{Error: err.Error()}, nil
+		}
+		return &domain.ModelListResp{Error: msg}, nil
+	}
+	return &modelListResp, nil
+}
+
+func (m *ModelKit) listGPUStack(req *domain.ModelListReq, httpClient *http.Client) (*domain.ModelListResp, error) {
+	provider := consts.ParseModelProvider(req.Provider)
+	models, err := reqModelListApi(req, httpClient, &domain.GPUStackListModelResp{})
+	if err != nil {
+		if m.logger != nil {
+			m.logger.Error("GPUStack list model failed", "error", err, "models: ", models)
+		}
+		msg := generateBaseURLFixSuggestion(err.Error(), req.BaseURL, provider)
+		if msg == "" {
+			return &domain.ModelListResp{Error: err.Error()}, nil
+		}
+		return &domain.ModelListResp{Error: msg}, nil
+	}
+	filtered := FilterModelsByType(models, req)
+	return &domain.ModelListResp{Models: filtered}, nil
+}
+
+func (m *ModelKit) listOpenAI(req *domain.ModelListReq, httpClient *http.Client, provider consts.ModelProvider) (*domain.ModelListResp, error) {
+	models, err := reqModelListApi(req, httpClient, &domain.OpenAIResp{})
+	if err != nil {
+		if provider == consts.ModelProviderOllama {
+			msg := generateBaseURLFixSuggestion(err.Error(), req.BaseURL, provider)
+			if msg == "" {
+				return &domain.ModelListResp{Error: err.Error()}, nil
+			}
+			return &domain.ModelListResp{Error: msg}, nil
+		}
+		return &domain.ModelListResp{Error: err.Error()}, nil
+	}
+	filtered := FilterModelsByType(models, req)
+	return &domain.ModelListResp{Models: filtered}, nil
+}
+
+func buildOpenAIChatConfig(md *domain.ModelMetadata) *openai.ChatModelConfig {
+	t := float32(0.0)
+	if md.Temperature != nil {
+		t = *md.Temperature
+	}
+	cfg := &openai.ChatModelConfig{
+		APIKey:      md.APIKey,
+		BaseURL:     md.BaseURL,
+		Model:       string(md.ModelName),
+		Temperature: &t,
+	}
+	if md.MaxTokens != nil {
+		cfg.MaxTokens = md.MaxTokens
+	}
+	if md.TopP != nil {
+		cfg.TopP = md.TopP
+	}
+	if len(md.Stop) > 0 {
+		cfg.Stop = md.Stop
+	}
+	if md.PresencePenalty != nil {
+		cfg.PresencePenalty = md.PresencePenalty
+	}
+	if md.FrequencyPenalty != nil {
+		cfg.FrequencyPenalty = md.FrequencyPenalty
+	}
+	if md.ResponseFormat != nil {
+		cfg.ResponseFormat = md.ResponseFormat
+	}
+	if md.Seed != nil {
+		cfg.Seed = md.Seed
+	}
+	if md.LogitBias != nil {
+		cfg.LogitBias = md.LogitBias
+	}
+	if md.Provider == consts.ModelProviderAzureOpenAI {
+		cfg.ByAzure = true
+		cfg.APIVersion = md.APIVersion
+		if cfg.APIVersion == "" {
+			cfg.APIVersion = "2024-10-21"
+		}
+	}
+	if md.APIHeader != "" {
+		hc := utils.GetHttpClientWithAPIHeaderMap(md.APIHeader)
+		if hc != nil {
+			cfg.HTTPClient = hc
+		}
+	}
+	return cfg
+}
+
+func newDeepseekChatModel(ctx context.Context, md *domain.ModelMetadata) (model.BaseChatModel, error) {
+	t := float32(0.0)
+	if md.Temperature != nil {
+		t = *md.Temperature
+	}
+	cfg := &deepseek.ChatModelConfig{
+		BaseURL:     md.BaseURL,
+		APIKey:      md.APIKey,
+		Model:       md.ModelName,
+		Temperature: t,
+	}
+	if md.MaxTokens != nil {
+		cfg.MaxTokens = *md.MaxTokens
+	}
+	if md.TopP != nil {
+		cfg.TopP = *md.TopP
+	}
+	if len(md.Stop) > 0 {
+		cfg.Stop = md.Stop
+	}
+	if md.PresencePenalty != nil {
+		cfg.PresencePenalty = *md.PresencePenalty
+	}
+	if md.FrequencyPenalty != nil {
+		cfg.FrequencyPenalty = *md.FrequencyPenalty
+	}
+	return deepseek.NewChatModel(ctx, cfg)
+}
+
+func newGeminiChatModel(ctx context.Context, md *domain.ModelMetadata) (model.BaseChatModel, error) {
+	client, err := genai.NewClient(ctx, &genai.ClientConfig{APIKey: md.APIKey})
+	if err != nil {
+		return nil, err
+	}
+	cfg := &gemini.Config{
+		Client: client,
+		Model:  md.ModelName,
+		ThinkingConfig: &genai.ThinkingConfig{
+			IncludeThoughts: true,
+			ThinkingBudget:  nil,
+		},
+	}
+	if md.MaxTokens != nil {
+		cfg.MaxTokens = md.MaxTokens
+	}
+	if md.Temperature != nil {
+		cfg.Temperature = md.Temperature
+	}
+	if md.TopP != nil {
+		cfg.TopP = md.TopP
+	}
+	return gemini.NewChatModel(ctx, cfg)
+}
+
+func newOllamaChatModel(ctx context.Context, md *domain.ModelMetadata) (model.BaseChatModel, error) {
+	if strings.HasSuffix(md.BaseURL, "/v1") {
+		cfg := buildOpenAIChatConfig(md)
+		return openai.NewChatModel(ctx, cfg)
+	}
+	t := float32(0.0)
+	if md.Temperature != nil {
+		t = *md.Temperature
+	}
+	baseUrl, err := utils.URLRemovePath(md.BaseURL)
+	if err != nil {
+		return nil, err
+	}
+	opts := &api.Options{Temperature: t}
+	if md.TopP != nil {
+		opts.TopP = *md.TopP
+	}
+	if len(md.Stop) > 0 {
+		opts.Stop = md.Stop
+	}
+	if md.PresencePenalty != nil {
+		opts.PresencePenalty = *md.PresencePenalty
+	}
+	if md.FrequencyPenalty != nil {
+		opts.FrequencyPenalty = *md.FrequencyPenalty
+	}
+	if md.Seed != nil {
+		opts.Seed = *md.Seed
+	}
+	return ollama.NewChatModel(ctx, &ollama.ChatModelConfig{BaseURL: baseUrl, Model: string(md.ModelName), Options: opts})
 }
