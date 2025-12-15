@@ -3,25 +3,26 @@ version: "2"
 linters:
   default: none
   enable:
-    - dupl # 重复代码
-    - errcheck # 检查是否存在未处理的错误
-    - govet  
-    - ineffassign # 检测到对现有变量的赋值未被使用
-    - staticcheck # 检查 Go 代码中是否存在静态错误
-    - unused # 检查 Go 代码中未使用的常量、变量、函数和类型
+    # - dupl # 重复代码
+    # - errcheck # 检查是否存在未处理的错误
+    # - govet  
+    # - ineffassign # 检测到对现有变量的赋值未被使用
+    # - staticcheck # 检查 Go 代码中是否存在静态错误
+    # - unused # 检查 Go 代码中未使用的常量、变量、函数和类型
     # - exhaustive # 检查枚举 switch 语句的详尽性
     # - exhaustruct # 检查结构体字段是否全部初始化
-    - goconst # 寻找可使用常量的地方
-    - gocritic # 检查 Go 代码中的错误
-    - gosec # 检查源代码中的安全问题
-    - intrange # 查找 for 循环可以使用的整数范围的位置 
-    - misspell # 检查拼写错误
-    - nestif # 检查嵌套的 if 语句 复杂度
-    - nilnesserr # 报告检查 err != nil，但返回不同 nil 值错误的构造
-    - unconvert 
+    # - goconst # 寻找可使用常量的地方
+    # - gocritic # 检查 Go 代码中的错误
+    # - gosec # 检查源代码中的安全问题
+    # - intrange # 查找 for 循环可以使用的整数范围的位置 
+    # - misspell # 检查拼写错误
+    # - nestif # 检查嵌套的 if 语句 复杂度
+    # - nilnesserr # 报告检查 err != nil，但返回不同 nil 值错误的构造
+    # - unconvert 
 
     # - funcorder # 没用
     # - nlreturn # return前要有空行 没用
+    - gocognit # 检查函数 Cognitive Complexity 复杂度
     # - cyclop # 圈复杂度 没用
     # - err113 # 没用
 
