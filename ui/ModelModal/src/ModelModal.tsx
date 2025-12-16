@@ -15,7 +15,7 @@ import {
   InputAdornment,
   IconButton,
 } from '@mui/material';
-import { Visibility, VisibilityOff } from '@mui/icons-material';
+import { Visibility, VisibilityOff, Search } from '@mui/icons-material';
 import { Icon, message, Modal, ThemeProvider } from '@ctzhian/ui';
 import Card from './components/card';
 import ModelTagsWithLabel from './components/ModelTagsWithLabel';
@@ -96,6 +96,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
   const [filteredModelList, setFilteredModelList] = useState<
     { model: string; provider: string }[]
   >([]);
+  const [modelSearchQuery, setModelSearchQuery] = useState('');
 
   const [loading, setLoading] = useState(false);
   const [modelLoading, setModelLoading] = useState(false);
@@ -608,7 +609,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                   }}
                   onClick={() =>
                     window.open(
-                      addingModelTutorialURL ,
+                      addingModelTutorialURL,
                       '_blank'
                     )
                   }
@@ -944,6 +945,10 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                       helperText={errors.model_name?.message}
                       SelectProps={{
                         MenuProps: {
+                          autoFocus: false,
+                          MenuListProps: {
+                            autoFocusItem: false,
+                          },
                           PaperProps: {
                             sx: {
                               maxHeight: 450,
@@ -957,13 +962,20 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                     >
                       {(() => {
                         // 使用筛选后的模型列表，如果没有筛选则使用原始列表
-                        const modelsToShow =
+                        const modelsBase =
                           filteredModelList.length > 0
                             ? filteredModelList
                             : modelUserList.map((item) => ({
-                                model: item.model,
-                                provider: providerBrand,
-                              }));
+                              model: item.model,
+                              provider: providerBrand,
+                            }));
+
+                        const query = modelSearchQuery.trim().toLowerCase();
+                        const modelsToShow = query
+                          ? modelsBase.filter((m) =>
+                            m.model.toLowerCase().includes(query)
+                          )
+                          : modelsBase;
 
                         // 按组分类模型
                         const groupedModels = modelsToShow.reduce(
@@ -1037,46 +1049,71 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                           .flat();
 
                         return [
-                          <MenuItem
-                            key='sticky-chip'
-                            disableRipple
-                            disableTouchRipple
+                          <ListSubheader
+                            key='sticky-tools'
                             sx={{
                               position: 'sticky',
                               top: 0,
-                              zIndex: 1000,
+                              zIndex: 1001,
                               backgroundColor: '#ffffff !important',
                               borderBottom: '1px solid',
                               borderColor: 'divider',
-                              boxShadow: '0 2px 4px rgba(0,0,0,0.1)',
-                              '&:hover': {
-                                backgroundColor: '#ffffff !important',
-                              },
-                              '&:focus': {
-                                backgroundColor: '#ffffff !important',
-                              },
+                              boxShadow: '0 2px 4px rgba(0,0,0,0.06)',
                               cursor: 'default',
-                              '&.Mui-selected': {
-                                backgroundColor: '#ffffff !important',
-                              },
-                              '&.Mui-selected:hover': {
-                                backgroundColor: '#ffffff !important',
-                              },
+                              px: 1,
+                              py: 1,
+                            }}
+                            onMouseDown={(e) => {
+                              e.stopPropagation();
                             }}
                             onClick={(e) => {
-                              e.preventDefault();
+                              e.stopPropagation();
                             }}
                           >
-                            <ModelTagFilter
-                              models={modelUserList.map((item) => ({
-                                model: item.model,
-                                provider: providerBrand,
-                              }))}
-                              onFilteredModelsChange={(filteredModels) => {
-                                setFilteredModelList(filteredModels);
-                              }}
-                            />
-                          </MenuItem>,
+                            <Stack direction='column' spacing={1}>
+                              <TextField
+                                value={modelSearchQuery}
+                                onChange={(e) => setModelSearchQuery(e.target.value)}
+                                fullWidth
+                                size='small'
+                                placeholder='搜索模型名称'
+                                onKeyDown={(e) => {
+                                  e.stopPropagation();
+                                }}
+                                onMouseDown={(e) => {
+                                  e.stopPropagation();
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                }}
+                                InputProps={{
+                                  startAdornment: (
+                                    <InputAdornment position='start'>
+                                      <Search fontSize='small' />
+                                    </InputAdornment>
+                                  ),
+                                }}
+                              />
+                              <Box
+                                onMouseDown={(e) => {
+                                  e.stopPropagation();
+                                }}
+                                onClick={(e) => {
+                                  e.stopPropagation();
+                                }}
+                              >
+                                <ModelTagFilter
+                                  models={modelUserList.map((item) => ({
+                                    model: item.model,
+                                    provider: providerBrand,
+                                  }))}
+                                  onFilteredModelsChange={(filteredModels) => {
+                                    setFilteredModelList(filteredModels);
+                                  }}
+                                />
+                              </Box>
+                            </Stack>
+                          </ListSubheader>,
                           ...modelItems,
                         ];
                       })()}
@@ -1168,13 +1205,13 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                       <Stack spacing={0}>
                         {/* 复选框组 - 使用更紧凑的布局 */}
                         <Stack spacing={0} sx={{ ml: -1.2 }}>
-                            <Controller
+                          <Controller
                             control={control}
                             name='support_image'
                             render={({ field }) => {
                               const isAnalysisVl = model_type === 'analysis-vl';
                               const isChecked = isAnalysisVl ? true : field.value;
-                              
+
                               return (
                                 <FormControlLabel
                                   control={
@@ -1200,7 +1237,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                                           fontSize: 11,
                                         }}
                                       >
-                                        {isAnalysisVl 
+                                        {isAnalysisVl
                                           ? '(图像分析模型默认启用图片功能)'
                                           : '(支持图片输入的模型可以启用此选项)'
                                         }
