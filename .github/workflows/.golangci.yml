@@ -14,5 +14,6 @@ linters:
         - (io.Closer).Close
 run:
   tests: false
-  skip-dirs:
+issues:
+  exclude-dirs:
     - '(^|/)test($|/)'
