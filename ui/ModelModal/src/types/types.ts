@@ -126,10 +126,18 @@ export interface UpdateModelReq {
 
 // 模型服务接口
 export interface ModelService {
-  createModel: (data: CreateModelReq) => Promise<{ model: Model; error?: string }>;
-  listModel: (data: ListModelReq) => Promise<{ models: ModelListItem[]; error?: string }>;
-  checkModel: (data: CheckModelReq) => Promise<{ model: Model; error?: string }>;
-  updateModel: (data: UpdateModelReq) => Promise<{ model: Model; error?: string }>;
+  createModel: (
+    data: CreateModelReq,
+  ) => Promise<{ model: Model; error?: string }>;
+  listModel: (
+    data: ListModelReq,
+  ) => Promise<{ models: ModelListItem[]; error?: string }>;
+  checkModel: (
+    data: CheckModelReq,
+  ) => Promise<{ model: Model; error?: string }>;
+  updateModel: (
+    data: UpdateModelReq,
+  ) => Promise<{ model: Model; error?: string }>;
 }
 
 export interface ModelListItem {
@@ -177,4 +185,6 @@ export interface ModelModalProps {
   messageComponent?: MessageComponent;
   is_close_model_remark?: boolean;
   addingModelTutorialURL?: string;
+  beforeSubmit?: (data: AddModelForm) => boolean | Promise<boolean>;
+  onOk?: (data: AddModelForm) => void;
 }
