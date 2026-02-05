@@ -129,6 +129,11 @@ func getHunyuanModels() []ModelMetadata {
 // getBaiLianModels 返回阿里百炼模型列表
 func getBaiLianModels() []ModelMetadata {
 	return []ModelMetadata{
+		{ModelName: "text-embedding-v1", Object: "model", Provider: consts.ModelProviderBaiLian, ModelType: consts.ModelTypeEmbedding, BaseURL: "https://dashscope.aliyuncs.com/api/v1/services/embeddings/text-embedding/text-embedding"},
+		{ModelName: "text-embedding-v2", Object: "model", Provider: consts.ModelProviderBaiLian, ModelType: consts.ModelTypeEmbedding, BaseURL: "https://dashscope.aliyuncs.com/api/v1/services/embeddings/text-embedding/text-embedding"},
+		{ModelName: "text-embedding-v3", Object: "model", Provider: consts.ModelProviderBaiLian, ModelType: consts.ModelTypeEmbedding, BaseURL: "https://dashscope.aliyuncs.com/api/v1/services/embeddings/text-embedding/text-embedding"},
+		{ModelName: "gte-rerank", Object: "model", Provider: consts.ModelProviderBaiLian, ModelType: consts.ModelTypeRerank, BaseURL: "https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank#"},
+		{ModelName: "qwen3-rerank", Object: "model", Provider: consts.ModelProviderBaiLian, ModelType: consts.ModelTypeRerank, BaseURL: "https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank#"},
 		{ModelName: "qwen3-coder-plus", Object: "model", Provider: consts.ModelProviderBaiLian, ModelType: consts.ModelTypeCoder},
 		{ModelName: "qwen3-coder-plus-2025-07-22", Object: "model", Provider: consts.ModelProviderBaiLian, ModelType: consts.ModelTypeCoder},
 		{ModelName: "qwen-plus-2025-07-14", Object: "model", Provider: consts.ModelProviderBaiLian, ModelType: consts.ModelTypeChat},

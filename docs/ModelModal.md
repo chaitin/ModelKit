@@ -1,6 +1,6 @@
 ## 🚀 功能特性
 
-- **多模型提供商支持**: 支持 OpenAI、Ollama、DeepSeek、SiliconFlow、Moonshot、Azure OpenAI、百智云、腾讯混元、百炼、火山引擎、Gemini、智谱等主流AI服务商
+- **多模型提供商支持**: 支持 OpenAI、Ollama、DeepSeek、SiliconFlow、Moonshot、Azure OpenAI、百智云、腾讯混元、百炼、火山引擎、Gemini、智谱等主流AI服务商（其中 Azure OpenAI、火山引擎支持手动输入模型名称）
 - **模型类型管理**: 支持聊天模型、嵌入模型、重排序模型、视觉模型、代码模型、函数调用等多种模型类型
 - **配置验证**: 提供模型配置的实时验证功能，确保API配置正确性
 - **现代化Web界面**: 基于React 19和Material-UI构建的响应式用户界面
@@ -205,4 +205,17 @@ function App() {
    cd ui/ModelModal
    pnpm install
    ```
+
+### 运行示例环境
+
+项目提供了一键启动测试环境的命令，可以同时启动后端服务和前端示例：
+
+```bash
+make dev
+```
+
+该命令会：
+1. 启动后端服务 (`test/backend/main.go`)
+2. 启动前端开发服务器 (`test/ui_example`)
+
 

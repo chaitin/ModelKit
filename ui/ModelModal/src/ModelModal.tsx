@@ -368,7 +368,10 @@ export const ModelModal: React.FC<ModelModalProps> = ({
 
   const resetCurData = (value: Model) => {
     // @ts-ignore
-    if (value.provider && value.provider !== 'Other') {
+    if (
+      value.provider &&
+      !['Other', 'AzureOpenAI', 'Volcengine'].includes(value.provider)
+    ) {
       getModel({
         api_key: value.api_key || '',
         base_url: value.base_url || '',
@@ -463,7 +466,15 @@ export const ModelModal: React.FC<ModelModalProps> = ({
         onOk={handleSubmit(handleOk)}
         okButtonProps={{
           loading,
-          disabled: !success && providerBrand !== 'Other',
+          disabled:
+            !success &&
+            !['Other', 'AzureOpenAI', 'Volcengine'].includes(providerBrand) &&
+            !(
+              providerBrand === 'BaiLian' &&
+              (model_type === 'embedding' ||
+                model_type === 'rerank' ||
+                model_type === 'reranker')
+            ),
         }}
       >
         <Stack
@@ -578,10 +589,18 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                           reset({
                             provider:
                               it.label as keyof typeof DEFAULT_MODEL_PROVIDERS,
-                            base_url:
-                              it.label === 'AzureOpenAI'
-                                ? ''
-                                : it.defaultBaseUrl,
+                            base_url: (() => {
+                              if (it.label === 'AzureOpenAI') return '';
+                              if (it.label === 'BaiLian') {
+                                if (model_type === 'embedding') {
+                                  return 'https://dashscope.aliyuncs.com/api/v1/services/embeddings/text-embedding/text-embedding';
+                                }
+                                if (model_type === 'rerank' || model_type === 'reranker') {
+                                  return 'https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank#';
+                                }
+                              }
+                              return it.defaultBaseUrl;
+                            })(),
                             model_name: '',
                             api_version: '',
                             api_key: '',
@@ -917,7 +936,11 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                 />
               </>
             )}
-            {providerBrand === 'Other' ? (
+            {['Other', 'AzureOpenAI', 'Volcengine'].includes(providerBrand) ||
+            (providerBrand === 'BaiLian' &&
+              (model_type === 'embedding' ||
+                model_type === 'rerank' ||
+                model_type === 'reranker')) ? (
               <>
                 <Box sx={{ fontSize: 14, lineHeight: '32px', mt: 2 }}>
                   模型名称{' '}
@@ -1006,15 +1029,15 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                           filteredModelList.length > 0
                             ? filteredModelList
                             : modelUserList.map((item) => ({
-                                model: item.model,
-                                provider: providerBrand,
-                              }));
+                              model: item.model,
+                              provider: providerBrand,
+                            }));
 
                         const query = modelSearchQuery.trim().toLowerCase();
                         const modelsToShow = query
                           ? modelsBase.filter((m) =>
-                              m.model.toLowerCase().includes(query),
-                            )
+                            m.model.toLowerCase().includes(query),
+                          )
                           : modelsBase;
 
                         // 按组分类模型

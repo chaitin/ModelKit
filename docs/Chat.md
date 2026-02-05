@@ -1,7 +1,7 @@
 # ModelKit Chat 介绍
 - 支持 `OpenAI API` 
 - 支持的供应商：
-  `兼容OpenAI API 的所有供应商`、`AzureOpenAI`、`Ollama` 、 `DeepSeek`、`Gemini`
+  `兼容OpenAI API 的所有供应商`、`AzureOpenAI`、`Ollama` 、 `DeepSeek`、`Gemini`、`BaiLian`
 # 创建chat
 
 ```go
@@ -40,7 +40,7 @@ func main() {
 
 字段说明（ModelMetadata）：
 
-- `provider`：模型提供商，取值如 `OpenAI`、`AzureOpenAI`、`Ollama`、`DeepSeek`、`Gemini`。
+- `provider`：模型提供商，取值如 `OpenAI`、`AzureOpenAI`、`Ollama`、`DeepSeek`、`Gemini`、`BaiLian`。
 - `model_name`：对话模型 ID，例如 `gpt-4o-mini`、`deepseek-chat`。
 - `base_url`：OpenAI 兼容客户端会自动调用 `/chat/completions`；不要在 `base_url` 中包含该路径。`Ollama` 若以 `/v1` 结尾走兼容模式，否则走原生。
 - `api_key`：鉴权密钥，作为 `Authorization: Bearer <API_KEY>` 使用。

@@ -757,6 +757,9 @@ func buildOpenAIChatConfig(md *domain.ModelMetadata) *openai.ChatModelConfig {
 		if cfg.APIVersion == "" {
 			cfg.APIVersion = "2024-10-21"
 		}
+		cfg.AzureModelMapperFunc = func(model string) string {
+			return model
+		}
 	}
 	if md.APIHeader != "" {
 		hc := utils.GetHttpClientWithAPIHeaderMap(md.APIHeader)
