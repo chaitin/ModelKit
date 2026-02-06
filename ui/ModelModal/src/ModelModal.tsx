@@ -362,7 +362,10 @@ export const ModelModal: React.FC<ModelModalProps> = ({
     if (beforeSubmit) {
       try {
         // 调用 beforeSubmit，支持同步和异步返回值
-        const result = beforeSubmit(value);
+        const result = beforeSubmit({
+          ...value,
+          model_type,
+        });
 
         // 如果返回的是 Promise，等待其 resolve
         const shouldSubmit = result instanceof Promise ? await result : result;
@@ -380,7 +383,10 @@ export const ModelModal: React.FC<ModelModalProps> = ({
 
     // beforeSubmit 验证通过后，执行 onOk 或 onSubmit
     if (onOk) {
-      onOk(value);
+      onOk({
+        ...value,
+        model_type,
+      });
     } else {
       onSubmit(value);
     }
