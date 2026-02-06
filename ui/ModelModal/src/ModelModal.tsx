@@ -17,6 +17,7 @@ import {
 } from '@mui/material';
 import { Visibility, VisibilityOff, Search } from '@mui/icons-material';
 import { Icon, message, Modal, ThemeProvider } from '@ctzhian/ui';
+import { ModalProps } from '@ctzhian/ui/dist/Modal/Modal';
 import Card from './components/card';
 import ModelTagsWithLabel from './components/ModelTagsWithLabel';
 import ModelTagFilter from './components/ModelTagFilter';
@@ -55,7 +56,9 @@ export const ModelModal: React.FC<ModelModalProps> = ({
   addingModelTutorialURL = 'https://github.com/chaitin/ModelKit/blob/main/docs/AddinModelTutorial.md',
   beforeSubmit,
   onOk,
-}: ModelModalProps) => {
+  loading: propsLoading,
+  ...modalProps
+}: ModelModalProps & Omit<ModalProps, 'onOk'>) => {
   const theme = useTheme();
 
   // 消息处理器，优先使用传入的messageComponent，否则使用@ctzhian/ui的message
@@ -93,6 +96,23 @@ export const ModelModal: React.FC<ModelModalProps> = ({
 
   const providerBrand = watch('provider');
   const baseUrl = watch('base_url');
+
+  // 判断是否需要显示手动输入模型名称（无法自动获取模型列表的情况）
+  const shouldShowManualModelInput = () => {
+    // 这些供应商无法自动获取模型列表，需要手动输入
+    const manualInputProviders = ['Other', 'AzureOpenAI', 'Volcengine'];
+    if (manualInputProviders.includes(providerBrand)) {
+      return true;
+    }
+
+    // BaiLian 的 embedding/rerank 类型也需要手动输入
+    if (providerBrand === 'BaiLian') {
+      const manualInputModelTypes = ['embedding', 'rerank', 'reranker'];
+      return manualInputModelTypes.includes(model_type);
+    }
+
+    return false;
+  };
 
   const [modelUserList, setModelUserList] = useState<{ model: string }[]>([]);
   const [filteredModelList, setFilteredModelList] = useState<
@@ -465,17 +485,10 @@ export const ModelModal: React.FC<ModelModalProps> = ({
         okText={getLocaleMessage('save', language)}
         onOk={handleSubmit(handleOk)}
         okButtonProps={{
-          loading,
-          disabled:
-            !success &&
-            !['Other', 'AzureOpenAI', 'Volcengine'].includes(providerBrand) &&
-            !(
-              providerBrand === 'BaiLian' &&
-              (model_type === 'embedding' ||
-                model_type === 'rerank' ||
-                model_type === 'reranker')
-            ),
+          loading: loading || propsLoading,
+          disabled: !success && shouldShowManualModelInput(),
         }}
+        {...modalProps}
       >
         <Stack
           direction={'row'}
@@ -595,7 +608,10 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                                 if (model_type === 'embedding') {
                                   return 'https://dashscope.aliyuncs.com/api/v1/services/embeddings/text-embedding/text-embedding';
                                 }
-                                if (model_type === 'rerank' || model_type === 'reranker') {
+                                if (
+                                  model_type === 'rerank' ||
+                                  model_type === 'reranker'
+                                ) {
                                   return 'https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank#';
                                 }
                               }
@@ -936,11 +952,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                 />
               </>
             )}
-            {['Other', 'AzureOpenAI', 'Volcengine'].includes(providerBrand) ||
-            (providerBrand === 'BaiLian' &&
-              (model_type === 'embedding' ||
-                model_type === 'rerank' ||
-                model_type === 'reranker')) ? (
+            {shouldShowManualModelInput() ? (
               <>
                 <Box sx={{ fontSize: 14, lineHeight: '32px', mt: 2 }}>
                   模型名称{' '}
@@ -1029,15 +1041,15 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                           filteredModelList.length > 0
                             ? filteredModelList
                             : modelUserList.map((item) => ({
-                              model: item.model,
-                              provider: providerBrand,
-                            }));
+                                model: item.model,
+                                provider: providerBrand,
+                              }));
 
                         const query = modelSearchQuery.trim().toLowerCase();
                         const modelsToShow = query
                           ? modelsBase.filter((m) =>
-                            m.model.toLowerCase().includes(query),
-                          )
+                              m.model.toLowerCase().includes(query),
+                            )
                           : modelsBase;
 
                         // 按组分类模型

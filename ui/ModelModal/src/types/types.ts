@@ -187,4 +187,5 @@ export interface ModelModalProps {
   addingModelTutorialURL?: string;
   beforeSubmit?: (data: AddModelForm) => boolean | Promise<boolean>;
   onOk?: (data: AddModelForm) => void;
+  loading?: boolean;
 }
