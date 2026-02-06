@@ -486,7 +486,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
         onOk={handleSubmit(handleOk)}
         okButtonProps={{
           loading: loading || propsLoading,
-          disabled: !success && shouldShowManualModelInput(),
+          disabled: !success && !shouldShowManualModelInput(),
         }}
         {...modalProps}
       >
