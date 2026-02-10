@@ -612,13 +612,13 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                               if (it.label === 'AzureOpenAI') return '';
                               if (it.label === 'BaiLian') {
                                 if (model_type === 'embedding') {
-                                  return 'https://dashscope.aliyuncs.com/api/v1/services/embeddings/text-embedding/text-embedding';
+                                  return 'https://dashscope.aliyuncs.com/compatible-mode/v1/embeddings#';
                                 }
                                 if (
                                   model_type === 'rerank' ||
                                   model_type === 'reranker'
                                 ) {
-                                  return 'https://dashscope.aliyuncs.com/api/v1/services/rerank/text-rerank/text-rerank#';
+                                  return 'https://dashscope.aliyuncs.com/compatible-api/v1/reranks#';
                                 }
                               }
                               return it.defaultBaseUrl;
