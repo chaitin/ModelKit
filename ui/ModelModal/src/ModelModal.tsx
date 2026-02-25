@@ -23,7 +23,7 @@ import { ModalProps } from '@ctzhian/ui/dist/Modal/Modal';
 import Card from './components/card';
 import ModelTagsWithLabel from './components/ModelTagsWithLabel';
 import ModelTagFilter from './components/ModelTagFilter';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useMemo, useState } from 'react';
 import { useForm, Controller } from 'react-hook-form';
 import { AddModelForm, Model, ModelModalProps } from './types/types';
 import { DEFAULT_MODEL_PROVIDERS } from './constants/providers';
@@ -32,6 +32,7 @@ import './assets/fonts/iconfont';
 import { lightTheme } from './theme';
 import { isValidURL } from './utils';
 import { getModelGroup, getModelLogo } from './utils/model';
+import Fuse from 'fuse.js';
 
 const titleMap: Record<string, string> = {
   ['llm']: '对话模型',
@@ -43,6 +44,14 @@ const titleMap: Record<string, string> = {
   ['reranker']: '重排序模型',
   ['analysis']: '分析模型',
   ['analysis-vl']: '图像分析模型',
+};
+
+const fuseOptions = {
+  keys: ['model', 'provider'],
+  threshold: 0.5,
+  ignoreLocation: true,
+  distance: 100,
+  minMatchCharLength: 1,
 };
 
 export const ModelModal: React.FC<ModelModalProps> = ({
@@ -122,6 +131,30 @@ export const ModelModal: React.FC<ModelModalProps> = ({
     { model: string; provider: string }[]
   >([]);
   const [modelSearchQuery, setModelSearchQuery] = useState('');
+
+  const modelsBase = useMemo<{ model: string; provider: string }[]>(() => {
+    if (filteredModelList.length > 0) {
+      return filteredModelList;
+    }
+
+    return modelUserList.map((item) => ({
+      model: item.model,
+      provider: providerBrand,
+    }));
+  }, [filteredModelList, modelUserList, providerBrand]);
+
+  const displayModels = useMemo(() => {
+    const query = modelSearchQuery.trim();
+    if (!query) {
+      return modelsBase;
+    }
+
+    const fuse = new Fuse<{ model: string; provider: string }>(
+      modelsBase,
+      fuseOptions,
+    );
+    return fuse.search(query).map(({ item }) => item);
+  }, [modelSearchQuery, modelsBase]);
 
   const [loading, setLoading] = useState(false);
   const [modelLoading, setModelLoading] = useState(false);
@@ -1052,24 +1085,8 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                       }}
                     >
                       {(() => {
-                        // 使用筛选后的模型列表，如果没有筛选则使用原始列表
-                        const modelsBase =
-                          filteredModelList.length > 0
-                            ? filteredModelList
-                            : modelUserList.map((item) => ({
-                              model: item.model,
-                              provider: providerBrand,
-                            }));
-
-                        const query = modelSearchQuery.trim().toLowerCase();
-                        const modelsToShow = query
-                          ? modelsBase.filter((m) =>
-                            m.model.toLowerCase().includes(query),
-                          )
-                          : modelsBase;
-
-                        // 按组分类模型
-                        const groupedModels = modelsToShow.reduce(
+                        // 基于筛选和搜索的模型列表
+                        const groupedModels = displayModels.reduce(
                           (acc, model) => {
                             const group = getModelGroup(model.model);
                             if (!acc[group]) {
@@ -1078,7 +1095,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                             acc[group].push(model);
                             return acc;
                           },
-                          {} as Record<string, typeof modelsToShow>,
+                          {} as Record<string, typeof displayModels>,
                         );
 
                         // 渲染分组后的模型
