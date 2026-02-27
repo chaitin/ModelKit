@@ -67,7 +67,8 @@
     "react-activity-calendar": "^2.7.12",
     "react-copy-to-clipboard": "^5.1.0",
     "react-hook-form": "^7.56.4",
-    "react-i18next": "^15.7.3"
+    "react-i18next": "^15.7.3",
+    "fuse.js": "^7.1.0"
   },
   "devDependencies": {
     "@types/node": "^24.2.1",
