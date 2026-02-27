@@ -15,8 +15,9 @@ import {
   InputAdornment,
   IconButton,
   Slider,
+  Tooltip,
 } from '@mui/material';
-import { Visibility, VisibilityOff, Search } from '@mui/icons-material';
+import { Visibility, VisibilityOff, Search, HelpOutline } from '@mui/icons-material';
 import { Icon, message, Modal, ThemeProvider } from '@ctzhian/ui';
 import { ModalProps } from '@ctzhian/ui/dist/Modal/Modal';
 import Card from './components/card';
@@ -1056,15 +1057,15 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                           filteredModelList.length > 0
                             ? filteredModelList
                             : modelUserList.map((item) => ({
-                                model: item.model,
-                                provider: providerBrand,
-                              }));
+                              model: item.model,
+                              provider: providerBrand,
+                            }));
 
                         const query = modelSearchQuery.trim().toLowerCase();
                         const modelsToShow = query
                           ? modelsBase.filter((m) =>
-                              m.model.toLowerCase().includes(query),
-                            )
+                            m.model.toLowerCase().includes(query),
+                          )
                           : modelsBase;
 
                         // 按组分类模型
@@ -1294,7 +1295,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                       高级设置
                     </AccordionSummary>
                     <AccordionDetails>
-                      <Stack spacing={0}>
+                      <Stack spacing={2}>
                         {/* 复选框组 - 使用更紧凑的布局 */}
                         <Stack spacing={0} sx={{ ml: -1.2 }}>
                           <Controller
@@ -1466,7 +1467,26 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                               alignItems: 'center',
                             }}
                           >
-                            <span>Temperature</span>
+                            <Stack
+                              direction='row'
+                              alignItems='center'
+                              gap={0.5}
+                            >
+                              <span>模型温度</span>
+                              <Tooltip
+                                title='模型生成内容的随机程度。值越小越稳定，值越大越随机。'
+                                placement='top'
+                                arrow
+                              >
+                                <HelpOutline
+                                  sx={{
+                                    fontSize: 15,
+                                    color: 'text.secondary',
+                                    cursor: 'help',
+                                  }}
+                                />
+                              </Tooltip>
+                            </Stack>
                             <Controller
                               control={control}
                               name='temperature'
@@ -1508,20 +1528,15 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                                 min={0}
                                 max={2}
                                 step={0.1}
+                                marks={[
+                                  { value: 0, label: '0' },
+                                  { value: 2, label: '2' },
+                                ]}
                                 size='small'
-                                sx={{ mt: -0.5 }}
+                                sx={{ mt: -0.5, width: '90%', ml: 2 }}
                               />
                             )}
                           />
-                          <Box
-                            sx={{
-                              mt: -1,
-                              color: 'text.secondary',
-                              fontSize: 11,
-                            }}
-                          >
-                            值越大输出越随机，值越小输出越确定。范围 0-2，默认 0
-                          </Box>
                         </Box>
                       </Stack>
                     </AccordionDetails>
