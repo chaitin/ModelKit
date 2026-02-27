@@ -14,6 +14,7 @@ import {
   ListSubheader,
   InputAdornment,
   IconButton,
+  Slider,
 } from '@mui/material';
 import { Visibility, VisibilityOff, Search } from '@mui/icons-material';
 import { Icon, message, Modal, ThemeProvider } from '@ctzhian/ui';
@@ -91,6 +92,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       support_image: model_type === 'analysis-vl' ? true : false,
       support_compute: false,
       support_prompt_caching: false,
+      temperature: 0,
     },
   });
 
@@ -147,6 +149,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       support_image: model_type === 'analysis-vl' ? true : false,
       support_compute: false,
       support_prompt_caching: false,
+      temperature: 0,
     });
     setModelUserList([]);
     setFilteredModelList([]);
@@ -260,6 +263,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
           support_images: value.support_image,
           support_computer_use: value.support_compute,
           support_prompt_cache: value.support_prompt_caching,
+          temperature: value.temperature,
         },
       })
       .then((res) => {
@@ -291,6 +295,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                 support_images: value.support_image,
                 support_computer_use: value.support_compute,
                 support_prompt_cache: value.support_prompt_caching,
+                temperature: value.temperature,
               },
             })
             .then((res) => {
@@ -330,6 +335,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                 support_images: value.support_image,
                 support_computer_use: value.support_compute,
                 support_prompt_cache: value.support_prompt_caching,
+                temperature: value.temperature,
               },
             })
             .then((res) => {
@@ -419,6 +425,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
         support_image: false,
         support_compute: false,
         support_prompt_caching: false,
+        temperature: 0,
       });
     }
     reset({
@@ -444,6 +451,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
           : value.param?.support_images || false,
       support_compute: value.param?.support_computer_use || false,
       support_prompt_caching: value.param?.support_prompt_cache || false,
+      temperature: value.param?.temperature ?? 0,
     });
   };
 
@@ -470,6 +478,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
           support_image: model_type === 'analysis-vl' ? true : false,
           support_compute: false,
           support_prompt_caching: false,
+          temperature: 0,
         });
       }
       // 确保每次打开时高级设置都是折叠的
@@ -1445,6 +1454,74 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                               />
                             )}
                           />
+                        </Box>
+
+                        <Box>
+                          <Box
+                            sx={{
+                              fontSize: 14,
+                              lineHeight: '32px',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                            }}
+                          >
+                            <span>Temperature</span>
+                            <Controller
+                              control={control}
+                              name='temperature'
+                              render={({ field }) => (
+                                <TextField
+                                  value={field.value}
+                                  size='small'
+                                  type='number'
+                                  inputProps={{
+                                    min: 0,
+                                    max: 2,
+                                    step: 0.1,
+                                    style: {
+                                      padding: '2px 8px',
+                                      width: 50,
+                                      textAlign: 'center',
+                                      fontSize: 12,
+                                    },
+                                  }}
+                                  onChange={(e) => {
+                                    const val = parseFloat(e.target.value);
+                                    if (!isNaN(val) && val >= 0 && val <= 2) {
+                                      field.onChange(val);
+                                    }
+                                  }}
+                                />
+                              )}
+                            />
+                          </Box>
+                          <Controller
+                            control={control}
+                            name='temperature'
+                            render={({ field }) => (
+                              <Slider
+                                value={field.value}
+                                onChange={(_, val) =>
+                                  field.onChange(val as number)
+                                }
+                                min={0}
+                                max={2}
+                                step={0.1}
+                                size='small'
+                                sx={{ mt: -0.5 }}
+                              />
+                            )}
+                          />
+                          <Box
+                            sx={{
+                              mt: -1,
+                              color: 'text.secondary',
+                              fontSize: 11,
+                            }}
+                          >
+                            值越大输出越随机，值越小输出越确定。范围 0-2，默认 0
+                          </Box>
                         </Box>
                       </Stack>
                     </AccordionDetails>

@@ -63,6 +63,11 @@ function App() {
       is_active: true,
       created_at: Date.now(),
       updated_at: Date.now(),
+      param: {
+        context_window: 128000,
+        max_tokens: 4096,
+        temperature: 0.7,
+      },
     };
     setEditingModel(mockModel);
     setModalOpen(true);
