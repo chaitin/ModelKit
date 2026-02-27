@@ -91,6 +91,9 @@ func (p *ModelKitHandler) CheckModel(c echo.Context) error {
 			})
 		}
 		req.Param = &param
+		if param.Temperature != nil {
+			p.logger.Info("CheckModel temperature", slog.Float64("temperature", float64(*param.Temperature)))
+		}
 	}
 
 	// 验证必需参数

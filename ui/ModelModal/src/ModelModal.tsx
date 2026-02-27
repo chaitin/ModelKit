@@ -14,8 +14,10 @@ import {
   ListSubheader,
   InputAdornment,
   IconButton,
+  Slider,
+  Tooltip,
 } from '@mui/material';
-import { Visibility, VisibilityOff, Search } from '@mui/icons-material';
+import { Visibility, VisibilityOff, Search, HelpOutline } from '@mui/icons-material';
 import { Icon, message, Modal, ThemeProvider } from '@ctzhian/ui';
 import { ModalProps } from '@ctzhian/ui/dist/Modal/Modal';
 import Card from './components/card';
@@ -91,6 +93,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       support_image: model_type === 'analysis-vl' ? true : false,
       support_compute: false,
       support_prompt_caching: false,
+      temperature: 0,
     },
   });
 
@@ -147,6 +150,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       support_image: model_type === 'analysis-vl' ? true : false,
       support_compute: false,
       support_prompt_caching: false,
+      temperature: 0,
     });
     setModelUserList([]);
     setFilteredModelList([]);
@@ -260,6 +264,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
           support_images: value.support_image,
           support_computer_use: value.support_compute,
           support_prompt_cache: value.support_prompt_caching,
+          temperature: value.temperature,
         },
       })
       .then((res) => {
@@ -291,6 +296,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                 support_images: value.support_image,
                 support_computer_use: value.support_compute,
                 support_prompt_cache: value.support_prompt_caching,
+                temperature: value.temperature,
               },
             })
             .then((res) => {
@@ -330,6 +336,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                 support_images: value.support_image,
                 support_computer_use: value.support_compute,
                 support_prompt_cache: value.support_prompt_caching,
+                temperature: value.temperature,
               },
             })
             .then((res) => {
@@ -419,6 +426,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
         support_image: false,
         support_compute: false,
         support_prompt_caching: false,
+        temperature: 0,
       });
     }
     reset({
@@ -444,6 +452,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
           : value.param?.support_images || false,
       support_compute: value.param?.support_computer_use || false,
       support_prompt_caching: value.param?.support_prompt_cache || false,
+      temperature: value.param?.temperature ?? 0,
     });
   };
 
@@ -470,6 +479,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
           support_image: model_type === 'analysis-vl' ? true : false,
           support_compute: false,
           support_prompt_caching: false,
+          temperature: 0,
         });
       }
       // 确保每次打开时高级设置都是折叠的
@@ -1047,15 +1057,15 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                           filteredModelList.length > 0
                             ? filteredModelList
                             : modelUserList.map((item) => ({
-                                model: item.model,
-                                provider: providerBrand,
-                              }));
+                              model: item.model,
+                              provider: providerBrand,
+                            }));
 
                         const query = modelSearchQuery.trim().toLowerCase();
                         const modelsToShow = query
                           ? modelsBase.filter((m) =>
-                              m.model.toLowerCase().includes(query),
-                            )
+                            m.model.toLowerCase().includes(query),
+                          )
                           : modelsBase;
 
                         // 按组分类模型
@@ -1285,7 +1295,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                       高级设置
                     </AccordionSummary>
                     <AccordionDetails>
-                      <Stack spacing={0}>
+                      <Stack spacing={2}>
                         {/* 复选框组 - 使用更紧凑的布局 */}
                         <Stack spacing={0} sx={{ ml: -1.2 }}>
                           <Controller
@@ -1442,6 +1452,88 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                                 onChange={(e) =>
                                   field.onChange(Number(e.target.value))
                                 }
+                              />
+                            )}
+                          />
+                        </Box>
+
+                        <Box>
+                          <Box
+                            sx={{
+                              fontSize: 14,
+                              lineHeight: '32px',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                            }}
+                          >
+                            <Stack
+                              direction='row'
+                              alignItems='center'
+                              gap={0.5}
+                            >
+                              <span>模型温度</span>
+                              <Tooltip
+                                title='模型生成内容的随机程度。值越小越稳定，值越大越随机。'
+                                placement='top'
+                                arrow
+                              >
+                                <HelpOutline
+                                  sx={{
+                                    fontSize: 15,
+                                    color: 'text.secondary',
+                                    cursor: 'help',
+                                  }}
+                                />
+                              </Tooltip>
+                            </Stack>
+                            <Controller
+                              control={control}
+                              name='temperature'
+                              render={({ field }) => (
+                                <TextField
+                                  value={field.value}
+                                  size='small'
+                                  type='number'
+                                  inputProps={{
+                                    min: 0,
+                                    max: 2,
+                                    step: 0.1,
+                                    style: {
+                                      padding: '2px 8px',
+                                      width: 50,
+                                      textAlign: 'center',
+                                      fontSize: 12,
+                                    },
+                                  }}
+                                  onChange={(e) => {
+                                    const val = parseFloat(e.target.value);
+                                    if (!isNaN(val) && val >= 0 && val <= 2) {
+                                      field.onChange(val);
+                                    }
+                                  }}
+                                />
+                              )}
+                            />
+                          </Box>
+                          <Controller
+                            control={control}
+                            name='temperature'
+                            render={({ field }) => (
+                              <Slider
+                                value={field.value}
+                                onChange={(_, val) =>
+                                  field.onChange(val as number)
+                                }
+                                min={0}
+                                max={2}
+                                step={0.1}
+                                marks={[
+                                  { value: 0, label: '0' },
+                                  { value: 2, label: '2' },
+                                ]}
+                                size='small'
+                                sx={{ mt: -0.5, width: '90%', ml: 2 }}
                               />
                             )}
                           />
