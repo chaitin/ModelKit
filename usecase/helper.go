@@ -53,7 +53,7 @@ func ollamaListModel(baseURL string, httpClient *http.Client, apiHeader string) 
 }
 
 func (m *ModelKit) getChatModelGenerateChat(ctx context.Context, provider consts.ModelProvider, modelType consts.ModelType, baseURL string, req *domain.CheckModelReq) (string, error) {
-	chatModel, err := m.GetChatModel(ctx, &domain.ModelMetadata{
+	md := &domain.ModelMetadata{
 		Provider:   provider,
 		ModelName:  req.Model,
 		APIKey:     req.APIKey,
@@ -61,7 +61,18 @@ func (m *ModelKit) getChatModelGenerateChat(ctx context.Context, provider consts
 		BaseURL:    baseURL,
 		APIVersion: req.APIVersion,
 		ModelType:  modelType,
-	})
+	}
+
+	if req.Param != nil {
+		if req.Param.Temperature != nil {
+			md.Temperature = req.Param.Temperature
+		}
+		if req.Param.MaxTokens > 0 {
+			md.MaxTokens = &req.Param.MaxTokens
+		}
+	}
+
+	chatModel, err := m.GetChatModel(ctx, md)
 	if err != nil {
 		return "", err
 	}

@@ -30,7 +30,7 @@ type ModelMetadata struct {
 	// 高级参数
 	// 限制生成的最大token数量,可选,默认为模型最大值, Ollama不支持
 	MaxTokens *int `json:"max_tokens"`
-	// 采样温度参数,建议与TopP二选一,范围0-2,值越大输出越随机,可选,默认1.0
+	// 采样温度参数,建议与TopP二选一,范围0-2,值越大输出越随机,可选,默认0.0
 	Temperature *float32 `json:"temperature"`
 	// 控制采样多样性,建议与Temperature二选一,范围0-1,值越小输出越聚焦,可选,默认1.0
 	TopP *float32 `json:"top_p"`

@@ -43,7 +43,7 @@ export interface ModelParam {
   support_computer_use?: boolean;
   support_images?: boolean;
   support_prompt_cache?: boolean;
-  temperature?: number;
+  temperature?: number | null;
 }
 
 // 模型提供商配置
@@ -165,7 +165,7 @@ export interface AddModelForm {
   support_image: boolean;
   support_compute: boolean;
   support_prompt_caching: boolean;
-  temperature: number;
+  temperature: number | null;
 }
 
 // 消息组件接口

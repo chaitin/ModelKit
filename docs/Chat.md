@@ -47,12 +47,12 @@ func main() {
 - `api_version`：仅 `AzureOpenAI` 需要，未设置将默认 `2024-10-21`。
 - `api_header`：可选的自定义请求头（`key=value` 按行拼接）。
 高级参数: 
-- `max_tokens`：最大生成长度。
-- `temperature`：采样温度。
-- `top_p`：核采样。
+- `max_tokens`：最大生成长度，默认为模型最大值。
+- `temperature`：采样温度，建议与TopP二选一，范围0-2，默认0.0。
+- `top_p`：核采样，建议与Temperature二选一，范围0-1，默认1.0。
 - `stop`：停止序列。
-- `presence_penalty`：存在惩罚。
-- `frequency_penalty`：频率惩罚。
+- `presence_penalty`：存在惩罚，范围-2到2，默认0。
+- `frequency_penalty`：频率惩罚，范围-2到2，默认0。
 - `response_format`：结构化响应格式（OpenAI 兼容）。
 - `seed`：确定性采样。
 - `logit_bias`：Logit 偏置。
