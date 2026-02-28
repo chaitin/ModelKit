@@ -1,7 +1,7 @@
 version: "2"
 
 linters:
-  default: none
+  disable-all: true
   enable:
     # - dupl # 重复代码
     # - errcheck # 检查是否存在未处理的错误

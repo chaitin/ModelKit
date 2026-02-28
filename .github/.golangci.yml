@@ -1,5 +1,5 @@
 linters:
-  default: none
+  disable-all: true
   enable:
     - gocognit # 检查函数 Cognitive Complexity 复杂度
     - gofmt

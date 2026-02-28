@@ -67,9 +67,6 @@ func (m *ModelKit) getChatModelGenerateChat(ctx context.Context, provider consts
 		if req.Param.Temperature != nil {
 			md.Temperature = req.Param.Temperature
 		}
-		if req.Param.MaxTokens > 0 {
-			md.MaxTokens = &req.Param.MaxTokens
-		}
 	}
 
 	chatModel, err := m.GetChatModel(ctx, md)

@@ -207,6 +207,11 @@ function App() {
    pnpm install
    ```
 
+3. **代码检查**
+   ```bash
+   make lint
+   ```
+
 ### 运行示例环境
 
 项目提供了一键启动测试环境的命令，可以同时启动后端服务和前端示例：
@@ -218,5 +223,4 @@ make dev
 该命令会：
 1. 启动后端服务 (`test/backend/main.go`)
 2. 启动前端开发服务器 (`test/ui_example`)
-
 
