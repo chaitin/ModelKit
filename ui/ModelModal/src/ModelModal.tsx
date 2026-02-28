@@ -102,7 +102,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       support_image: model_type === 'analysis-vl' ? true : false,
       support_compute: false,
       support_prompt_caching: false,
-      temperature: 0,
+      temperature: null,
     },
   });
 
@@ -183,7 +183,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       support_image: model_type === 'analysis-vl' ? true : false,
       support_compute: false,
       support_prompt_caching: false,
-      temperature: 0,
+      temperature: null,
     });
     setModelUserList([]);
     setFilteredModelList([]);
@@ -459,7 +459,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
         support_image: false,
         support_compute: false,
         support_prompt_caching: false,
-        temperature: 0,
+        temperature: null,
       });
     }
     reset({
@@ -485,7 +485,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
           : value.param?.support_images || false,
       support_compute: value.param?.support_computer_use || false,
       support_prompt_caching: value.param?.support_prompt_cache || false,
-      temperature: value.param?.temperature ?? 0,
+      temperature: value.param?.temperature ?? null,
     });
   };
 
@@ -512,7 +512,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
           support_image: model_type === 'analysis-vl' ? true : false,
           support_compute: false,
           support_prompt_caching: false,
-          temperature: 0,
+          temperature: null,
         });
       }
       // 确保每次打开时高级设置都是折叠的
@@ -1509,7 +1509,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                               name='temperature'
                               render={({ field }) => (
                                 <TextField
-                                  value={field.value}
+                                  value={field.value ?? ''}
                                   size='small'
                                   type='number'
                                   inputProps={{
@@ -1524,6 +1524,10 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                                     },
                                   }}
                                   onChange={(e) => {
+                                    if (e.target.value === '') {
+                                      field.onChange(null);
+                                      return;
+                                    }
                                     const val = parseFloat(e.target.value);
                                     if (!isNaN(val) && val >= 0 && val <= 2) {
                                       field.onChange(val);
@@ -1538,7 +1542,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                             name='temperature'
                             render={({ field }) => (
                               <Slider
-                                value={field.value}
+                                value={field.value ?? 0}
                                 onChange={(_, val) =>
                                   field.onChange(val as number)
                                 }
