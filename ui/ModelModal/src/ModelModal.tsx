@@ -31,7 +31,7 @@ import { getLocaleMessage } from './constants/locale';
 import './assets/fonts/iconfont';
 import { lightTheme } from './theme';
 import { isValidURL } from './utils';
-import { getModelGroup, getModelLogo } from './utils/model';
+import { getModelGroup, getModelLogo, shouldDisableTemperatureForModel } from './utils/model';
 import Fuse from 'fuse.js';
 
 const titleMap: Record<string, string> = {
@@ -108,6 +108,9 @@ export const ModelModal: React.FC<ModelModalProps> = ({
 
   const providerBrand = watch('provider');
   const baseUrl = watch('base_url');
+  const modelName = watch('model_name');
+  const temperature = watch('temperature');
+  const isTemperatureDisabled = shouldDisableTemperatureForModel(modelName || '');
 
   // 判断是否需要显示手动输入模型名称（无法自动获取模型列表的情况）
   const shouldShowManualModelInput = () => {
@@ -520,6 +523,12 @@ export const ModelModal: React.FC<ModelModalProps> = ({
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [data, open]);
+
+  useEffect(() => {
+    if (isTemperatureDisabled && temperature !== null) {
+      setValue('temperature', null);
+    }
+  }, [isTemperatureDisabled, setValue, temperature]);
 
   return (
     <ThemeProvider theme={lightTheme}>
@@ -1510,6 +1519,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                               render={({ field }) => (
                                 <TextField
                                   value={field.value ?? ''}
+                                  disabled={isTemperatureDisabled}
                                   size='small'
                                   type='number'
                                   inputProps={{
@@ -1543,6 +1553,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                             render={({ field }) => (
                               <Slider
                                 value={field.value ?? 0}
+                                disabled={isTemperatureDisabled}
                                 onChange={(_, val) =>
                                   field.onChange(val as number)
                                 }
@@ -1558,6 +1569,19 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                               />
                             )}
                           />
+                          {isTemperatureDisabled && (
+                            <Box
+                              sx={{
+                                mt: 1,
+                                ml: 2,
+                                fontSize: 12,
+                                lineHeight: '18px',
+                                color: 'text.secondary',
+                              }}
+                            >
+                              当前模型不支持自定义 temperature，将忽略该参数。
+                            </Box>
+                          )}
                         </Box>
                       </Stack>
                     </AccordionDetails>

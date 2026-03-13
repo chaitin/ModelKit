@@ -730,10 +730,12 @@ func buildOpenAIChatConfig(md *domain.ModelMetadata) *openai.ChatModelConfig {
 		t = *md.Temperature
 	}
 	cfg := &openai.ChatModelConfig{
-		APIKey:      md.APIKey,
-		BaseURL:     md.BaseURL,
-		Model:       string(md.ModelName),
-		Temperature: &t,
+		APIKey:  md.APIKey,
+		BaseURL: md.BaseURL,
+		Model:   string(md.ModelName),
+	}
+	if !shouldIgnoreOpenAITemperature(md.ModelName) {
+		cfg.Temperature = &t
 	}
 	if md.MaxTokens != nil {
 		cfg.MaxTokens = md.MaxTokens
@@ -776,6 +778,13 @@ func buildOpenAIChatConfig(md *domain.ModelMetadata) *openai.ChatModelConfig {
 		}
 	}
 	return cfg
+}
+
+func shouldIgnoreOpenAITemperature(model string) bool {
+	return strings.HasPrefix(model, "o1") ||
+		strings.HasPrefix(model, "o3") ||
+		strings.HasPrefix(model, "o4") ||
+		strings.HasPrefix(model, "gpt-5")
 }
 
 func newDeepseekChatModel(ctx context.Context, md *domain.ModelMetadata) (model.BaseChatModel, error) {
