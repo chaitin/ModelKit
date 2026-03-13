@@ -99,6 +99,20 @@ export function isCodeModel(model_id: string, provider: string): boolean {
   return /(?:^o3$|.*(code|claude\s+sonnet|claude\s+opus|gpt-4\.1|gpt-4o|gpt-5|gemini[\s-]+2\.5|o4-mini|kimi-k2).*)/i.test(modelId) || false
 }
 
+export function shouldDisableTemperatureForModel(model_id: string): boolean {
+  if (!model_id) {
+    return false
+  }
+
+  const modelId = getLowerBaseModelName(model_id, '/')
+  return (
+    modelId.startsWith('o1') ||
+    modelId.startsWith('o3') ||
+    modelId.startsWith('o4') ||
+    modelId.startsWith('gpt-5')
+  )
+}
+
 export function isReasoningModel(model_id: string, provider: string): boolean {
   if (!model_id || isEmbeddingModel(model_id, provider) || isRerankModel(model_id)) {
     return false

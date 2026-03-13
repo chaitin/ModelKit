@@ -37,6 +37,46 @@ func TestBuildOpenAIChatConfig_Azure(t *testing.T) {
 	}
 }
 
+func TestBuildOpenAIChatConfig_IgnoreTemperatureForReasoningModels(t *testing.T) {
+	temp := float32(1.0)
+	testCases := []struct {
+		name      string
+		modelName string
+		ignored   bool
+	}{
+		{name: "o1", modelName: "o1-preview", ignored: true},
+		{name: "o3", modelName: "o3-mini", ignored: true},
+		{name: "o4", modelName: "o4-mini", ignored: true},
+		{name: "gpt-5", modelName: "gpt-5-mini", ignored: true},
+		{name: "regular model", modelName: "gpt-4.1-mini", ignored: false},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			md := &domain.ModelMetadata{
+				ModelName:   tc.modelName,
+				Temperature: &temp,
+			}
+
+			cfg := buildOpenAIChatConfig(md)
+
+			if tc.ignored {
+				if cfg.Temperature != nil {
+					t.Fatalf("expected temperature to be ignored for model %q, got %v", tc.modelName, *cfg.Temperature)
+				}
+				return
+			}
+
+			if cfg.Temperature == nil {
+				t.Fatalf("expected temperature to be preserved for model %q", tc.modelName)
+			}
+			if *cfg.Temperature != temp {
+				t.Fatalf("expected temperature %v for model %q, got %v", temp, tc.modelName, *cfg.Temperature)
+			}
+		})
+	}
+}
+
 func TestCheckModel_TemperaturePassed(t *testing.T) {
 	testName := "TestCheckModel_TemperaturePassed_Provider=Moonshot_Model=kimi-k2.5_Temp=1"
 	// 1. Setup a test server to intercept the request
