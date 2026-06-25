@@ -1,5 +1,6 @@
 import {
   Box,
+  Alert,
   Button,
   MenuItem,
   Stack,
@@ -54,6 +55,11 @@ const fuseOptions = {
   minMatchCharLength: 1,
 };
 
+const BAI_ZHI_CLOUD_PROVIDER = 'BaiZhiCloud';
+const BAI_ZHI_CLOUD_MODEL_STORE_PROVIDER = 'BaiZhiCloudModelStore';
+const BAI_ZHI_CLOUD_MODEL_SQUARE_EXPIRE_TIP =
+  '当前配置将于 2026 年 12 月 31 日失效，请及时切换到百智云。';
+
 export const ModelModal: React.FC<ModelModalProps> = ({
   open,
   onClose,
@@ -87,8 +93,8 @@ export const ModelModal: React.FC<ModelModalProps> = ({
   } = useForm<AddModelForm>({
     defaultValues: {
       model_type,
-      provider: 'BaiZhiCloud',
-      base_url: providers['BaiZhiCloud'].defaultBaseUrl,
+      provider: BAI_ZHI_CLOUD_MODEL_STORE_PROVIDER,
+      base_url: providers[BAI_ZHI_CLOUD_MODEL_STORE_PROVIDER].defaultBaseUrl,
       model_name: '',
       api_version: '',
       api_key: '',
@@ -171,7 +177,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
     onClose();
     reset({
       model_type,
-      provider: 'BaiZhiCloud',
+      provider: BAI_ZHI_CLOUD_MODEL_STORE_PROVIDER,
       model_name: '',
       base_url: '',
       api_key: '',
@@ -436,16 +442,17 @@ export const ModelModal: React.FC<ModelModalProps> = ({
   };
 
   const resetCurData = (value: Model) => {
+    const formProvider = value.provider || 'Other';
     // @ts-ignore
     if (
-      value.provider &&
-      !['Other', 'AzureOpenAI', 'Volcengine'].includes(value.provider)
+      formProvider &&
+      !['Other', 'AzureOpenAI', 'Volcengine'].includes(formProvider)
     ) {
       getModel({
         api_key: value.api_key || '',
         base_url: value.base_url || '',
         model_name: value.model_name || '',
-        provider: value.provider,
+        provider: formProvider,
         api_version: value.api_version || '',
         api_header_key: value.api_header?.split('=')[0] || '',
         api_header: value.api_header || '',
@@ -467,7 +474,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
     }
     reset({
       model_type,
-      provider: value.provider || 'Other',
+      provider: formProvider,
       model_name: value.model_name || '',
       base_url: value.base_url || '',
       api_key: value.api_key || '',
@@ -476,7 +483,7 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       api_header_value: value.api_header?.split('=')[1] || '',
       show_name: value.show_name || '',
       resource_name:
-        value.provider === 'AzureOpenAI'
+        formProvider === 'AzureOpenAI'
           ? extractResourceNameFromUrl(value.base_url || '')
           : '',
       context_window_size: value.param?.context_window || 64000,
@@ -499,9 +506,9 @@ export const ModelModal: React.FC<ModelModalProps> = ({
       } else {
         reset({
           model_type,
-          provider: 'BaiZhiCloud',
+          provider: BAI_ZHI_CLOUD_MODEL_STORE_PROVIDER,
           model_name: '',
-          base_url: providers['BaiZhiCloud'].defaultBaseUrl,
+          base_url: providers[BAI_ZHI_CLOUD_MODEL_STORE_PROVIDER].defaultBaseUrl,
           api_key: '',
           api_version: '',
           api_header_key: '',
@@ -619,7 +626,8 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                         return it.analysis_vl;
                       default:
                         return (
-                          it.label === 'BaiZhiCloud' || it.label === 'Other'
+                          it.label === BAI_ZHI_CLOUD_MODEL_STORE_PROVIDER ||
+                          it.label === 'Other'
                         );
                     }
                   })
@@ -829,6 +837,34 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                   /结尾忽略V1版本，#结尾强制使用输入地址
                 </Box>
               </Stack>
+            )}
+            {providerBrand === BAI_ZHI_CLOUD_PROVIDER && (
+              <Alert
+                severity='warning'
+                variant='outlined'
+                sx={{
+                  mt: 1,
+                  py: 0.5,
+                  px: 1.5,
+                  alignItems: 'center',
+                  borderRadius: '8px',
+                  borderColor: 'warning.200',
+                  bgcolor: 'rgba(245, 158, 11, 0.06)',
+                  color: 'text.secondary',
+                  '& .MuiAlert-icon': {
+                    py: 0,
+                    color: 'warning.dark',
+                    alignItems: 'center',
+                  },
+                  '& .MuiAlert-message': {
+                    py: 0,
+                    fontSize: 12,
+                    lineHeight: '20px',
+                  },
+                }}
+              >
+                {BAI_ZHI_CLOUD_MODEL_SQUARE_EXPIRE_TIP}
+              </Alert>
             )}
             <Stack
               direction={'row'}

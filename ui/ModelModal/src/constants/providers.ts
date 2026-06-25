@@ -4,6 +4,22 @@ import { ModelProviderMap } from '../types/types';
 export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   BaiZhiCloud: {
     label: 'BaiZhiCloud',
+    cn: '模型广场（即将下线）',
+    icon: 'ikun-baizhiyunlogo',
+    urlWrite: false,
+    secretRequired: true,
+    customHeader: false,
+    chat: true,
+    code: true,
+    embedding: true,
+    rerank: true,
+    analysis: true,
+    analysis_vl: true,
+    modelDocumentUrl: 'https://ai-models.app.baizhi.cloud/console/keys',
+    defaultBaseUrl: 'https://model-square.app.baizhi.cloud/v1',
+  },
+  BaiZhiCloudModelStore: {
+    label: 'BaiZhiCloudModelStore',
     cn: '百智云',
     icon: 'ikun-baizhiyunlogo',
     urlWrite: false,
@@ -15,8 +31,8 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     rerank: true,
     analysis: true,
     analysis_vl: true,
-    modelDocumentUrl: 'https://model-square.app.baizhi.cloud/token',
-    defaultBaseUrl: 'https://model-square.app.baizhi.cloud/v1',
+    modelDocumentUrl: 'https://ai-models.app.baizhi.cloud/console/keys',
+    defaultBaseUrl: 'https://ai-models.app.baizhi.cloud/api/openai',
   },
   ZhiPu: {
     label: 'ZhiPu',

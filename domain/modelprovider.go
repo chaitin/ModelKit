@@ -26,6 +26,11 @@ func initModelProviders() {
 			Models:    getModelsByOwner(consts.ModelProviderBaiZhiCloud),
 			APIBase:   "https://model-square.app.baizhi.cloud/v1",
 		},
+		consts.ModelProviderBaiZhiCloudModelStore: {
+			OwnerName: consts.ModelProviderBaiZhiCloudModelStore,
+			Models:    getModelsByOwner(consts.ModelProviderBaiZhiCloud),
+			APIBase:   "https://ai-models.app.baizhi.cloud/api/openai",
+		},
 		consts.ModelProviderDeepSeek: {
 			OwnerName: consts.ModelProviderDeepSeek,
 			Models:    getModelsByOwner(consts.ModelProviderDeepSeek),

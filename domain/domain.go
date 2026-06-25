@@ -32,7 +32,7 @@ type ModelListItem struct {
 }
 
 type CheckModelReq struct {
-	Provider   string      `json:"provider" query:"provider" validate:"required,oneof=OpenAI Ollama DeepSeek SiliconFlow Moonshot Other AzureOpenAI BaiZhiCloud Hunyuan BaiLian Volcengine Gemini ZhiPu AiHubMix"`
+	Provider   string      `json:"provider" query:"provider" validate:"required,oneof=OpenAI Ollama DeepSeek SiliconFlow Moonshot Other AzureOpenAI BaiZhiCloud BaiZhiCloudModelStore Hunyuan BaiLian Volcengine Gemini ZhiPu AiHubMix"`
 	Model      string      `json:"model" query:"model_name" validate:"required"`
 	BaseURL    string      `json:"base_url" query:"base_url" validate:"required"`
 	APIKey     string      `json:"api_key" query:"api_key"`
