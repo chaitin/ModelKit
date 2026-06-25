@@ -703,7 +703,17 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                       }}
                     >
                       <Icon type={it.icon} sx={{ fontSize: 18 }} />
-                      {it.cn || it.label || '其他'}
+                      <Box
+                        component='span'
+                        sx={{
+                          minWidth: 0,
+                          overflow: 'hidden',
+                          textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}
+                      >
+                        {it.cn || it.label || '其他'}
+                      </Box>
                     </Stack>
                   ))}
               </Stack>
@@ -729,6 +739,34 @@ export const ModelModal: React.FC<ModelModalProps> = ({
               },
             }}
           >
+            {providerBrand === BAI_ZHI_CLOUD_PROVIDER && (
+              <Alert
+                severity='error'
+                variant='outlined'
+                sx={{
+                  mb: 1,
+                  py: 0.35,
+                  px: 1.25,
+                  alignItems: 'center',
+                  borderRadius: '8px',
+                  borderColor: 'error.main',
+                  bgcolor: 'rgba(239, 68, 68, 0.06)',
+                  color: 'error.main',
+                  '& .MuiAlert-icon': {
+                    py: 0,
+                    color: 'error.main',
+                    alignItems: 'center',
+                  },
+                  '& .MuiAlert-message': {
+                    py: 0,
+                    fontSize: 12,
+                    lineHeight: '20px',
+                  },
+                }}
+              >
+                {BAI_ZHI_CLOUD_MODEL_SQUARE_EXPIRE_TIP}
+              </Alert>
+            )}
             <Stack
               direction={'row'}
               alignItems={'center'}
@@ -837,34 +875,6 @@ export const ModelModal: React.FC<ModelModalProps> = ({
                   /结尾忽略V1版本，#结尾强制使用输入地址
                 </Box>
               </Stack>
-            )}
-            {providerBrand === BAI_ZHI_CLOUD_PROVIDER && (
-              <Alert
-                severity='warning'
-                variant='outlined'
-                sx={{
-                  mt: 1,
-                  py: 0.5,
-                  px: 1.5,
-                  alignItems: 'center',
-                  borderRadius: '8px',
-                  borderColor: 'warning.200',
-                  bgcolor: 'rgba(245, 158, 11, 0.06)',
-                  color: 'text.secondary',
-                  '& .MuiAlert-icon': {
-                    py: 0,
-                    color: 'warning.dark',
-                    alignItems: 'center',
-                  },
-                  '& .MuiAlert-message': {
-                    py: 0,
-                    fontSize: 12,
-                    lineHeight: '20px',
-                  },
-                }}
-              >
-                {BAI_ZHI_CLOUD_MODEL_SQUARE_EXPIRE_TIP}
-              </Alert>
             )}
             <Stack
               direction={'row'}

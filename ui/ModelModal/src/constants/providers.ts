@@ -4,7 +4,7 @@ import { ModelProviderMap } from '../types/types';
 export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
   BaiZhiCloud: {
     label: 'BaiZhiCloud',
-    cn: '模型广场（即将下线）',
+    cn: '（即将下线）模型广场',
     icon: 'ikun-baizhiyunlogo',
     urlWrite: false,
     secretRequired: true,
