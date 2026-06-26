@@ -15,7 +15,7 @@ export const DEFAULT_MODEL_PROVIDERS: ModelProviderMap = {
     rerank: true,
     analysis: true,
     analysis_vl: true,
-    modelDocumentUrl: 'https://ai-models.app.baizhi.cloud/console/keys',
+    modelDocumentUrl: 'https://model-square.app.baizhi.cloud/token',
     defaultBaseUrl: 'https://model-square.app.baizhi.cloud/v1',
   },
   BaiZhiCloudModelStore: {
