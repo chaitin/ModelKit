@@ -77,6 +77,60 @@ func TestBuildOpenAIChatConfig_IgnoreTemperatureForReasoningModels(t *testing.T)
 	}
 }
 
+// 测试视觉模型正则识别逻辑
+// 1. 测试官方已确认支持图片输入的新模型能识别为视觉模型
+// 2. 测试未确认支持图片输入或明确为文本/代码模型的模型不会误判为视觉模型
+func TestIsVisionModel_NewModelRegex(t *testing.T) {
+	provider := string(consts.ModelProviderOther)
+	testCases := []struct {
+		name      string
+		modelName string
+		want      bool
+	}{
+		{name: "gpt-5.5", modelName: "gpt-5.5", want: true},
+		{name: "gpt-5.4", modelName: "gpt-5.4", want: true},
+		{name: "gpt-5.4-mini", modelName: "gpt-5.4-mini", want: true},
+		{name: "minimax-m2.7", modelName: "minimax-m2.7", want: false},
+		{name: "minimax-m2.5", modelName: "minimax-m2.5", want: false},
+		{name: "glm-5.1", modelName: "glm-5.1", want: false},
+		{name: "glm-5", modelName: "glm-5", want: false},
+		{name: "glm-4.7", modelName: "glm-4.7", want: false},
+		{name: "kimi-k2.5", modelName: "kimi-k2.5", want: true},
+		{name: "kimi-k2.6", modelName: "kimi-k2.6", want: true},
+		{name: "qwen3.6-plus", modelName: "qwen3.6-plus", want: true},
+		{name: "qwen3.5-plus", modelName: "qwen3.5-plus", want: true},
+		{name: "qwen3.5-flash", modelName: "qwen3.5-flash", want: true},
+		{name: "qwen-flash", modelName: "qwen-flash", want: true},
+		{name: "deepseek-v4-pro", modelName: "deepseek-v4-pro", want: false},
+		{name: "deepseek-v4-flash", modelName: "deepseek-v4-flash", want: false},
+		{name: "mimo-v2.5-pro", modelName: "mimo-v2.5-pro", want: false},
+		{name: "mimo-v2.5", modelName: "mimo-v2.5", want: true},
+		{name: "mimo-v2-flash", modelName: "mimo-v2-flash", want: false},
+		{name: "glm-4.5-air", modelName: "glm-4.5-air", want: false},
+		{name: "qwen3.7-max", modelName: "qwen3.7-max", want: true},
+		{name: "qwen3.6-max", modelName: "qwen3.6-max", want: true},
+		{name: "doubao-seed-2.0-code", modelName: "doubao-seed-2.0-code", want: true},
+		{name: "doubao-seed-2.0-pro", modelName: "doubao-seed-2.0-pro", want: true},
+		{name: "hy3", modelName: "hy3", want: false},
+		{name: "deepseek-v3.2", modelName: "deepseek-v3.2", want: false},
+		{name: "minimax-m3", modelName: "minimax-m3", want: true},
+		{name: "qwen3.7-plus", modelName: "qwen3.7-plus", want: true},
+		{name: "qwen3.6-flash", modelName: "qwen3.6-flash", want: true},
+		{name: "kimi-k2.7-code", modelName: "kimi-k2.7-code", want: true},
+		{name: "glm-5.2", modelName: "glm-5.2", want: false},
+	}
+
+	for _, tc := range testCases {
+		tc := tc
+		// 测试单个模型是否按官方视觉能力判断
+		t.Run(tc.name, func(t *testing.T) {
+			if got := isVisionModel(tc.modelName, provider); got != tc.want {
+				t.Fatalf("isVisionModel(%q) = %v, want %v", tc.modelName, got, tc.want)
+			}
+		})
+	}
+}
+
 func TestCheckModel_TemperaturePassed(t *testing.T) {
 	testName := "TestCheckModel_TemperaturePassed_Provider=Moonshot_Model=kimi-k2.5_Temp=1"
 	// 1. Setup a test server to intercept the request
